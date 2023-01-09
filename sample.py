@@ -9,7 +9,7 @@ if __name__ == '__main__':
     import logging
     logging.basicConfig(level=logging.DEBUG)
 
-    csv_path = "sakurai_sightseeing_spots.csv"
+    csv_path = "sample/sakurai_sightseeing_spots.csv"
     out_path = "output.csv"
 
     table = Table(csv_path)
