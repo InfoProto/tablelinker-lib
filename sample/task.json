@@ -1,0 +1,19 @@
+[
+    {
+        "convertor":"rename_col",
+        "params":{
+            "input_attr_idx": "NO",
+            "new_col_name": "番号"
+        }
+    },
+    {
+        "convertor":"geocoder_code",
+        "params":{
+            "input_attr_idx": "住所",
+            "output_attr_name": "5桁コード",
+            "withCheckDigit": false,
+            "output_attr_new_index": 0
+        }
+    }
+]
+
