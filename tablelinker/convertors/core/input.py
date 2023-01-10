@@ -2,6 +2,8 @@ import csv
 import io
 from logging import getLogger
 
+import nkf
+
 logger = getLogger(__name__)
 
 
@@ -71,6 +73,7 @@ class ArrayInputCollection(InputCollection):
 
 
 class CsvInputCollection(InputCollection):
+
     def __init__(self, filepath):
         self.filepath = filepath
         self._file = None
@@ -87,10 +90,18 @@ class CsvInputCollection(InputCollection):
             self._file.close()
 
         self._file = open(self.filepath, "rb")
+        # 先頭10行を読み込んでエンコーディングを推定する
+        buffer = b''
+        for i in range(10):
+            buffer += self._file.readline()
+
+        guessed_encoding = nkf.guess(buffer)
+        self._file.seek(0)
+
         self._reader = csv.reader(
             io.TextIOWrapper(
                 buffer=self._file,
-                encoding='utf-8',
+                encoding=guessed_encoding,
                 newline=''))
 
         return self._file

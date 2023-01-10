@@ -1,7 +1,10 @@
+import csv
 from logging import getLogger
 import os
 import shutil
 import tempfile
+
+import pandas as pd
 
 from .convertors import core
 from .convertors import basics
@@ -54,7 +57,49 @@ class Table(object):
             logger.debug("一時ファイル '{}' を削除しました".format(
                 self.csv_in))
 
-    def save(self, csv_path: os.PathLike):
+    @classmethod
+    def fromPandas(cls, df: "DataFrame") -> "Table":
+        """
+        Pandas DataFrame から Table オブジェクトを作成する
+
+        Parameters
+        ----------
+        df: pandas.core.frame.DataFrame
+            Pandas DataFrame オブジェクト
+
+        Returns
+        -------
+        Table
+            新しい Table オブジェクト
+        """
+        table = None
+        with tempfile.NamedTemporaryFile(
+                mode="w+b", delete=False) as f:
+            df.to_csv(f)
+            table = Table(f.name, is_tempfile=True)
+
+        return table
+
+    def toPandas(self) -> "DataFrame":
+        """
+        Table オブジェクトから Pandas DataFrame を作成する
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+        """
+        with tempfile.NamedTemporaryFile(
+                mode="w", newline="", delete=True) as f:
+            writer = csv.writer(f)
+            with core.CsvInputCollection(self.csv_in) as input:
+                for row in input:
+                    writer.writerow(row)
+
+            df = pd.read_csv(f.name)
+
+        return df
+
+    def save(self, csv_path: os.PathLike, encoding="utf-8"):
         """
         入力 CSV ファイルを指定したファイル名で保存する。
 
@@ -62,12 +107,16 @@ class Table(object):
         ---------
         csv_path: os.PathLike
             保存する CSV ファイルのパス
+        encoding: str
+            テキストエンコーディング
         """
         if self.csv_in is not None and \
                 os.path.exists(self.csv_in):
-            shutil.copyfile(self.csv_in, csv_path)
-            logger.debug("一時ファイル '{}' を '{}' に保存しました".format(
-                self.csv_in, csv_path))
+            with open(csv_path, mode="w", newline="", encoding=encoding) as f:
+                writer = csv.writer(f)
+                with core.CsvInputCollection(self.csv_in) as input:
+                    for row in input:
+                        writer.writerow(row)
 
     def write(self, file):
         """
@@ -80,13 +129,10 @@ class Table(object):
         """
         if self.csv_in is not None and \
                 os.path.exists(self.csv_in):
-            with open(self.csv_in, 'r') as f:
-                while True:
-                    buf = f.read(1024)
-                    if buf is None or len(buf) == 0:
-                        break
-
-                    file.write(buf)
+            writer = csv.writer(file)
+            with core.CsvInputCollection(self.csv_in) as input:
+                for row in input:
+                    writer.writerow(row)
 
     def convert(
             self,
