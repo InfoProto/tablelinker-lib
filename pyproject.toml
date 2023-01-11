@@ -1,10 +1,17 @@
 [tool.poetry]
 name = "tablelinker-lib"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "A library of processes for manipulating tabular data in CSV format"
+authors = ["Takeshi Sagara <sagara@info-proto.com>"]
 readme = "README.md"
-packages = [{include = "tablelinker_lib"}]
+repository = "https://github.com/InfoProto/tablelinker-lib"
+keywords = ["CSV", "tabular", "manipulation", "cleansing"]
+packages = [{include = "tablelinker"}]
+classifiers = [
+	"Operating System :: Linux",
+	"License :: OSI Approved :: MIT License",
+	"Programming Language :: Python :: 3",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<4.0"

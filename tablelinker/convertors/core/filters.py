@@ -63,7 +63,7 @@ class Filter(ABC):
             except ValueError:
                 raise RuntimeError((
                     "Column '{}' specified by 'input_attr_idx' "
-                    "is not in the heder columns. Candidates are; {}"
+                    "is not in the header columns. Candidates are; {}"
                 ).format(input_attr_idx, ",".join(headers)))
 
     def initial(self, context):

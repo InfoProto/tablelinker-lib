@@ -10,12 +10,10 @@ logger = getLogger(__name__)
 
 
 def usage():
-    print(
-        "Usage: cat <input.csv> | python {} [-d] <task.json>".format(
-            sys.argv[0]))
+    print("Usage: cat <input.csv> | python -m tablelinker [-d] <task.json>")
     print((
         "ex. cat sample/sakurai_sightseeing_spots.csv | "
-        "python {} sample/task.json").format(sys.argv[0]))
+        "python -m tablelinker sample/task.json"))
     sys.exit(-1)
 
 
@@ -48,8 +46,8 @@ if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as tmpdir:
         logger.debug("Reading csv data from STDIN...")
         csv_in = os.path.join(tmpdir, 'input.csv')
-        with open(csv_in, 'w') as fout:
-            fout.write(sys.stdin.read())
+        with open(csv_in, 'wb') as fout:
+            fout.write(sys.stdin.buffer.read())
 
         logger.debug("Start convertor(s)...")
         table = Table(csv_in)
