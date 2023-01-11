@@ -17,6 +17,38 @@ from . import (
     mtab,
 )
 
+selectable_filters = (
+    truncate.TruncateFilter,
+    concat_col.ConcatColFilter,
+    split_col.SplitColFilter,
+    split_col.PivotColFilter,
+    wareki.ToSeirekiFilter,
+    zenkaku.ToHarfNumberFilter,
+    select_row.StringContainSelectRowFilter,
+    delete_row.StringContainDeleteRowFilter,
+    calc_col.CalcColFilter,
+    zenkaku.ToHarfSymbolFilter,
+    zenkaku.ToWholeSymbolFilter,
+    zenkaku.ToHarfAlphanumericFilter,
+    zenkaku.ToWholeAlphanumericFilter,
+    move_col.MoveColFilter,
+    insert_col.InsertColFilter,
+    rename_col.RenameColFilter,
+    delete_col.DeleteColFilter,
+    geocoder.ToGeocodeCodeFilter,
+    geocoder.ToGeocodePrefectureFilter,
+    geocoder.ToGeocodeMunicipalitiesFilter,
+    geocoder.ToGeocodeLongitudeFilter,
+    geocoder.ToGeocodeLatitudeFilter,
+    geocoder.ToGeocodeLatLongFilter,
+    mtab.MtabFilter,
+)
+
+def register_filters():
+    for filter in selectable_filters:
+        filters.registry_filter(filter)
+
+"""
 filters.registry_filter(truncate.TruncateFilter)
 filters.registry_filter(concat_col.ConcatColFilter)
 filters.registry_filter(split_col.SplitColFilter)
@@ -42,3 +74,4 @@ filters.registry_filter(geocoder.ToGeocodeMunicipalitiesFilter)
 filters.registry_filter(geocoder.ToGeocodeLongitudeFilter)
 filters.registry_filter(geocoder.ToGeocodeLatitudeFilter)
 filters.registry_filter(mtab.MtabFilter)
+"""

@@ -164,10 +164,9 @@ class InputOutputFilter(Filter):
 
         # 移動
         output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is None:  # 先頭
-            header.insert(0, header.pop(self.output_attr_index))
-        else:  # 指定位置
-            header.insert(output_attr_new_index + 1, header.pop(self.output_attr_index))
+        if output_attr_new_index is not None:
+            # 指定位置へ
+            header.insert(output_attr_new_index, header.pop(self.output_attr_index))
 
         context.output(header)
 
@@ -183,10 +182,101 @@ class InputOutputFilter(Filter):
 
         # 移動
         output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is None:  # 先頭
-            record.insert(0, record.pop(self.output_attr_index))
+        if output_attr_new_index is not None:
+            # 指定位置へ
+            record.insert(output_attr_new_index, record.pop(self.output_attr_index))
+
+        context.output(record)
+
+    def process_filter(self, input_attr_idx, record, context):
+        return record[input_attr_idx]
+
+
+class InputOutputsFilter(Filter):
+    """
+    入力列が1, 出力列が複数のフィルタの基底クラス
+    """
+
+    @classmethod
+    def meta(cls):
+        _meta = FilterMeta(cls.Meta)
+        _meta.params = params.ParamSet(
+            [
+                params.InputAttributeParam("input_attr_idx", label="入力列", description="処理をする対象の列", required=True),
+                params.OutputAttributeListParam(
+                    "output_attr_names",
+                    label="出力列名のリスト",
+                    description="変換結果を出力する列名のリストです。",
+                    help_text="既存の列名が指定された場合、置換となります。",
+                    required=True,
+                ),
+                params.AttributeParam(
+                    "output_attr_new_index",
+                    label="出力列の位置",
+                    description="新しい列の挿入位置です。",
+                    label_suffix="の後",
+                    empty=True,
+                    empty_label="先頭",
+                    required=False,
+                ),
+            ]
+            + _meta.params.params()
+        )
+        return _meta
+
+    @classmethod
+    def can_apply(cls, attrs):
+        """
+        対象の属性がこのフィルタに適用可能かどうかを返します。
+        attrs: 属性のリスト({name, attr_type, data_type})
+        """
+        if len(attrs) != 1:
+            return False
+        return True
+
+    def initial(self, context):
+        self.del_attr_indexes = []
+        self.new_attr = None
+
+    def process_header(self, header, context):
+        output_attr_names = context.get_param("output_attr_names")
+        input_attr_idx = context.get_param("input_attr_idx")
+
+        # 既存列は削除
+        for output_attr_name in output_attr_names:
+            if output_attr_name in header:
+                idx = header.index(output_attr_name)
+                self.del_attr_indexes.append(idx)
+                del header[idx]
+
+        # 指定列に挿入
+        output_attr_new_index = context.get_param("output_attr_new_index")
+        if output_attr_new_index is None or \
+                output_attr_new_index >= len(header):  # 末尾
+            header = header + output_attr_names
         else:  # 指定位置
-            record.insert(output_attr_new_index + 1, record.pop(self.output_attr_index))
+            header = header[0:output_attr_new_index] + \
+                output_attr_names + \
+                header[output_attr_new_index:]
+
+        context.output(header)
+
+    def process_record(self, record, context):
+        input_attr_idx = context.get_param("input_attr_idx")
+
+        values = self.process_filter(input_attr_idx, record, context)
+
+        for idx in self.del_attr_indexes:
+            del record[idx]
+
+        # 指定列に挿入
+        output_attr_new_index = context.get_param("output_attr_new_index")
+        if output_attr_new_index is None or \
+                output_attr_new_index >= len(record):  # 末尾
+            record = record + values
+        else:  # 指定位置
+            record = record[0:output_attr_new_index] + \
+                values + record[output_attr_new_index:]
 
         context.output(record)
 

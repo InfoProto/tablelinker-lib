@@ -12,7 +12,15 @@
             "input_attr_idx": "住所",
             "output_attr_name": "5桁コード",
             "withCheckDigit": false,
-            "output_attr_new_index": 0
+            "output_attr_new_index": 1
+        }
+    },
+    {
+        "convertor":"geocoder_latlong",
+        "params":{
+            "input_attr_idx": "住所",
+            "output_attr_names": ["緯度", "経度", "ジオコーディングレベル"],
+            "output_attr_new_index": null
         }
     }
 ]

@@ -327,7 +327,7 @@ class OutputAttributeParam(StringParam):
         return {"prefix": self.prefix}
 
 
-class OutputAttributeListParam(AttributeListParam):
+class OutputAttributeListParam(StringListParam):
     """
     複数の列を指定するためのパラメータ
     """

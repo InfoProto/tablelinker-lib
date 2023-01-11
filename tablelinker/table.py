@@ -7,10 +7,10 @@ import tempfile
 import pandas as pd
 
 from .convertors import core
-from .convertors import basics
+from .convertors.basics import register_filters
 
 logger = getLogger(__name__)
-
+register_filters()
 
 class Table(object):
     """
@@ -160,6 +160,10 @@ class Table(object):
         input = core.CsvInputCollection(self.csv_in)
         output = core.CsvOutputCollection(csv_out)
         filter = core.filter_find_by(filter_name)
+
+        if filter is None:
+            raise ValueError("Filter '{}' is not registered.".format(
+                filter_name))
 
         with core.core.Context(
                 filter=filter,

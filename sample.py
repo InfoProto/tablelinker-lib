@@ -26,8 +26,14 @@ if __name__ == '__main__':
             "input_attr_idx": "住所",
             "output_attr_name": "5桁コード",
             "withCheckDigit": False,
-            "output_attr_new_index": 0,
+            "output_attr_new_index": 1,
         })
+    table = table.convert(
+        'geocoder_latlong', {
+            "input_attr_idx": "住所",
+            "output_attr_names": ["緯度", "経度", "ジオコーディングレベル"],
+        })
+
     table.save(out_path)  # encoding はデフォルトで UTF-8
 
     # Pandas DataFrame を利用して JSON にエクスポート

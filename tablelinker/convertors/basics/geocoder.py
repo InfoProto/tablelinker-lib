@@ -78,11 +78,14 @@ class ToGeocodeCodeFilter(filters.InputOutputFilter):
         logger.warning("ToGeocoderCodeFilter.can_apply returns {}".format(res))
         return res
 
-    def process_filter(self, output_attr_name, record, context):
+    def initial(self, context):
+        super().initial(context)
         initialize_jageocoder()
+
+    def process_filter(self, input_attr_idx, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[output_attr_name]))
+            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 if context.get_param("withCheckDigit"):
@@ -128,11 +131,14 @@ class ToGeocodePrefectureFilter(filters.InputOutputFilter):
         """
         return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
 
-    def process_filter(self, output_attr_name, record, context):
+    def initial(self, context):
+        super().initial(context)
         initialize_jageocoder()
+
+    def process_filter(self, input_attr_idx, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[output_attr_name]))
+            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 result = node.get_pref_name()
@@ -168,11 +174,14 @@ class ToGeocodeMunicipalitiesFilter(filters.InputOutputFilter):
         """
         return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
 
-    def process_filter(self, output_attr_name, record, context):
+    def initial(self, context):
+        super().initial(context)
         initialize_jageocoder()
+
+    def process_filter(self, input_attr_idx, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[output_attr_name]))
+            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 if node.level >= 3:
@@ -206,9 +215,12 @@ class ToGeocodeLatitudeFilter(filters.InputOutputFilter):
         """
         return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
 
-    def process_filter(self, output_attr_name, record, context):
+    def initial(self, context):
+        super().initial(context)
         initialize_jageocoder()
-        geocode = jageocoder.search(str(record[output_attr_name]))
+
+    def process_filter(self, input_attr_idx, record, context):
+        geocode = jageocoder.search(str(record[input_attr_idx]))
         result = ""
         if geocode["candidates"]:
             candidates = [str(candidate["y"]) for candidate in geocode["candidates"]]
@@ -239,12 +251,63 @@ class ToGeocodeLongitudeFilter(filters.InputOutputFilter):
         """
         return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
 
-    def process_filter(self, output_attr_name, record, context):
+    def initial(self, context):
+        super().initial(context)
         initialize_jageocoder()
-        geocode = jageocoder.search(str(record[output_attr_name]))
+
+    def process_filter(self, input_attr_idx, record, context):
+        geocode = jageocoder.search(str(record[input_attr_idx]))
         result = ""
         if geocode["candidates"]:
             candidates = [str(candidate["x"]) for candidate in geocode["candidates"]]
             result = ",".join(candidates)
+
+        return result
+
+
+class ToGeocodeLatLongFilter(filters.InputOutputsFilter):
+    """
+    住所から緯度・経度を返すフィルターです。
+    """
+
+    class Meta:
+        key = "geocoder_latlong"
+        name = "住所から緯度経度"
+        description = """
+        住所から緯度・経度を生成します
+        """
+        help_text = None
+        params = params.ParamSet()
+
+    @classmethod
+    @check_jageocoder
+    def can_apply(cls, attrs):
+        """
+        対象の属性がこのフィルタに適用可能かどうかを返します。
+        attrs: 属性のリスト({name, attr_type, data_type})
+        """
+        return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
+
+    @check_jageocoder
+    def initial(self, context):
+        # 出力列名が3つ指定されていることを確認
+        output_attr_names = context.get_param("output_attr_names")
+        if isinstance(output_attr_names, str) or \
+                len(output_attr_names) != 3:
+            raise ValueError((
+                "The output_attr_names parameter of geocoder_latlong "
+                "requires 3 column names for latitude, longitude and level."))
+
+        initialize_jageocoder()
+        super().initial(context)
+
+    def process_filter(self, input_attr_idx, record, context):
+        geocode = jageocoder.search(str(record[input_attr_idx]))
+        result = ["", ""]
+        if geocode["candidates"]:
+            lats = [str(candidate["y"]) for candidate in geocode["candidates"]]
+            lons = [str(candidate["x"]) for candidate in geocode["candidates"]]
+            lvls = [str(candidate["level"]) for candidate in geocode["candidates"]]
+            result = [",".join(lats), ",".join(lons), ",".join(lvls)]
 
         return result
