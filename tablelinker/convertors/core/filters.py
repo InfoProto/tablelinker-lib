@@ -125,6 +125,12 @@ class InputOutputFilter(Filter):
                     empty_label="先頭",
                     required=False,
                 ),
+                params.BooleanParam(
+                    "overwrite",
+                    label="上書き",
+                    description="既に値が存在する場合に上書きするか指定します。",
+                    default_value=False,
+                    required=False)
             ]
             + _meta.params.params()
         )
@@ -173,11 +179,16 @@ class InputOutputFilter(Filter):
     def process_record(self, record, context):
         input_attr_idx = context.get_param("input_attr_idx")
 
-        value = self.process_filter(input_attr_idx, record, context)
-
         if self.output_attr_index < len(record):
-            record[self.output_attr_index] = value
+            if context.get_param("overwrite") or \
+                    record[self.output_attr_index] == "":
+                value = self.process_filter(input_attr_idx, record, context)
+                record[self.output_attr_index] = value
+            else:
+                # 値が存在する場合は上書きしない
+                pass
         else:
+            value = self.process_filter(input_attr_idx, record, context)
             record.insert(self.output_attr_index, value)
 
         # 移動
@@ -219,6 +230,13 @@ class InputOutputsFilter(Filter):
                     empty_label="先頭",
                     required=False,
                 ),
+                params.BooleanParam(
+                    "overwrite",
+                    label="上書き",
+                    description="既に値が存在する場合に上書きするか指定します。",
+                    default_value=False,
+                    required=False
+                ),
             ]
             + _meta.params.params()
         )
@@ -248,6 +266,8 @@ class InputOutputsFilter(Filter):
                 idx = header.index(output_attr_name)
                 self.del_attr_indexes.append(idx)
                 del header[idx]
+            else:
+                self.del_attr_indexes.append(None)
 
         # 指定列に挿入
         output_attr_new_index = context.get_param("output_attr_new_index")
@@ -266,17 +286,32 @@ class InputOutputsFilter(Filter):
 
         values = self.process_filter(input_attr_idx, record, context)
 
+        old_values = []
         for idx in self.del_attr_indexes:
-            del record[idx]
+            if idx is None:
+                old_values.append("")
+            else:
+                old_values.append(record[idx])
+                del record[idx]
+
+        if context.get_param("overwrite"):
+            new_values = values
+        else:
+            new_values = []
+            for i, old_value in enumerate(old_values):
+                if old_value == "":
+                    new_values.append(values[i])
+                else:
+                    new_values.append(old_value)
 
         # 指定列に挿入
         output_attr_new_index = context.get_param("output_attr_new_index")
         if output_attr_new_index is None or \
                 output_attr_new_index >= len(record):  # 末尾
-            record = record + values
+            record = record + new_values
         else:  # 指定位置
             record = record[0:output_attr_new_index] + \
-                values + record[output_attr_new_index:]
+                new_values + record[output_attr_new_index:]
 
         context.output(record)
 

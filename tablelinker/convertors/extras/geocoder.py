@@ -41,7 +41,7 @@ def check_jageocoder(func):
     return wrapper
 
 
-class ToGeocodeCodeFilter(filters.InputOutputFilter):
+class ToCodeFilter(filters.InputOutputFilter):
     """
     住所から自治体コードを返すフィルターです。
     """
@@ -75,7 +75,6 @@ class ToGeocodeCodeFilter(filters.InputOutputFilter):
         attrs: 属性のリスト({name, attr_type, data_type})
         """
         res = len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-        logger.warning("ToGeocoderCodeFilter.can_apply returns {}".format(res))
         return res
 
     def initial(self, context):
@@ -105,7 +104,7 @@ class ToGeocodeCodeFilter(filters.InputOutputFilter):
         return result
 
 
-class ToGeocodePrefectureFilter(filters.InputOutputFilter):
+class ToPrefectureFilter(filters.InputOutputFilter):
     """
     住所から都道府県を返すフィルターです。
     """
@@ -148,7 +147,7 @@ class ToGeocodePrefectureFilter(filters.InputOutputFilter):
         return result
 
 
-class ToGeocodeMunicipalitiesFilter(filters.InputOutputFilter):
+class ToMunicipalitiesFilter(filters.InputOutputFilter):
     """
     住所から市区町村を返すフィルターです。
     """
@@ -192,7 +191,7 @@ class ToGeocodeMunicipalitiesFilter(filters.InputOutputFilter):
         return result
 
 
-class ToGeocodeLatitudeFilter(filters.InputOutputFilter):
+class ToLatitudeFilter(filters.InputOutputFilter):
     """
     住所から緯度を返すフィルターです。
     """
@@ -228,7 +227,7 @@ class ToGeocodeLatitudeFilter(filters.InputOutputFilter):
         return result
 
 
-class ToGeocodeLongitudeFilter(filters.InputOutputFilter):
+class ToLongitudeFilter(filters.InputOutputFilter):
     """
     住所から経度を返すフィルターです。
     """
@@ -265,7 +264,7 @@ class ToGeocodeLongitudeFilter(filters.InputOutputFilter):
         return result
 
 
-class ToGeocodeLatLongFilter(filters.InputOutputsFilter):
+class ToLatLongFilter(filters.InputOutputsFilter):
     """
     住所から緯度・経度を返すフィルターです。
     """

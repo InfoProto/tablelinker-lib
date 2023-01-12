@@ -4,6 +4,8 @@ from logging import getLogger
 
 import nkf
 
+from .csv_cleaner import CSVCleaner
+
 logger = getLogger(__name__)
 
 
@@ -76,44 +78,19 @@ class CsvInputCollection(InputCollection):
 
     def __init__(self, filepath):
         self.filepath = filepath
-        self._file = None
-
-    def file(self):
-        return self._file
 
     def open(self):
         """
-        ファイルを開き、そのハンドルを返す。
-        もし既にファイルが開いている場合は開きなおす。
+        ファイルを開き、そのコンテンツを CSVCleaner で整形する。
         """
-        if self._file is not None:
-            self._file.close()
+        with open(self.filepath, "rb") as fb:
+            content = fb.read()
 
-        self._file = open(self.filepath, "rb")
-        # 先頭10行を読み込んでエンコーディングを推定する
-        buffer = b''
-        for i in range(10):
-            buffer += self._file.readline()
-
-        guessed_encoding = nkf.guess(buffer)
-        self._file.seek(0)
-
-        self._reader = csv.reader(
-            io.TextIOWrapper(
-                buffer=self._file,
-                encoding=guessed_encoding,
-                newline=''))
-
-        return self._file
-
-    def close(self):
-        if self._file is not None:
-            self._file.close()
-            self._file = None
+        self._reader = CSVCleaner(data=content)
+        self._reader.open()
 
     def reset(self):
-        self.close()
-        return self.open()
+        self.open()
 
     def next(self):
         return self._reader.__next__()

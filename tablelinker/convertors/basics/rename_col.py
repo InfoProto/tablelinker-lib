@@ -36,3 +36,31 @@ class RenameColFilter(filters.Filter):
         headers[input_attr_idx] = new_col_name
 
         context.output(headers)
+
+
+class RenameColsFilter(filters.Filter):
+    """
+    全ての列名を一括変更します。
+    """
+
+    class Meta:
+        key = "rename_cols"
+        name = "カラム名一括変更"
+        description = "カラム名を一括で変更します"
+        help_text = None
+
+        params = params.ParamSet(
+            params.StringListParam(
+                "column_list",
+                label="カラム名リスト",
+                description="変更後のカラム名のリスト",
+                required=True),
+        )
+
+    def process_header(self, headers, context):
+        output_headers = context.get_param("column_list")
+        if len(headers) != len(output_headers):
+            raise ValueError(
+                "Length of columns is not identical to the original headers.")
+
+        context.output(output_headers)

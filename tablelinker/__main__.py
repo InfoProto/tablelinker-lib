@@ -38,6 +38,12 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.WARNING)
         taskfile = sys.argv[1]
 
+    # 利用するコンバータ
+    import tablelinker.convertors.basics as basic_convertors
+    import tablelinker.convertors.extras as extra_convertors
+    basic_convertors.register()
+    extra_convertors.register()
+
     with open(taskfile, 'r') as jsonf:
         logger.debug("Reading tasks from '{}'.".format(
             taskfile))

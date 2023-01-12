@@ -7,10 +7,9 @@ import tempfile
 import pandas as pd
 
 from .convertors import core
-from .convertors.basics import register_filters
 
 logger = getLogger(__name__)
-register_filters()
+
 
 class Table(object):
     """
