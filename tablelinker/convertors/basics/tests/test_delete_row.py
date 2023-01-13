@@ -9,7 +9,9 @@ class TestStringContainSelectRowFilter(unittest.TestCase):
     def test_concat_filter(self):
         job = LocalJob(
             filter=StringContainDeleteRowFilter,
-            filter_params={"attr": 3, "query": "test",},
+            filter_params={
+                "attr": 3, "query": "test",
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],

@@ -149,13 +149,17 @@ class InputOutputFilter(Filter):
     def initial(self, context):
         self.output_attr_index = None
         self.new_attr = None
+        self.overwrite = None
 
     def process_header(self, header, context):
         output_attr_name = context.get_param("output_attr_name")
         input_attr_idx = context.get_param("input_attr_idx")
+        self.overwrite = context.get_param("overwrite")
 
         if output_attr_name is None:
-            self.output_attr_index = input_attr_idx  # Noneの場合は、置換
+            # Noneの場合は既存列を置換する
+            self.output_attr_index = input_attr_idx
+            self.overwrite = True
             self.new_attr = False
         else:
             # 既存列か調べる
@@ -180,7 +184,7 @@ class InputOutputFilter(Filter):
         input_attr_idx = context.get_param("input_attr_idx")
 
         if self.output_attr_index < len(record):
-            if context.get_param("overwrite") or \
+            if self.overwrite or \
                     record[self.output_attr_index] == "":
                 value = self.process_filter(input_attr_idx, record, context)
                 record[self.output_attr_index] = value
@@ -255,10 +259,11 @@ class InputOutputsFilter(Filter):
     def initial(self, context):
         self.del_attr_indexes = []
         self.new_attr = None
+        self.input_attr_idx = None
 
     def process_header(self, header, context):
         output_attr_names = context.get_param("output_attr_names")
-        input_attr_idx = context.get_param("input_attr_idx")
+        self.input_attr_idx = context.get_param("input_attr_idx")
 
         # 既存列は削除
         for output_attr_name in output_attr_names:
@@ -282,9 +287,7 @@ class InputOutputsFilter(Filter):
         context.output(header)
 
     def process_record(self, record, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-
-        values = self.process_filter(input_attr_idx, record, context)
+        values = self.process_filter(self.input_attr_idx, record, context)
 
         old_values = []
         for idx in self.del_attr_indexes:

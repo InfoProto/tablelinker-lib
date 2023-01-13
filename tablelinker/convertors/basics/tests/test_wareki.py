@@ -14,7 +14,9 @@ class TestToSeirekiFilter(unittest.TestCase):
     def test_filter(self):
         job = LocalJob(
             filter=ToSeirekiFilter,
-            filter_params={"attr": 2,},
+            filter_params={
+                "attr": 2,
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],

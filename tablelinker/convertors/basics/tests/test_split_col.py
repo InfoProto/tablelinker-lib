@@ -14,7 +14,11 @@ class TestSplitColFilter(unittest.TestCase):
     def test_concat_filter(self):
         job = LocalJob(
             filter=SplitColFilter,
-            filter_params={"attr": 2, "separator": ",", "output_attr_name": "output_attr_name",},
+            filter_params={
+                "attr": 2,
+                "separator": ",",
+                "output_attr_name": "output_attr_name",
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],
@@ -52,7 +56,10 @@ class TestPivotColFilter(unittest.TestCase):
     def test_concat_filter(self):
         job = LocalJob(
             filter=PivotColFilter,
-            filter_params={"attr": 2, "separator": ",", "output_attr_name": "output_attr_name",},
+            filter_params={
+                "attr": 2, "separator": ",",
+                "output_attr_name": "output_attr_name",
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],

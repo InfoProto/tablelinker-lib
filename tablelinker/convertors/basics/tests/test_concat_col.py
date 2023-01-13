@@ -15,7 +15,10 @@ class TestConcatColFilter(unittest.TestCase):
     def test_run_filter(self):
         job = LocalJob(
             filter=ConcatColFilter,
-            filter_params={"attr1": 1, "attr2": 2, "separator": "-", "output_attr_name": "output_attr_name",},
+            filter_params={
+                "attr1": 1, "attr2": 2, "separator": "-",
+                "output_attr_name": "output_attr_name",
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],
@@ -47,5 +50,8 @@ class TestConcatColFilter(unittest.TestCase):
 
         self.assertEqual(
             job.errors().error_messages,
-            {"attr1": ["対象列1は、必須入力です。", "対象列1は、数字を入力してください。"], "attr2": ["対象列2は、必須入力です。", "対象列2は、数字を入力してください。"],},
+            {
+                "attr1": ["対象列1は、必須入力です。", "対象列1は、数字を入力してください。"],
+                "attr2": ["対象列2は、必須入力です。", "対象列2は、数字を入力してください。"],
+            },
         )

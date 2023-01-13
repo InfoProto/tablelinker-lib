@@ -14,7 +14,9 @@ class TestTruncateFilter(unittest.TestCase):
     def test_concat_filter(self):
         job = LocalJob(
             filter=TruncateFilter,
-            filter_params={"attr": 2, "length": 5, "omission": "...",},
+            filter_params={
+                "attr": 2, "length": 5, "omission": "...",
+            },
             input=ArrayInputCollection(
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],

@@ -1,10 +1,10 @@
 import csv
 from logging import getLogger
 import os
-import shutil
 import tempfile
 
 import pandas as pd
+from pandas.core.frame import DataFrame
 
 from .convertors import core
 
@@ -57,7 +57,7 @@ class Table(object):
                 self.csv_in))
 
     @classmethod
-    def fromPandas(cls, df: "DataFrame") -> "Table":
+    def fromPandas(cls, df: DataFrame) -> "Table":
         """
         Pandas DataFrame から Table オブジェクトを作成する
 
@@ -79,7 +79,7 @@ class Table(object):
 
         return table
 
-    def toPandas(self) -> "DataFrame":
+    def toPandas(self) -> DataFrame:
         """
         Table オブジェクトから Pandas DataFrame を作成する
 

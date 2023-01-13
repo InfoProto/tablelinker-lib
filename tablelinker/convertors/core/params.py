@@ -80,7 +80,9 @@ class Param(ABC):
         self.group = group
         self.required = required
 
-        self.validators = validators + self.default_validators() if validators is not None else self.default_validators()
+        self.validators = validators + self.default_validators() \
+            if validators is not None \
+            else self.default_validators()
         if required:
             self.validators = (RequiredValidator(),) + self.validators
 

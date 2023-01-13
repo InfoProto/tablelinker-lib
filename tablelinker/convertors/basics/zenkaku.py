@@ -133,8 +133,8 @@ class ToHarfNumberFilter(filters.InputOutputFilter):
         help_text = None
         params = params.ParamSet()
 
-    def process_filter(self, output_attr_name, record, context):
-        return to_harf_number(record[output_attr_name])
+    def process_filter(self, input_attr_idx, record, context):
+        return to_harf_number(record[input_attr_idx])
 
 
 class ToHarfSymbolFilter(filters.InputOutputFilter):
