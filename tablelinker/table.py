@@ -74,7 +74,7 @@ class Table(object):
         table = None
         with tempfile.NamedTemporaryFile(
                 mode="w+b", delete=False) as f:
-            df.to_csv(f)
+            df.to_csv(f, index=False)
             table = Table(f.name, is_tempfile=True)
 
         return table
@@ -135,18 +135,18 @@ class Table(object):
 
     def convert(
             self,
-            filter_name: str,
-            filter_params: dict) -> 'Table':
+            convertor: str,
+            params: dict) -> 'Table':
         """
         表形式データにフィルタを適用して変換する。
 
         Parameters
         ----------
-        filter_name: str
-            フィルタ名
-            定義済みフィルタの Meta.key (例: 'rename_col')
-        filter_params: dict
-            フィルタに渡すパラメータ名・値の辞書
+        convertor: str
+            コンバータ名
+            定義済みコンバータの Meta.key (例: 'rename_col')
+        params: dict
+            コンバータに渡すパラメータ名・値の辞書
             例: {"input_attr_idx": 1, "new_col_name": "番号"}
 
         Returns
@@ -158,30 +158,30 @@ class Table(object):
         csv_out = tempfile.NamedTemporaryFile(delete=False).name
         input = core.CsvInputCollection(self.csv_in)
         output = core.CsvOutputCollection(csv_out)
-        filter = core.filter_find_by(filter_name)
+        filter = core.filter_find_by(convertor)
 
         if filter is None:
-            raise ValueError("Filter '{}' is not registered.".format(
-                filter_name))
+            raise ValueError("コンバータ '{}' は未登録です".format(
+                convertor))
 
         with core.core.Context(
                 filter=filter,
-                filter_params=filter_params,
+                filter_params=params,
                 input=input,
                 output=output) as context:
             try:
                 filter().process(context)
                 logger.debug((
-                    "ファイル '{}' にフィルタ '{}' を適用し"
+                    "ファイル '{}' にコンバータ '{}' を適用し"
                     "一時ファイル '{}' に出力しました。").format(
-                    self.csv_in, filter_name, csv_out))
+                    self.csv_in, convertor, csv_out))
                 new_table = Table(csv_out, True)
                 return new_table
             except RuntimeError as e:
                 os.remove(csv_out)
                 logger.debug((
-                    "ファイル '{}' にフィルタ '{}' を適用中、"
+                    "ファイル '{}' にコンバータ '{}' を適用中、"
                     "エラーのため一時ファイル '{}' を削除しました。").format(
-                    self.csv_in, filter_name, csv_out))
+                    self.csv_in, convertor, csv_out))
 
                 raise e

@@ -22,20 +22,23 @@ if __name__ == '__main__':
     table = Table(csv_path)
 
     table = table.convert(
-        'geocoder_code', {
+        convertor='geocoder_code',
+        params={
             "input_attr_idx": "住所",
             "output_attr_name": "都道府県コード又は市区町村コード",
             "withCheckDigit": False,
             "output_attr_new_index": 1,
         })
     table = table.convert(
-        'geocoder_latlong', {
+        convertor='geocoder_latlong',
+        params={
             "input_attr_idx": "住所",
             "output_attr_names": ["緯度", "経度", "ジオコーディングレベル"],
             "overwrite": False,
         })
     table = table.convert(
-        'mapping_cols', {
+        convertor='mapping_cols',
+        params={
             "column_list": [  # 推奨データセット - 観光
                 '都道府県コード又は市区町村コード', 'NO', '都道府県名',
                 '市区町村名', '名称', '名称_カナ', '名称_英語',

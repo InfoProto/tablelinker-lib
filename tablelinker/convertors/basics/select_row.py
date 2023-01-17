@@ -17,7 +17,8 @@ class StringContainSelectRowFilter(filters.Filter):
         """
 
         params = params.ParamSet(
-            params.InputAttributeParam("attr", label="対象列", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx", label="対象列", required=True),
             params.StringParam("query", label="文字列", required=True),
         )
 
@@ -30,8 +31,8 @@ class StringContainSelectRowFilter(filters.Filter):
         return len(attrs) == 0
 
     def process_record(self, record, context):
-        attr = context.get_param("attr")
+        idx = context.get_param("input_attr_idx")
         query = context.get_param("query")
-        value = record[attr]
+        value = record[idx]
         if query in value:
             context.output(record)

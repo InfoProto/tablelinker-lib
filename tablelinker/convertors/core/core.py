@@ -116,6 +116,12 @@ class Context(object):
         val = self._filter_params.get(name)
         return param.get_value(val, self)
 
+    def get_params(self):
+        """
+        有効なパラメータ名のリストを取得する
+        """
+        return self._filter.meta().params.keys()
+
 
 class Job(object):
     """

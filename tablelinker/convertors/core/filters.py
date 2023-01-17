@@ -54,17 +54,21 @@ class Filter(ABC):
         context.set_data("num_of_columns", len(headers))
 
         # 入力カラムを列番号ではなく列名での指定に対応
-        input_attr_idx = context.get_param("input_attr_idx")
-        if isinstance(input_attr_idx, str):
-            headers = context.get_data("headers")
-            try:
-                idx = headers.index(input_attr_idx)
-                context._filter_params["input_attr_idx"] = idx
-            except ValueError:
-                raise RuntimeError((
-                    "Column '{}' specified by 'input_attr_idx' "
-                    "is not in the header columns. Candidates are; {}"
-                ).format(input_attr_idx, ",".join(headers)))
+        for key in context.get_params():
+            if not key.startswith('input_attr'):
+                continue
+
+            val = context.get_param(key)
+            if isinstance(val, str):
+                headers = context.get_data("headers")
+                try:
+                    idx = headers.index(val)
+                    context._filter_params[key] = idx
+                except ValueError:
+                    raise RuntimeError((
+                        "パラメータ '{}' で指定された列 '{}' は"
+                        "有効な列名ではありません。有効な列名は次の通り; {}"
+                    ).format(key, val, ",".join(headers)))
 
     def initial(self, context):
         pass

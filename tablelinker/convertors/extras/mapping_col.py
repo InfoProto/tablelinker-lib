@@ -1,6 +1,8 @@
 from ..core import filters, params
 from ..core.mapping import ItemsPair
 
+# Todo: 手動で個々のカラムの対応表を指定できるフィルタを作成する
+
 
 class MappingColsFilter(filters.Filter):
     """

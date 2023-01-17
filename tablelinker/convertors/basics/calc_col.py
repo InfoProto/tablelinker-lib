@@ -3,17 +3,17 @@ from enum import Enum
 
 
 class Calculation(Enum):
-    Add = "1"
-    Sub = "2"
-    Mul = "3"
-    Div = "4"
+    Add = "+"
+    Sub = "-"
+    Mul = "*"
+    Div = "/"
 
 
 CalculationLabels = {
-    Calculation.Add: "足し算",
-    Calculation.Sub: "引き算",
-    Calculation.Mul: "掛け算",
-    Calculation.Div: "割り算",
+    Calculation.Add: "和",
+    Calculation.Sub: "差",
+    Calculation.Mul: "積",
+    Calculation.Div: "商",
 }
 
 
@@ -37,11 +37,39 @@ def calc(valueA, valueB, calculation):
 
 class CalcColFilter(filters.Filter):
     """
-    ２つの列を演算します。
+    概要
+        2つの入力列に対して四則演算を実行し、結果を出力列に保存します。
+
+    コンバータ名
+        "calc"
+
+    パラメータ
+        * "input_attr1": 入力列1の列番号または列名
+        * "input_attr2": 入力列2の列番号または列名
+        * "operator": 演算子（"+", "-", "*", "/"）
+        * "output_attr_name": 出力列名
+        * "overwrite": 出力列名が存在し空欄ではない場合に、
+          上書きするか（true, false）
+
+    サンプル
+        表の「人口」列の値を「面積」列の値で割った商を「人口密度」に
+        出力します。 ::
+
+            {
+                "convertor": "calc",
+                "params": {
+                    "input_attr1": "人口",
+                    "input_attr2": "面積",
+                    "operator": "/",
+                    "output_attr_name": "人口密度",
+                    "overwrite": false
+                }
+            }
+
     """
 
     class Meta:
-        key = "clac"
+        key = "calc"
         name = "列演算"
 
         description = """
@@ -52,10 +80,10 @@ class CalcColFilter(filters.Filter):
 
         #
         params = params.ParamSet(
-            params.InputAttributeParam("attr1", label="対象列1", required=True),
-            params.InputAttributeParam("attr2", label="対象列2", required=True),
+            params.InputAttributeParam("input_attr1", label="対象列1", required=True),
+            params.InputAttributeParam("input_attr2", label="対象列2", required=True),
             params.EnumsParam(
-                "calculation", label="計算", enums=Calculation, labels=CalculationLabels, default_value=Calculation.Add
+                "operator", label="演算子", enums=Calculation, labels=CalculationLabels, default_value=Calculation.Add
             ),
             params.StringParam("output_attr_name", label="新しい列名"),
             params.BooleanParam("delete_col", label="元の列を消しますか？", default_value=False),
@@ -72,8 +100,8 @@ class CalcColFilter(filters.Filter):
         return True
 
     def process_header(self, headers, context):
-        attr1 = context.get_param("attr1")
-        attr2 = context.get_param("attr2")
+        attr1 = context.get_param("input_attr1")
+        attr2 = context.get_param("input_attr2")
         output_attr_name = context.get_param("output_attr_name")
         delete_col = context.get_param("delete_col")
 
@@ -90,9 +118,9 @@ class CalcColFilter(filters.Filter):
         context.output(headers)
 
     def process_record(self, record, context):
-        attr1 = context.get_param("attr1")
-        attr2 = context.get_param("attr2")
-        calculation = context.get_param("calculation")
+        attr1 = context.get_param("input_attr1")
+        attr2 = context.get_param("input_attr2")
+        calculation = context.get_param("operator")
         delete_col = context.get_param("delete_col")
 
         try:
