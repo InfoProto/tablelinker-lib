@@ -1,7 +1,6 @@
 import unittest
 
-from ...core import ArrayInputCollection, ArrayOutputCollection, LocalJob
-from ...core.core import Context
+from ...core import ArrayInputCollection, ArrayOutputCollection, Context, LocalJob
 
 from ..zenkaku import ToHarfNumberFilter, to_harf_number
 
@@ -14,6 +13,7 @@ class TestZenkakuiFn(unittest.TestCase):
 
 class TestToZenkakuFilter(unittest.TestCase):
     def test_filter(self):
+        output = ArrayOutputCollection([])
         with Context(
                 filter=ToHarfNumberFilter,
                 filter_params={
@@ -27,11 +27,11 @@ class TestToZenkakuFilter(unittest.TestCase):
                         [1, "aaa3", "xxx,yyy,zzz", "ccc3", "ddd3", "eee3"],
                     ]
                 ),
-                output=ArrayOutputCollection([])) as context:
+                output=output) as context:
             ToHarfNumberFilter().process(context)
 
             self.assertEqual(
-                context._output.get_data(),
+                output.get_data(),
                 [
                     ["num", "col-a", "col-b", "col-c", "col-d", "col-e"],
                     [1, "aaa1", "1234567890", "ccc1", "ddd1", "eee1"],

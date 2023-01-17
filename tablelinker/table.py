@@ -164,7 +164,7 @@ class Table(object):
             raise ValueError("コンバータ '{}' は未登録です".format(
                 convertor))
 
-        with core.core.Context(
+        with core.Context(
                 filter=filter,
                 filter_params=params,
                 input=input,

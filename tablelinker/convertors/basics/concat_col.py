@@ -16,7 +16,38 @@ def concat(value_list, separator=""):
 
 class ConcatColFilter(filters.Filter):
     """
-    文字列を結合します。
+    概要
+        2つの入力列の文字列を結合し、結果を出力列に保存します。
+
+    コンバータ名
+        "concat"
+
+    パラメータ
+        * "input_attr1": 入力列1の列番号または列名 [必須]
+        * "input_attr2": 入力列2の列番号または列名 [必須]
+        * "output_attr_name": 出力列名 [必須]
+        * "separator": 区切り文字 [""]
+        * "delete_col": 入力列を削除するか （true/false） [false]
+
+    注釈
+        出力列名が元の表に存在している場合、その列に上書きします。
+        存在していなかった場合、最後に新しい列が追加されます。
+
+    サンプル
+        表の「姓」列と「名」列を空白で結合し、結果を「姓名」列に
+        出力します。 ::
+
+            {
+                "convertor": "concat",
+                "params": {
+                    "input_attr1": "姓",
+                    "input_attr2": "名",
+                    "separator": " ",
+                    "output_attr_name": "姓名",
+                    "delete_col": true
+                }
+            }
+
     """
 
     class Meta:
@@ -32,9 +63,9 @@ class ConcatColFilter(filters.Filter):
         """
 
         params = params.ParamSet(
+            params.InputAttributeParam("input_attr1", label="対象列1", required=True),
+            params.InputAttributeParam("input_attr2", label="対象列2", required=True),
             params.OutputAttributeParam("output_attr_name", label="新しい列名"),
-            params.InputAttributeParam("attr1", label="対象列1", required=True),
-            params.InputAttributeParam("attr2", label="対象列2", required=True),
             params.StringParam("separator", label="区切り文字", default_value=""),
             params.BooleanParam("delete_col", label="元の列を消しますか？", default_value=False),
         )
@@ -50,8 +81,8 @@ class ConcatColFilter(filters.Filter):
         return True
 
     def process_header(self, headers, context):
-        attr1 = context.get_param("attr1")
-        attr2 = context.get_param("attr2")
+        attr1 = context.get_param("input_attr1")
+        attr2 = context.get_param("input_attr2")
         output_attr_name = context.get_param("output_attr_name")
         delete_col = context.get_param("delete_col")
 
@@ -62,14 +93,16 @@ class ConcatColFilter(filters.Filter):
 
         if delete_col:
             headers.pop(attr1)
-            if attr1 != attr2:
+            if attr1 > attr2:
                 headers.pop(attr2)
+            elif attr1 < attr2:
+                headers.pop(attr2 - 1)
 
         context.output(headers)
 
     def process_record(self, record, context):
-        attr1 = context.get_param("attr1")
-        attr2 = context.get_param("attr2")
+        attr1 = context.get_param("input_attr1")
+        attr2 = context.get_param("input_attr2")
         separator = context.get_param("separator")
         delete_col = context.get_param("delete_col")
 
@@ -80,7 +113,9 @@ class ConcatColFilter(filters.Filter):
 
         if delete_col:
             record.pop(attr1)
-            if attr1 != attr2:
+            if attr1 > attr2:
                 record.pop(attr2)
+            elif attr1 < attr2:
+                record.pop(attr2 - 1)
 
         context.output(record)

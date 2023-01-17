@@ -59,7 +59,13 @@ def convert(args: dict):
     with open(taskfile, 'r') as jsonf:
         logger.debug("Reading tasks from '{}'.".format(
             taskfile))
-        tasks = json.load(jsonf)
+        try:
+            tasks = json.load(jsonf)
+        except json.decoder.JSONDecodeError as e:
+            logger.error((
+                "タスクファイル '{}' の JSON 表記が正しくありません。"
+                "json.decoder.JSONDecodeError: {}").format(taskfile, e))
+            sys.exit(-1)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:

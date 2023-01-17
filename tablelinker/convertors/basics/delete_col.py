@@ -2,6 +2,28 @@ from ..core import filters, params
 
 
 class DeleteColFilter(filters.Filter):
+    """
+    概要
+        指定した列を削除します。
+
+    コンバータ名
+        "delete_col"
+
+    パラメータ
+        * "input_attr_idx": 削除する入力列の列番号または列名 [必須]
+
+    サンプル
+        表の「備考」列を削除します。 ::
+
+            {
+                "convertor": "delete_col",
+                "params": {
+                    "input_attr_idx": "備考"
+                }
+            }
+
+    """
+
     class Meta:
         key = "delete_col"
         name = "列を削除する"

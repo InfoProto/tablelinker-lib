@@ -1,6 +1,6 @@
 # flake8: noqa
 # isort:skip_file
-from .core import Job, LocalJob, LocalRunner, Runner
+from .core import Context, Job, LocalJob, LocalRunner, Runner
 from .filters import (
     AttrCopyFilter,
     Filter,
