@@ -1,3 +1,4 @@
+import csv
 from logging import getLogger
 
 from .csv_cleaner import CSVCleaner
@@ -72,18 +73,27 @@ class ArrayInputCollection(InputCollection):
 
 class CsvInputCollection(InputCollection):
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, need_cleaning=True):
         self.filepath = filepath
+        self.need_cleaning = need_cleaning
 
     def open(self):
         """
-        ファイルを開き、そのコンテンツを CSVCleaner で整形する。
+        ファイルを開く。
+        need_cleaning が True の場合、のコンテンツを読み込み
+        CSVCleaner で整形したバッファを開く。
         """
-        with open(self.filepath, "rb") as fb:
-            content = fb.read()
+        if self.need_cleaning:
+            with open(self.filepath, "rb") as fb:
+                content = fb.read()
 
-        self._reader = CSVCleaner(data=content)
-        self._reader.open()
+            self._reader = CSVCleaner(data=content)
+            self._reader.open()
+        else:
+            f = open(self.filepath, "r", newline="")
+            self._reader = csv.reader(f)
+
+        return self
 
     def reset(self):
         self.open()

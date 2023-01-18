@@ -9,11 +9,8 @@ if __name__ == '__main__':
     import logging
     logging.basicConfig(level=logging.WARNING)
 
-    # 利用するコンバータを登録
-    import tablelinker.convertors.basics as basic_convertors
-    import tablelinker.convertors.extras as extra_convertors
-    basic_convertors.register()
-    extra_convertors.register()
+    # 拡張コンバータを利用
+    Table.useExtraConvertors()
 
     # 入力 CSV は Shift_JIS
     csv_path = "sample/sakurai_sightseeing_spots_sjis.csv"

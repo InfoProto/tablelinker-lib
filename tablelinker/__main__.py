@@ -1,4 +1,5 @@
 import csv
+import io
 import json
 from logging import getLogger
 import os
@@ -18,15 +19,16 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} [-d] [-i <file>] [-o <file>] <task>
-  {p} mapping [-d] [-i <file>] [-o <file>] [-t <val>] <template>
+  {p} [-d] [-i <file>] [-o <file>] [--no-cleaning] <task>
+  {p} mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
 
 Options:
   -h --help              このヘルプを表示
   -d --debug             デバッグメッセージを表示
   -i, --input=<file>     入力ファイルを指定（省略時は標準入力）
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
-  -t, --th=<val>         マッピングしきい値 (0-100) [default: 70]
+  --no-cleaning          指定すると入力ファイルをクリーニングしない
+  --headers=<headers>    列名リスト（カンマ区切り）
 
 Parameters:
   <task>        コンバータとパラメータを記述した JSON ファイル
@@ -49,6 +51,7 @@ templates/sightseeing_spots.csv
   マッピング情報はタスクとして利用できる JSON 形式で出力されます。
 """.format(p='tablelinker')
 
+
 def convert(args: dict):
     import tablelinker.convertors.basics as basic_convertors
     import tablelinker.convertors.extras as extra_convertors
@@ -56,6 +59,7 @@ def convert(args: dict):
     extra_convertors.register()
 
     taskfile = args['<task>']
+    need_cleaning = args['--no-cleaning'] is False
     with open(taskfile, 'r') as jsonf:
         logger.debug("Reading tasks from '{}'.".format(
             taskfile))
@@ -77,7 +81,7 @@ def convert(args: dict):
                 fout.write(sys.stdin.buffer.read())
 
         logger.debug("Start convertor(s)...")
-        table = Table(csv_in)
+        table = Table(csv_in, need_cleaning=need_cleaning)
 
         if isinstance(tasks, dict):
             # コンバータが一つだけ指定されている場合
@@ -93,9 +97,10 @@ def convert(args: dict):
 
         # 結果を出力
         if args['--output'] is None:
-            table.write(sys.stdout)
+            table.write()
         else:
             table.save(args['--output'])
+
 
 def mapping(args: dict):
     from tablelinker.convertors import core
@@ -112,19 +117,30 @@ def mapping(args: dict):
                 fout.write(sys.stdin.buffer.read())
 
         # しきい値
-        th = int(args['--th'])
+        # 手作業で修正することを前提とするため、緩い値を用いる
+        th = 20
 
         # 入力 CSV の見出し行を取得
         with core.CsvInputCollection(csv_in) as f:
             headers = f.next()
 
         # テンプレート CSV の見出し行を取得
-        with open(args['<template>'], 'r', newline='') as f:
-            reader = csv.reader(f)
-            template_headers = reader.__next__()
+        if args['<template>']:
+            # ファイル名指定
+            with open(
+                    args['<template>'],
+                    mode='r', newline='') as f:
+                reader = csv.reader(f)
+                template_headers = reader.__next__()
+        elif args['--headers']:
+            with io.StringIO(
+                    args['--headers'], newline='') as stream:
+                reader = csv.reader(stream)
+                template_headers = reader.__next__()
 
         # 項目マッピング
         pair = ItemsPair(template_headers, headers)
+
         mapping = OrderedDict()
         for result in pair.mapping():
             output, header, score = result
@@ -140,9 +156,9 @@ def mapping(args: dict):
 
         # 結果出力
         result = json.dumps({
-                "convertor":"mapping",
-                "params":dict(mapping)
-            }, indent=2, ensure_ascii=False)
+            "convertor": "mapping_cols",
+            "params": {"column_map": dict(mapping)},
+        }, indent=2, ensure_ascii=False)
 
         if args['--output']:
             with open(args['--output'], 'w') as f:

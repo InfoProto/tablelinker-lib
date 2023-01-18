@@ -336,3 +336,12 @@ class OutputAttributeListParam(StringListParam):
 
     class Meta:
         type = "output-attribute-list"
+
+
+class DictParam(Param):
+    """
+    dict 型を指定するパラメータです。
+    """
+
+    class Meta:
+        type = "dict"

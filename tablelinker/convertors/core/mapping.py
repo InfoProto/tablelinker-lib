@@ -251,8 +251,8 @@ class ItemsPair(object):
         items1: List[str]
             テーブル1の項目見出しリスト
         """
-        self.items0 = items0
-        self.items1 = items1
+        self.items0 = [x if x != '' else 'empty' for x in items0]
+        self.items1 = [x if x != '' else 'empty' for x in items1]
         self.mxsim = None
         self.mxed = None
 

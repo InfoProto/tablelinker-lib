@@ -18,8 +18,8 @@ Tablelinker はよく利用される変換処理をライブラリ化し、
 オープンソースとして公開することで、より多くの処理を
 集合知として共有することを目標としています。
 
-使い方1: Python ライブラリ
---------------------------
+使い方1: Python パッケージとして利用する
+----------------------------------------
 
 Tablelinker パッケージを Python スクリプトに import することで、
 CSV の読み込み、変換、出力機能を利用できます。
@@ -29,7 +29,6 @@ CSV の読み込み、変換、出力機能を利用できます。
 .. code-block:: python
 
     from tablelinker import Table
-    import tablelinker.convertors.basics as basic_convertors
     table = Table("opendata.csv")  # csv を読み込み
     table = table.convert({        # コンバータで変換
         "select_string_contains":{  # コンバータ名
@@ -38,15 +37,15 @@ CSV の読み込み、変換、出力機能を利用できます。
     }})
     table.save("clean_opendata.csv")
 
-上記の例は、"opendata.csv" を読み込み、"所在地" 列に
-"千代田区" を部分文字列として含む行だけを選択する処理を実行し
-（見出し行は残ります）、結果を "clean_opendata.csv" に出力します。
+上記の例は、``opendata.csv`` を読み込み、「所在地」列に
+「千代田区」を部分文字列として含む行だけを選択する処理を実行し
+（見出し行は残ります）、結果を ``clean_opendata.csv`` に出力します。
 
 
-使い方2: コマンドライン
------------------------
+使い方2: コマンドラインで利用する
+---------------------------------
 
-Tablelinker パッケージをモジュール実行すると、
+Tablelinker パッケージをモジュールとして実行すると、
 CSV を標準入力から受け取り、 JSON で記述したタスクを実行し、
 結果の CSV を標準出力に書き出すパイプコマンドとして利用できます。
 
@@ -56,7 +55,7 @@ CSV を標準入力から受け取り、 JSON で記述したタスクを実行�
 
     $ cat opendata.csv | python -m tablelinker task.json > clean_opendata.csv
 
-`task.json` には次のように記述します。
+``task.json`` には次のように記述します。
 
 .. code-block:: json
 
@@ -71,7 +70,7 @@ CSV を標準入力から受け取り、 JSON で記述したタスクを実行�
 JSON ファイルに複数のコンバータを列挙すれば、順番に適用します。
 
 
-インストール手順やコンバータの種類については、
+インストール手順やコンバータの種類、より詳しい使い方については、
 以下の文書を参照してください。
 
 .. toctree::
@@ -79,7 +78,8 @@ JSON ファイルに複数のコンバータを列挙すれば、順番に適用
     :caption: Contents:
 
     install
-    aslibrary
+    as_library
+    as_command
     convertor
 
 

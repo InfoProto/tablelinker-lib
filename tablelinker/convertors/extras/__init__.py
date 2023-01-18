@@ -14,7 +14,7 @@ selectable_filters = (
     geocoder.ToLongitudeFilter,
     geocoder.ToLatitudeFilter,
     geocoder.ToLatLongFilter,
-    mapping_col.MappingColsFilter,
+    mapping_col.AutoMappingColsFilter,
     mtab.MtabFilter,
     wareki.ToSeirekiFilter,
 )

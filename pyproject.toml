@@ -30,7 +30,7 @@ docopt = "^0.6.2"
 
 
 [tool.poetry.group.dev.dependencies]
-flake8 = "^6.0.0"
+flake8 = "^5.0.0"
 Sphinx = "<6"
 sphinx-rtd-theme = "^1.1.1"
 

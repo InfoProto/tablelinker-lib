@@ -110,6 +110,8 @@ class Context(object):
         # TODO: memo化
         params = self._filter.meta().params
         if name not in params:
+            logger.warning(
+                "Param '{}' didn't declared.".format(name))
             return None
 
         param = params[name]

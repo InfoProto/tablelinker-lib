@@ -1,19 +1,17 @@
 from ..core import filters, params
 from ..core.mapping import ItemsPair
 
-# Todo: 手動で個々のカラムの対応表を指定できるフィルタを作成する
 
-
-class MappingColsFilter(filters.Filter):
+class AutoMappingColsFilter(filters.Filter):
     """
     指定したカラムのリストにマッピングします。
     カラムのマッピングは語ベクトルと表記の類似度によって決定します。
     """
 
     class Meta:
-        key = "mapping_cols"
-        name = "カラムマッピング"
-        description = "カラムを指定したリストにマッピングします"
+        key = "auto_mapping_cols"
+        name = "自動カラムマッピング"
+        description = "カラムを指定したリストに自動マッピングします"
         help_text = None
 
         params = params.ParamSet(
