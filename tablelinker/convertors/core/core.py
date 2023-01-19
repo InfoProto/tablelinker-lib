@@ -57,6 +57,18 @@ class Context(object):
     """
 
     def __init__(self, filter, filter_params, input, output, proxy=None):
+        """
+        Parameters
+        ----------
+        filter: Filter
+            The filter class to be used in this context.
+        filter_params: dict[Param, Any]
+            The pairs of parameter name and its value.
+        input: InputCollection
+            The input source of this context.
+        output: OutputCollection
+            The output source of this context.
+        """
         self._filter = filter
         self._input = input
         self._output = output
@@ -65,6 +77,26 @@ class Context(object):
         self._current = None
         self._current_idx = None
         self._data = {}
+
+        # Check parameters
+        filter_meta = self._filter.meta()
+        declared_params = filter_meta.params
+        filter_key = filter_meta.key
+        for key in self._filter_params.keys():
+            if key in declared_params:
+                continue
+
+            msg = ("コンバータ '{}' ではパラメータ '{}' は"
+                "利用できません").format(filter_key, key)
+            logger.warning(msg)
+
+        for name in declared_params.keys():
+            param = declared_params[name]
+            if param.required and name not in self._filter_params:
+                msg = ("コンバータ '{}' の必須パラメータ '{}' が"
+                    "未指定です").format(filter_key, name)
+                logger.error(msg)
+                raise ValueError("Param '{}' is required.".format(name))
 
     def __enter__(self):
         # TODO: preheat params
@@ -108,13 +140,23 @@ class Context(object):
 
     def get_param(self, name):
         # TODO: memo化
-        params = self._filter.meta().params
-        if name not in params:
-            logger.warning(
-                "Param '{}' didn't declared.".format(name))
-            return None
+        filter_meta = self._filter.meta()
+        declared_params = filter_meta.params
+        filter_key = filter_meta.key
+        if name not in declared_params:
+            msg = "Accessing param '{}' of the converter '{}' which is not declared.".format(
+                name, filter_key)
+            logger.error(msg)
+            raise ValueError(msg)
 
-        param = params[name]
+        param = declared_params[name]
+        if param.required and name not in self._filter_params:
+            logger.error("コンバータ '{}' のパラメータ '{}' は必須です（終了します）".format(
+                    filter_key, name))
+            msg = "Param '{}' of the convertor '{}' is required.".format(
+                filter_key, name)
+            raise ValueError(msg)
+
         val = self._filter_params.get(name)
         return param.get_value(val, self)
 

@@ -34,7 +34,7 @@ if __name__ == '__main__':
             "overwrite": False,
         })
     table = table.convert(
-        convertor='mapping_cols',
+        convertor='auto_mapping_cols',
         params={
             "column_list": [  # 推奨データセット - 観光
                 '都道府県コード又は市区町村コード', 'NO', '都道府県名',
@@ -44,7 +44,7 @@ if __name__ == '__main__':
                 '料金（基本）', '料金（詳細）', '説明', '説明_英語',
                 'アクセス方法', '駐車場情報', 'バリアフリー情報',
                 '連絡先名称', '連絡先電話番号', '連絡先内線番号',
-                '画像', '画像_ライセンス', 'URL', '備考']
+                '画像', '画像_ライセンス', 'URL', '備考'],
         })
 
     table.save(out_path)  # encoding はデフォルトで UTF-8
