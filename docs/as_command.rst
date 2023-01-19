@@ -4,10 +4,10 @@
 ====================
 
 Tablelinker モジュールをコマンドラインから呼び出すと、
-CSV ファイルの読み込みやクレンジング、さまざまな変換処理を
-UNIX コマンドのように実行できます。
+CSV ファイルの読み込みやクリーニング、さまざまな変換処理を
+コマンドのように実行できます。
 
-Python プログラムを書かずに CSV ファイルに対する定型処理を
+Python プログラムを書かずに CSV ファイルに対する変換処理を
 バッチ実行したい場合などに有用です。
 
 .. code-block:: bash
@@ -24,8 +24,8 @@ Python プログラムを書かずに CSV ファイルに対する定型処理�
 ヘルプ表示
 ----------
 
-``-h`` または ``--help`` オプションを付けて実行すると、
-詳しいヘルプ画面が表示されます。
+Tablelinker コマンドに ``-h`` または ``--help`` オプションを
+付けて実行すると、詳しいヘルプ画面が表示されます。
 
 .. code-block:: bash
 
@@ -43,17 +43,23 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 
     $ python -m tablelinker [-d] [-i <file>] [-o <file>] [--no-cleaning] <task>
 
+- サンプルデータ
+
+    この節では厚生労働省の「人口動態調査(2020年)」の
+    `上巻_3-3-1_都道府県（特別区－指定都市再掲）別にみた人口動態総覧CSV <https://www.data.go.jp/data/dataset/mhlw_20211015_0019>`_ から
+    ダウンロードできる ``ma030000.csv`` をサンプルとして利用します。
+
 .. _taskfile:
 
 タスクファイル
 ^^^^^^^^^^^^^^
 
-利用するコンバータとパラメータは、事前に JSON 形式の
-「タスクファイル」に記述しておいて、 Tablelinker コマンドの
-実行時に ``<task>`` パラメータとして指定します。
+適用するコンバータとパラメータは、事前に JSON 形式のファイルに
+に記述しておいて、 Tablelinker コマンドの実行時に
+``<task>`` パラメータとしてそのファイル名を指定します。
 
 例として、列名を変更する ``rename_col`` コンバータを利用し、
-0 列目の名前を「都道府県名」に変更するタスクファイルを
+0 列目の名前を「都道府県名」に変更する以下の内容のファイルを
 ``task1.json`` という名前で作成します。
 
 .. code-block:: json
@@ -68,18 +74,20 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 
 ``convertor`` には利用するコンバータ名を、``params`` には
 コンバータごとに定義されているパラメータを記述します。
-また、 ``convertor`` と ``params`` を含むオブジェクトを
-「タスク」と呼びます。
-
 利用可能なコンバータおよびパラメータについては
 :ref:`convertor` を参照してください。
 
-次のコマンドを実行すると、 ``sample/ma030000.csv`` に
+.. note::
+    Tablelinker コマンドでは、 ``convertor`` と ``params`` を含む
+    オブジェクトを「タスク」と呼び、タスクを記述した JSON ファイルを
+    「タスクファイル」と呼びます。
+
+次のコマンドを実行すると、 ``ma030000.csv`` に
 このタスクを適用し、結果を表示します。
 
 .. code-block:: bash
 
-    $ cat sample/ma030000.csv | python -m tablelinker task1.json
+    $ cat ma030000.csv | python -m tablelinker task1.json
     都道府県名,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
     ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
     ,,,,,死亡数,,,,,,の死産数,死亡数,,
@@ -113,12 +121,12 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
         }
     }
 
-``sample/ma030000.csv`` に対して ``task1.json`` を適用後に
-``task2.json`` を適用するコマンドは次のように書けます。
+``ma030000.csv`` に対して ``task1.json`` を適用後に
+``task2.json`` を適用するコマンドは次のようになります。
 
 .. code-block:: bash
 
-    $ cat sample/ma030000.csv | python -m tablelinker task1.json | python -m tablelinker task2.json
+    $ cat ma030000.csv | python -m tablelinker task1.json | python -m tablelinker task2.json
     都道府県名,人口,出生数,死亡数
     ,,,
     ,,,
@@ -138,7 +146,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 連続してコンバータを適用する複合タスクを定義することができます。
 
 上記の ``rename_col`` と ``reorder_cols`` を連続して適用する
-タスクファイルは次のように書けます。
+タスクファイル ``task3.json`` は次のように書きます。
 
 .. code-block:: json
 
@@ -158,8 +166,26 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
         }
     ]
 
-よく利用する一連の変換処理をタスクファイルにまとめておくと、
-簡単に再利用することができて便利です。
+``task3.json`` を適用するコマンドは次のようになります。
+
+.. code-block:: bash
+
+    $ cat ma030000.csv | python -m tablelinker task3.json
+    都道府県名,人口,出生数,死亡数
+    ,,,
+    ,,,
+    全　国,123398962,840835,1372755
+    01 北海道,5188441,29523,65078
+    02 青森県,1232227,6837,17905
+    03 岩手県,1203203,6718,17204
+    04 宮城県,2280203,14480,24632
+    05 秋田県,955659,4499,15379
+    06 山形県,1060586,6217,15348
+    ...
+
+``task1.json`` と ``task2.json`` を連続して適用したのと
+同じ結果が得られます。このようによく利用する一連の変換処理を
+1つのタスクファイルにまとめておくと、簡単に再利用できて便利です。
 
 コマンドラインオプション
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -178,7 +204,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
     つまり上記の ``task1.json`` を適用する処理は、次のように
     書いても同じです。 ::
 
-        $ python -m tablelinker -i sample/ma030000.csv task1.json 
+        $ python -m tablelinker -i ma030000.csv task1.json 
 
 - 出力ファイル指定
 
@@ -199,10 +225,10 @@ Tablelinker コマンドは以下のオプションを指定できます。
     あることが事前に分かっている場合、クリーニング処理を
     実行しないことで、使用するメモリや実行時間を節約できます。
 
-    上記の ``sample/ma0300000.csv`` は Shift JIS なので、
+    上記の ``ma0300000.csv`` は Shift JIS なので、
     このオプションを指定するとエラーになります。 ::
 
-        $ cat sample/ma030000.csv | python -m tablelinker --no-cleaning task1.json
+        $ cat ma030000.csv | python -m tablelinker --no-cleaning task1.json
         Traceback (most recent call last):
         ...
         UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97 in position 0: invalid start byte
@@ -210,25 +236,38 @@ Tablelinker コマンドは以下のオプションを指定できます。
 見出し列のマッピング
 --------------------
 
+- サンプルデータ
+
+    この節では八丈町の `「八丈島の主な観光スポット一覧 (CSVファイル)」
+    <https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000002>`_
+    からダウンロードできる ``sightseeing.csv`` をサンプルとして利用します。
+
+    また、デジタル庁の `「推奨データセット一覧」 <https://www.digital.go.jp/resources/data_dataset/>`_ ページ内、
+    「5 観光施設一覧」の `CSV <https://www.digital.go.jp/assets/contents/node/basic_page/field_ref_resources/0066e8a8-6734-44ab-a9a9-8e09ba9cb508/xxxxxx_tourism.csv>`_ 
+    からダウンロードできる ``xxxxxx_tourism.csv`` をテンプレートとして
+    利用します。
+
 作成したい CSV と入力 CSV の列名が少し異なっていたり、
-列の順番が入れ替わっている場合、
-入力 CSV と出力 CSV の列を対応表に従って入れ替える
-``mapping_cols`` コンバータを利用して一括変換できます。
+列の順番が入れ替わっている場合、定義した対応表に従って
+入力 CSV と出力 CSV の列を入れ替える ``mapping_cols`` 
+コンバータを利用すれば、一括変換できます。
 
 しかし CSV ごとの対応表をゼロから作成するのは手間がかかります。
 そこで Tablelinker コマンドに ``mapping`` を指定すると、
 ``mapping_cols`` コンバータ用のタスクを作成する機能を利用できます。
 
-たとえば `八丈島の主な観光スポット一覧（CSVファイル） <https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000002/resource/080dfc76-6027-4681-a2f9-dd4b40a06b13>`_ からダウンロードした
-``sample/hachijo_sightseeing.csv`` を、デジタル庁の `推奨データセット
-「観光施設一覧」 <https://www.digital.go.jp/resources/data_dataset/>`_ の形式に変換することを考えます。
+たとえば `「八丈島の主な観光スポット一覧（CSVファイル）」 <https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000002/resource/080dfc76-6027-4681-a2f9-dd4b40a06b13>`_ からダウンロードした
+``sightseeing.csv`` を、デジタル庁の推奨データセット
+「5 観光施設一覧」の `CSV <https://www.digital.go.jp/assets/contents/node/basic_page/field_ref_resources/0066e8a8-6734-44ab-a9a9-8e09ba9cb508/xxxxxx_tourism.csv>`_ 
+からダウンロードした ``xxxxxx_tourism.csv`` の形式に合わせることを考えます。
 
-観光施設一覧の CSV テンプレートを ``templates/xxxxxx_tourism.csv`` に
-保存し、次のコマンドでタスクを作成します。
+まず次のコマンドで、 ``mapping_cols`` コンバータを利用して
+``sightseeing.csv`` を ``xxxxxx_tourism.csv`` に合わせるタスクの
+たたき台を作成します。
 
 .. code-block:: bash
 
-    $ cat sample/hachijo_sightseeing.csv | python -m tablelinker mapping templates/xxxxxx_tourism.csv
+    $ cat sightseeing.csv | python -m tablelinker mapping xxxxxx_tourism.csv
     {
       "convertor": "mapping_cols",
       "params": {
@@ -271,6 +310,11 @@ Tablelinker コマンドは以下のオプションを指定できます。
 出力列名、右側（値）が入力列名です。
 値が ``null`` になっている列は、入力 CSV に対応する列が
 見つからなかったことを意味します。
+
+「緯度」「経度」「説明」列は、同じ名前の列がテンプレートにも
+存在するのでそのままマップされます。また、「観光スポット名称」列が
+「名称」列に、「所在地」列が「住所」列にマップされています。
+このマッピングには列名の類似度が用いられています。
 
 この結果をタスクファイル ``mapping_task.json`` に保存して、
 手作業で修正します。ここでは「八丈島ホームページ記載」は
@@ -317,11 +361,11 @@ Tablelinker コマンドは以下のオプションを指定できます。
     }
 
 このタスクファイルを利用すると「八丈島の主な観光スポット一覧」を
-推奨データセットフォーマットに変換できます。
+推奨データセットフォーマット「観光施設一覧」に変換できます。
 
 .. code-block:: bash
 
-    $ cat sample/hachijo_sightseeing.csv | python -m tablelinker mapping_task.json
+    $ cat hachijo_sightseeing.csv | python -m tablelinker mapping_task.json
     都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考
     ,,,,ホタル水路,,,,,,33.108218,139.80102,,,,,,,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,,,,,,,,,,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01,
     ,,,,登龍峠展望,,,,,,33.113154,139.835245,,,,,,,「ノボリュウトウゲ」または「ノボリョウトウゲ」といい、この道を下方から望むとあたかも龍 が昇天するように見えるので、この名が付けられました。峠道の頂上近くの展望台は、八丈島で一、二を争う景勝地として名高く、新東京百景の一つにも選ばれました。眼前に八丈富士と神止山、八丈小島を、眼下には底土港や神湊港、三根市街を一望できます。,,,,,,,,,,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#02,
@@ -350,11 +394,10 @@ Tablelinker コマンドの mapping モードでは以下のオプションを�
 - ヘッダ列直接指定
 
     ``--headers=<headers>`` を指定すると、出力 CSV の列名リストを
-    テンプレートとなる CSV ファイルから読み込む代わりに、
+    テンプレート CSV ファイルの見出し行から読み込む代わりに、
     文字列で直接指定できます。
 
     上記のマッピングの例をこのオプションで実行するには
     次のように指定します。 ::
 
-        cat sample/hachijo_sightseeing.csv | python -m tablelinker mapping --headers='都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考'
-
+        cat hachijo_sightseeing.csv | python -m tablelinker mapping --headers='都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考'

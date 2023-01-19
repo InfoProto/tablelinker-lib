@@ -4,16 +4,23 @@
 ====================
 
 Tablelinker を Python アプリケーションやスクリプトに読み込むと、
-CSV ファイルの読み込みやクレンジング、さまざまな変換処理を
+CSV ファイルの読み込みやクリーニングなどの処理を
 簡単に実装できます。
 
 変換した表データは CSV ファイルとして保存したり、
 一行ずつ取り出してコード内で利用できます。
 
 より高度な使い方として、 `pandas <http://pandas.pydata.org/>`_
-の DataFrame から CSV データに変換して読み込んだり、
-変換した結果の表データを DataFrame に変換することもできます。
+の DataFrame から表データとして Tablelinker に読み込んだり、
+Tablelinker で変換した結果の表データを DataFrame に
+変換することもできます。
 詳細は :ref:`use_with_pandas` を参照してください。
+
+- サンプルデータのダウンロード
+
+    このページでは厚生労働省の「人口動態調査(2020年)」の
+    `上巻_3-3-1_都道府県（特別区－指定都市再掲）別にみた人口動態総覧 <https://www.data.go.jp/data/dataset/mhlw_20211015_0019>`_ から
+    ダウンロードできる ``ma030000.csv`` をサンプルとして利用します。
 
 CSV を開く
 ----------
@@ -25,7 +32,7 @@ CSV ファイルから Table オブジェクトを作成するコードの例を
 .. code-block:: python
 
     >>> from tablelinker import Table
-    >>> table = Table("sample/ma030000.csv")
+    >>> table = Table("ma030000.csv")
 
 .. note::
 
