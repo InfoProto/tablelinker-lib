@@ -73,25 +73,64 @@ class ArrayInputCollection(InputCollection):
 
 class CsvInputCollection(InputCollection):
 
-    def __init__(self, filepath, need_cleaning=True):
-        self.filepath = filepath
-        self.need_cleaning = need_cleaning
+    def __init__(self, file_or_path, need_cleaning=True):
+        # file_or_path パラメータが File-like か PathLike か判別
+        if all(hasattr(file_or_path, attr)
+               for attr in ('seek', 'close', 'read')):
+            # File-like オブジェクトの場合
+            self.fp = file_or_path
+            self.path = None
+            logger.debug("Detect file-like object.")
+        else:
+            self.fp = None
+            self.path = file_or_path
+            logger.debug("Detect path-like object.")
 
-    def open(self):
+        self.need_cleaning = need_cleaning
+        self._reader = None
+
+    def open(self, as_dict: bool = False, **kwargs):
         """
         ファイルを開く。
         need_cleaning が True の場合、のコンテンツを読み込み
         CSVCleaner で整形したバッファを開く。
         """
-        if self.need_cleaning:
-            with open(self.filepath, "rb") as fb:
-                content = fb.read()
+        reader = csv.reader
+        if as_dict is True:
+            reader = csv.DictReader
 
+        if self.need_cleaning:
+            # ファイルの内容を読む
+            if self.path is not None:
+                with open(self.path, "rb") as fb:
+                    content = fb.read()
+            else:
+                self.fp.seek(0)
+                content = self.fp.read()
+
+            # クリーニング
             self._reader = CSVCleaner(data=content)
-            self._reader.open()
+            self._reader.open(as_dict=as_dict, **kwargs)
         else:
-            f = open(self.filepath, "r", newline="")
-            self._reader = csv.reader(f)
+            # ファイルをそのまま開く
+            if self.path is not None:
+                if self.fp is not None:
+                    self.fp.close()
+
+                self.fp = open(self.path, "r", newline="")
+                self._reader = reader(self.fp, **kwargs)
+            else:
+                self.fp.seek(0)
+                top = self.fp.read(1)
+                self.fp.seek(0)
+                if isinstance(top, bytes):
+                    # バイトストリーム
+                    stream = io.TextIOWrapper(
+                        self.fp, encoding="utf-8")
+                    self._reader = reader(stream, **kwargs)
+                else:
+                    # テキストストリーム
+                    self._reader = reader(self.fp, **kwargs)
 
         return self
 
@@ -107,6 +146,13 @@ class CsvInputCollection(InputCollection):
     @classmethod
     def decode(cls, args):
         return cls(args[0])
+
+    def __exit(self, type_, value, traceback):
+        if self.path is not None and self.fp is not None:
+            self.fp.close()
+
+        if self._reader is not None:
+            self._reader.__exit__()
 
 
 INPUTS = [ArrayInputCollection, CsvInputCollection]

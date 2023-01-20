@@ -33,7 +33,7 @@ class CSVCleaner(object):
         else:
             self.data = data
 
-    def open(self):
+    def open(self, as_dict: bool = False):
         self.delimiter = self.get_delimiter()
         self.skip_lines = self.get_skip_lines()
 
@@ -41,8 +41,12 @@ class CSVCleaner(object):
         for i in range(self.skip_lines):
             next(self.text_io)
 
-        self.csv_reader = csv.reader(
-            self.text_io, delimiter=self.delimiter)
+        if as_dict is True:
+            self.csv_reader = csv.DictReader(
+                self.text_io, delimiter=self.delimiter)
+        else:
+            self.csv_reader = csv.reader(
+                self.text_io, delimiter=self.delimiter)
 
         return self.csv_reader
 

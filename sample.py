@@ -7,16 +7,16 @@ logger = getLogger(__name__)
 
 if __name__ == '__main__':
     import logging
-    logging.basicConfig(level=logging.WARNING)
+    logging.basicConfig(level=logging.INFO)
 
     # 拡張コンバータを利用
     Table.useExtraConvertors()
 
-    # 入力 CSV は Shift_JIS
-    csv_path = "sample/sakurai_sightseeing_spots_sjis.csv"
+    csv_path_sjis = "sample/sakurai_sightseeing_spots_sjis.csv"  # Shift JIS
+    csv_path_utf8 = "sample/sakurai_sightseeing_spots.csv"  # UTF-8
     out_path = "output.csv"
 
-    table = Table(csv_path)
+    table = Table(csv_path_sjis)
 
     table = table.convert(
         convertor='geocoder_code',

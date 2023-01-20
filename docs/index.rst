@@ -100,11 +100,4 @@ CSV データを標準入力から受け取り、 JSON ファイルに記述し�
     as_library
     as_command
     convertor
-
-
-インデックス
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    api
