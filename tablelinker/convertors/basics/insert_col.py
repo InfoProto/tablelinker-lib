@@ -2,6 +2,40 @@ from ..core import filters, params
 
 
 class InsertColFilter(filters.Filter):
+    """
+    概要
+        新しい列を追加します。
+
+    コンバータ名
+        "insert_col"
+
+    パラメータ
+        * "output_attr_idx": 新しい列を追加する列番号または列名 [最後尾]
+        * "output_attr_name": 追加する列名 [必須]
+        * "value": 追加した列にセットする値 [""]
+
+    注釈
+        - 出力列名が元の表に存在していても同じ名前の列を追加します。
+        - 追加する位置を既存の列名で指定した場合、その列の直前に
+          新しい列を挿入します。
+        - 追加する位置を省略した場合、最後尾に追加します。
+
+    サンプル
+        「所在地」列の前に「都道府県名」列を挿入し、その列の
+        すべての値を「東京都」にセットします。
+
+        .. code-block:: json
+
+            {
+                "convertor": "insert_col",
+                "params": {
+                    "output_attr_idx": "所在地",
+                    "output_attr_name": "都道府県名",
+                    "value": "東京都"
+                }
+            }
+    """
+
     class Meta:
         key = "insert_col"
         name = "新規列追加"
@@ -18,19 +52,24 @@ class InsertColFilter(filters.Filter):
             params.OutputAttributeParam(
                 "output_attr_name",
                 label="出力列名",
-                description="変換結果を出力する列名です。",
-                help_text="空もしくは既存の名前が指定された場合、置換となります。",
-                required=False,
+                description="新しく追加する列名です。",
+                help_text="既存の名前が指定された場合も同じ名前の列が追加されます。",
+                required=True,
             ),
-            params.StringParam("new_value", label="新しい値", required=False, default_value=""),
             params.AttributeParam(
-                "output_attr_new_index",
+                "output_attr_idx",
                 label="出力列の位置",
-                description="新しく列の挿入位置です。",
+                description="新しい列の挿入位置です。",
                 label_suffix="の後",
                 empty=True,
                 empty_label="先頭",
                 required=False,
+            ),
+            params.StringParam(
+                "value",
+                label="新しい値",
+                required=False,
+                default_value="",
             ),
         )
 
@@ -44,29 +83,63 @@ class InsertColFilter(filters.Filter):
 
     def process_header(self, headers, context):
         new_name = context.get_param("output_attr_name")
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        headers = self.insert_list(output_attr_new_index, new_name, headers)
+        output_attr_idx = context.get_param("output_attr_idx")
+        headers = self.insert_list(output_attr_idx, new_name, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        new_value = context.get_param("new_value")
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        record = self.insert_list(output_attr_new_index, new_value, record)
+        value = context.get_param("value")
+        output_attr_idx = context.get_param("output_attr_idx")
+        record = self.insert_list(output_attr_idx, value, record)
         context.output(record)
 
-    def insert_list(self, output_attr_new_index, new_value, target_list):
-        target_list.insert(output_attr_new_index, new_value)
+    def insert_list(self, output_attr_idx, value, target_list):
+        target_list.insert(output_attr_idx, value)
         return target_list
 
 
-class InsertColListFilter(filters.Filter):
+class InsertColsFilter(filters.Filter):
     """
-    新規列追加
+    概要
+        新しい複数の列を追加します。
+
+    コンバータ名
+        "insert_cols"
+
+    パラメータ
+        * "output_attr_idx": 新しい列を追加する列番号または列名 [最後尾]
+        * "output_attr_names": 追加する列名のリスト [必須]
+        * "values": 追加した列にセットする値のリスト [""]
+
+    注釈
+        - 出力列名が元の表に存在していても同じ名前の列を追加します。
+        - 追加する位置を既存の列名で指定した場合、その列の直前に
+          新しい列を挿入します。
+        - 追加する位置を省略した場合、最後尾に追加します。
+        - ``values`` に単一の値を指定した場合はすべての列にその値をセットします。
+        - ``values`` にリストを指定する場合、追加する列数と
+          長さが同じである必要があります。
+
+    サンプル
+        「所在地」列の前に「都道府県名」「市区町村名」列を挿入し、
+        その列のすべての値を「東京都」「八丈町」にセットします。
+
+        .. code-block:: json
+
+            {
+                "convertor": "insert_cols",
+                "params": {
+                    "output_attr_idx": "所在地",
+                    "output_attr_names": ["都道府県名", "市区町村名"],
+                    "values": ["東京都", "八丈町"]
+                }
+            }
+
     """
 
     class Meta:
-        key = "insert_col_list"
-        name = "新規列追加"
+        key = "insert_cols"
+        name = "新規列追加（複数）"
 
         description = """
         新規列を複数指定した場所に追加します。
@@ -75,16 +148,22 @@ class InsertColListFilter(filters.Filter):
         help_text = None
 
         params = params.ParamSet(
-            params.StringListParam("new_name_list", label="新しい列名", required=True),
-            params.StringParam("new_value", label="新しい値", required=False, default_value=""),
             params.AttributeParam(
-                "target_col",
+                "output_attr_idx",
                 label="新規列を追加する位置",
                 description="新規列の挿入位置です。",
-                label_suffix="の後",
-                empty=True,
-                empty_label="先頭",
+                required=True,
+            ),
+            params.StringListParam(
+                "output_attr_names",
+                label="新しい列名のリスト",
+                required=True
+            ),
+            params.StringListParam(
+                "values",
+                label="新しい列にセットする値のリスト",
                 required=False,
+                default_value=""
             ),
         )
 
@@ -96,19 +175,30 @@ class InsertColListFilter(filters.Filter):
         """
         return len(attrs) == 0
 
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.new_names = context.get_param("output_attr_names")
+        self.new_values = context.get_param("values")
+        if isinstance(self.new_values, str):
+            self.new_values = [self.new_values] * len(self.new_names)
+        elif len(self.new_values) != len(self.new_names):
+            logger.error("追加する列数と、値の列数が一致しません。")
+            raise ValueError((
+                "The length of 'values' must be equal to "
+                "the length of 'output_attr_names'."))
+
     def process_header(self, headers, context):
-        new_name_list = context.get_param("new_name_list")
-        target_col = context.get_param("target_col")
-        headers = self.insert_list(target_col, new_name_list, headers)
+        headers = self.insert_list(
+            self.output_attr_idx, self.new_names, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        new_name_list = context.get_param("new_name_list")
-        new_value = context.get_param("new_value")
-        target_col = context.get_param("target_col")
-        record = self.insert_list(target_col, [new_value for new_name in new_name_list], record)
+        record = self.insert_list(
+            self.output_attr_idx, self.new_values, record)
         context.output(record)
 
-    def insert_list(self, target_col, value_list, target_list):
-        target_list[target_col:0] = value_list
-        return target_list
+    def insert_list(self, output_attr_idx, value_list, target_list):
+        new_list = target_list[0:output_attr_idx] + value_list \
+                + target_list[output_attr_idx:]
+        return new_list

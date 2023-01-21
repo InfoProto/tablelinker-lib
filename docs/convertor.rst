@@ -23,23 +23,35 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 
 以下の基本コンバータが利用可能です。
 
-.. autoclass::
-	tablelinker.convertors.basics.calc_col.CalcColFilter
+列操作
+^^^^^^
 
 .. autoclass::
-	tablelinker.convertors.basics.concat_col.ConcatColFilter
+    tablelinker.convertors.basics.calc_col.CalcColFilter
 
 .. autoclass::
-	tablelinker.convertors.basics.delete_col.DeleteColFilter
+    tablelinker.convertors.basics.concat_col.ConcatColFilter
 
 .. autoclass::
-	tablelinker.convertors.basics.delete_row.StringContainDeleteRowFilter
+    tablelinker.convertors.basics.delete_col.DeleteColFilter
+
+行操作
+^^^^^^
 
 .. autoclass::
-	tablelinker.convertors.basics.insert_col.InsertColFilter
+    tablelinker.convertors.basics.delete_row.StringMatchDeleteRowFilter
 
 .. autoclass::
-	tablelinker.convertors.basics.move_col.MoveColFilter
+    tablelinker.convertors.basics.delete_row.StringContainDeleteRowFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.insert_col.InsertColFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.move_col.MoveColFilter
 
 .. autoclass::
     tablelinker.convertors.basics.rename_col.RenameColFilter
@@ -51,7 +63,13 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.reorder_col.ReorderColsFilter
 
 .. autoclass::
+    tablelinker.convertors.basics.select_row.StringMatchSelectRowFilter
+
+.. autoclass::
     tablelinker.convertors.basics.select_row.StringContainSelectRowFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.select_row.PatternMatchSelectRowFilter
 
 .. autoclass::
     tablelinker.convertors.basics.split_col.SplitColFilter

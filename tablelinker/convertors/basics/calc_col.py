@@ -44,25 +44,27 @@ class CalcColFilter(filters.Filter):
         "calc"
 
     パラメータ
-        * "input_attr1": 入力列1の列番号または列名 [必須]
-        * "input_attr2": 入力列2の列番号または列名 [必須]
+        * "input_attr_idx1": 入力列1の列番号または列名 [必須]
+        * "input_attr_idx2": 入力列2の列番号または列名 [必須]
         * "output_attr_name": 出力列名 [必須]
         * "operator": 演算子（"+", "-", "*", "/"） ["*"]
         * "delete_col": 入力列を削除するか （true/false） [false]
 
     注釈
-        出力列名が元の表に存在している場合、その列に上書きします。
-        存在していなかった場合、最後に新しい列が追加されます。
+        - 出力列名が元の表に存在している場合、その列に上書きします。
+        - 存在していなかった場合、最後に新しい列が追加されます。
 
     サンプル
         表の「人口」列の値を「面積」列の値で割った商を「人口密度」列に
-        出力します。 ::
+        出力します。
+
+        .. code-block:: json
 
             {
                 "convertor": "calc",
                 "params": {
-                    "input_attr1": "人口",
-                    "input_attr2": "面積",
+                    "input_attr_idx1": "人口",
+                    "input_attr_idx2": "面積",
                     "operator": "/",
                     "output_attr_name": "人口密度",
                     "delete_col": false
@@ -83,8 +85,8 @@ class CalcColFilter(filters.Filter):
 
         #
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr1", label="対象列1", required=True),
-            params.InputAttributeParam("input_attr2", label="対象列2", required=True),
+            params.InputAttributeParam("input_attr_idx1", label="対象列1", required=True),
+            params.InputAttributeParam("input_attr_idx2", label="対象列2", required=True),
             params.StringParam("output_attr_name", label="新しい列名"),
             params.EnumsParam(
                 "operator", label="演算子", enums=Calculation,
@@ -104,8 +106,8 @@ class CalcColFilter(filters.Filter):
         return True
 
     def process_header(self, headers, context):
-        attr1 = context.get_param("input_attr1")
-        attr2 = context.get_param("input_attr2")
+        attr1 = context.get_param("input_attr_idx1")
+        attr2 = context.get_param("input_attr_idx2")
         output_attr_name = context.get_param("output_attr_name")
         delete_col = context.get_param("delete_col")
 
@@ -122,8 +124,8 @@ class CalcColFilter(filters.Filter):
         context.output(headers)
 
     def process_record(self, record, context):
-        attr1 = context.get_param("input_attr1")
-        attr2 = context.get_param("input_attr2")
+        attr1 = context.get_param("input_attr_idx1")
+        attr2 = context.get_param("input_attr_idx2")
         calculation = context.get_param("operator")
         delete_col = context.get_param("delete_col")
 

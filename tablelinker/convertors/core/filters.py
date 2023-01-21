@@ -52,23 +52,51 @@ class Filter(ABC):
         headers = context.next()
         context.set_data("headers", headers)
         context.set_data("num_of_columns", len(headers))
+        headers = context.get_data("headers")
 
         # 入力カラムを列番号ではなく列名での指定に対応
         for key in context.get_params():
-            if not key.startswith('input_attr'):
-                continue
+            if key.startswith('input_attr_idx'):
+                val = context.get_param(key)
+                if isinstance(val, str):
+                    try:
+                        idx = headers.index(val)
+                        context._filter_params[key] = idx
+                    except ValueError:
+                        raise RuntimeError((
+                            "パラメータ '{}' で指定された列 '{}' は"
+                            "有効な列名ではありません。有効な列名は次の通り; {}"
+                        ).format(key, val, ",".join(headers)))
+                elif isinstance(val, list):
+                    for i, v in enumerate(val):
+                        if isinstance(v, str):
+                            try:
+                                idx = headers.index(v)
+                                context._filter_params[key][i] = idx
+                            except ValueError:
+                                raise RuntimeError((
+                                    "パラメータ '{}' の {} 番目で指定された列 '{}' は"
+                                    "有効な列名ではありません。有効な列名は次の通り; {}"
+                                ).format(key, i + 1, v, ",".join(headers)))
 
-            val = context.get_param(key)
-            if isinstance(val, str):
-                headers = context.get_data("headers")
-                try:
-                    idx = headers.index(val)
+            if key.startswith('output_attr_idx'):
+                val = context.get_param(key)
+                if isinstance(val, str):
+                    try:
+                        idx = headers.index(val)
+                    except ValueError:
+                        idx = len(headers)
+
                     context._filter_params[key] = idx
-                except ValueError:
-                    raise RuntimeError((
-                        "パラメータ '{}' で指定された列 '{}' は"
-                        "有効な列名ではありません。有効な列名は次の通り; {}"
-                    ).format(key, val, ",".join(headers)))
+                elif isinstance(val, list):
+                    for i, v in enumerate(val):
+                        if isinstance(v, str):
+                            try:
+                                idx = headers.index(v)
+                            except ValueError:
+                                idx = len(headers)
+
+                            context._filter_params[key][i] = idx
 
     def initial(self, context):
         pass

@@ -1,8 +1,8 @@
 {
 	"convertor": "calc",
 	"params": {
-		"input_attr1": "出生数",
-		"input_attr2": "人口",
+		"input_attr_idx1": "出生数",
+		"input_attr_idx2": "人口",
 		"operator": "/",
 		"output_attr_name": "出生率（計算）",
 		"overwrite": false
