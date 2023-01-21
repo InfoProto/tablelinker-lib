@@ -16,13 +16,15 @@ class StringMatchSelectRowFilter(filters.Filter):
         * "query": 文字列 [必須]
 
     サンプル
-        表の 0 列目が「東京都」の行を選択します。 ::
+        表の 0 列目が「東京都」の行を選択します。
+
+        .. code-block :: json
 
             {
                 "convertor": "select_string_match",
                 "params": {
                     "input_attr_idx": 0,
-                    "query": "市",
+                    "query": "東京都",
                 }
             }
     """
@@ -72,7 +74,9 @@ class StringContainSelectRowFilter(filters.Filter):
         * "query": 文字列 [必須]
 
     サンプル
-        表の 0 列目に「市」を含む行を選択します。 ::
+        表の 0 列目に「市」を含む行を選択します。
+
+        .. code-block:: json
 
             {
                 "convertor": "select_string_contains",
@@ -129,7 +133,9 @@ class PatternMatchSelectRowFilter(filters.Filter):
         * "pattern": 正規表現 [必須]
 
     サンプル
-        表の 0 列目の末尾が「区部」「市」の行を選択します。 ::
+        表の 0 列目の末尾が「区部」「市」の行を選択します。
+
+        .. code-block:: json
 
             {
                 "convertor": "select_pattern_match",

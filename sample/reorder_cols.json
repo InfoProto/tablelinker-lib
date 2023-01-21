@@ -1,0 +1,11 @@
+{
+    "convertor": "reorder_cols",
+    "params": {
+        "column_list": [
+            "所在地",
+            "経度",
+            "緯度",
+            "説明"
+        ]
+    }
+}

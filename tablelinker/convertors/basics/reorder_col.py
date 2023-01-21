@@ -3,7 +3,35 @@ from ..core import filters, params
 
 class ReorderColsFilter(filters.Filter):
     """
-    指定したカラムの順番に列を並べ替えます。
+    概要
+        指定した順番に列を並べ替えます。
+
+    コンバータ名
+        "reorder_cols"
+
+    パラメータ
+        * "column_list": 並び替えた列番号または列名のリスト [必須]
+
+    注釈
+        - ``column_list`` に含まれない列は削除されます。
+
+    サンプル
+        列を選択して並び替えます。
+
+        .. code-block:: json
+
+            {
+                "convertor": "reorder_cols",
+                "params": {
+                    "column_list": [
+                        "所在地",
+                        "経度",
+                        "緯度",
+                        "説明"
+                    ]
+                }
+            }
+
     """
 
     class Meta:
@@ -23,9 +51,12 @@ class ReorderColsFilter(filters.Filter):
     def process_header(self, headers, context):
         output_headers = context.get_param("column_list")
         missed_headers = []
-        for header in output_headers:
-            if header not in headers:
-                missed_headers.append(header)
+        for idx in output_headers:
+            if isinstance(idx, str) and idx not in headers:
+                missed_headers.append(idx)
+            elif isinstance(idx, int) and (
+                    idx < 0 or idx >= len(headers)):
+                missed_headers.append(str(idx))
 
         if len(missed_headers) > 0:
             if len(missed_headers) == 1:
@@ -37,8 +68,9 @@ class ReorderColsFilter(filters.Filter):
                 "{} not in the original headers.".format(msg))
 
         self.mapping = []
-        for header in output_headers:
-            idx = headers.index(header)
+        for idx in output_headers:
+            if isinstance(idx, str):
+                idx = headers.index(idx)
             self.mapping.append(idx)
 
         context.output(self.reorder(headers))

@@ -35,6 +35,16 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 .. autoclass::
     tablelinker.convertors.basics.delete_col.DeleteColFilter
 
+.. autoclass::
+    tablelinker.convertors.basics.insert_col.InsertColFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.insert_col.InsertColsFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.mapping_col.MappingColsFilter
+
+
 行操作
 ^^^^^^
 
@@ -46,9 +56,6 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 
 .. autoclass::
     tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowFilter
-
-.. autoclass::
-    tablelinker.convertors.basics.insert_col.InsertColFilter
 
 .. autoclass::
     tablelinker.convertors.basics.move_col.MoveColFilter

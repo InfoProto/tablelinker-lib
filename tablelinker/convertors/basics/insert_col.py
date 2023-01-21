@@ -34,6 +34,7 @@ class InsertColFilter(filters.Filter):
                     "value": "東京都"
                 }
             }
+
     """
 
     class Meta:
