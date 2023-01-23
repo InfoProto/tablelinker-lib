@@ -35,7 +35,7 @@ selectable_filters = (
     select_row.StringContainSelectRowFilter,
     select_row.PatternMatchSelectRowFilter,
     split_col.SplitColFilter,
-    split_col.PivotColFilter,
+    split_col.SplitRowFilter,
     truncate.TruncateFilter,
     zenkaku.ToHarfAlphanumericFilter,
     zenkaku.ToHarfNumberFilter,

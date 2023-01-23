@@ -240,7 +240,7 @@ class ItemsPair(object):
         テーブル0の見出し(m)×テーブル1の見出し(n)の
         編集距離による類似度を格納する行列
     """
-    similarity = Similarity()  # 時間がかかるので1度だけ呼ぶ
+    similarity = None  # Similarity()  # 時間がかかるのでオンデマンド登録
 
     def __init__(self, items0: List[str], items1: List[str]):
         """
@@ -269,8 +269,11 @@ class ItemsPair(object):
         if self.mxsim is not None and self.mxed is not None:
             return self.mxsim, self.mxed
 
-        vec0 = [self.similarity.item2vec(name) for name in self.items0]
-        vec1 = [self.similarity.item2vec(name) for name in self.items1]
+        if self.__class__.similarity is None:
+            self.__class__.simirarity = Similarity()
+
+        vec0 = [self.__class__.similarity.item2vec(name) for name in self.items0]
+        vec1 = [self.__class__.similarity.item2vec(name) for name in self.items1]
         dim = max(len(self.items0), len(self.items1))
         self.mxsim = np.zeros((dim, dim))
         self.mxed = np.zeros((dim, dim))

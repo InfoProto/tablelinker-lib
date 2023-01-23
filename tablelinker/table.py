@@ -91,6 +91,22 @@ class Table(object):
             logger.debug("一時ファイル '{}' を削除しました".format(
                 self.file))
 
+    def __enter__(self):
+        if self._reader is None:
+            self.open()
+
+        return self
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self._reader.__next__()
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        return self._reader.__exit__(
+            exception_type, exception_value, traceback)
+
     def open(self, as_dict: bool = False, **kwargs):
         """
         CSV データを開き、 csv.reader オブジェクトを返す。
@@ -147,7 +163,7 @@ class Table(object):
             self.file,
             need_cleaning=self.need_cleaning).open(
                 as_dict=as_dict, **kwargs)
-        return self._reader
+        return self
 
     @classmethod
     def useExtraConvertors(cls) -> None:

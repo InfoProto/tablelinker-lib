@@ -50,8 +50,8 @@ class CSVCleaner(object):
 
         return self.csv_reader
 
-    def __enter__(self):
-        return self.open()
+    def __enter__(self, as_dict: bool=False):
+        return self.open(as_dict=as_dict)
 
     def __next__(self):
         return self.csv_reader.__next__()

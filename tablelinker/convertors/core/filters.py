@@ -40,21 +40,25 @@ class Filter(ABC):
     def process(self, context):
         self.initial_context(context)
         self.initial(context)
-        context.reset()
 
-        self.process_header(context.next(), context)
+        # 念のため先頭に戻し、2行目から処理する
+        context.reset()
+        context.next()
+
+        self.process_header(context.get_data('headers'), context)
         for record in context.read():
             if not self.check_process_record(record, context):
                 continue
             self.process_record(record, context)
 
     def initial_context(self, context):
+        """
+        パラメータの前処理と、ヘッダ情報の登録を行う。
+        """
         headers = context.next()
-        context.set_data("headers", headers)
-        context.set_data("num_of_columns", len(headers))
-        headers = context.get_data("headers")
+        context.set_data("num_of_columns", len(headers))  # 入力データ列数
 
-        # 入力カラムを列番号ではなく列名での指定に対応
+        # 入出力列番号に列名が指定された場合、列番号に変換する
         for key in context.get_params():
             if key.startswith('input_attr_idx'):
                 val = context.get_param(key)
@@ -95,8 +99,11 @@ class Filter(ABC):
                                 idx = headers.index(v)
                             except ValueError:
                                 idx = len(headers)
+                                headers.append(v)
 
                             context._filter_params[key][i] = idx
+
+        context.set_data("headers", headers)
 
     def initial(self, context):
         pass

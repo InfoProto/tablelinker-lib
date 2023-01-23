@@ -1,22 +1,44 @@
+import re
+
 from ..core import filters, params
-
-
-def split(value, separator=",", limit=None):
-    """
-    列を指定された文字列で分割します。
-    value_list: 対象の文字列リスト
-    separator: 区切り文字
-    limit: 区切りの最大文字
-    """
-    if limit is None:
-        return value.split(separator)
-    else:
-        return value.split(separator, limit)
 
 
 class SplitColFilter(filters.Filter):
     """
-    文字列を分割するフィルターです。
+    概要
+        指定した列を区切り文字で複数列に分割します。
+
+    コンバータ名
+        "split_col"
+
+    パラメータ
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "output_attr_idxs": 分割した結果を出力する列番号または
+          列名のリスト [必須]
+        * "separator": 区切り文字（正規表現） [","]
+
+    注釈
+        - ``output_attr_idxs`` で指定された列名が存在しない場合、
+          最後尾に追加されます。
+        - 分割した列の数が ``output_attr_idxs`` よりも少ない場合は
+          足りない列の値が "" になります。
+        - 分割した列の数が ``output_attr_idxs`` よりも多い場合は
+          最後の列に残りのすべての文字列が出力されます。
+
+    サンプル
+        「氏名」列を空白で区切り、「姓」列と「名」列に分割します。
+
+        .. code-block :: json
+
+            {
+                "convertor": "split_col",
+                "params": {
+                    "input_attr_idx": "氏名",
+                    "output_attr_idxs": ["姓", "名"],
+                    "separator": "\\s+",
+                }
+            }
+
     """
 
     class Meta:
@@ -35,21 +57,11 @@ class SplitColFilter(filters.Filter):
                 label="入力列",
                 description="処理をする対象の列を選択してください。",
                 required=True),
-            params.OutputAttributeParam(
-                "output_attr_name",
-                label="出力列のプレフィックス",
-                description="変換結果を出力する列名です。空もしくは既存の名前が指定された場合、置換となります。",
-                prefix=True,
-                required=False,
-            ),
-            params.AttributeParam(
-                "output_attr_new_index",
-                label="出力列の位置",
-                description="新しく生成した列の挿入位置です。",
-                label_suffix="の後",
-                empty=True,
-                empty_label="先頭",
-                required=False,
+            params.OutputAttributeListParam(
+                "output_attr_idxs",
+                label="分割後に出力する列番号または列名のリスト",
+                description="変換結果を出力する列名です。",
+                required=True,
             ),
             params.StringParam(
                 "separator",
@@ -73,77 +85,89 @@ class SplitColFilter(filters.Filter):
             return False
         return True
 
-    def initial(self, context):
-        self.output_attr_index = None
-        self.new_attr = None
-
-        input_attr_idx = context.get_param("input_attr_idx")
-        separator = context.get_param("separator")
-
-        context.next()  # skip haeder
-
-        # すべてのデータを読んで、最大の列数を算出する
-        limit = max([len(split(record[input_attr_idx], separator=separator)) for record in context.read()])
-        context.set_data("limit", limit)
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.headers = context.get_data("headers")
+        self.re_separator = re.compile(context.get_param("separator"))
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.output_attr_idxs = context.get_param("output_attr_idxs")
 
     def process_header(self, headers, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        limit = context.get_data("limit")
+        # 出力列として指定された列番号が存在しない場合の処理
+        counter = 1
+        for i, idx in enumerate(self.output_attr_idxs):
+            if idx >= len(self.headers):
+                input_header = headers[self.input_attr_idx]
+                self.output_attr_idxs[i] = len(self.headers)
+                self.headers.append(f"{input_header}_{counter:d}")
+                counter +=1
 
-        output_attr_name = context.get_param("output_attr_name")
-        if output_attr_name is None:
-            output_attr_name = headers[input_attr_idx]
-
-        output_attr_names = ["_".join([output_attr_name, str(n + 1)]) for n in range(limit)]
-
-        # 移動
-        new_headers = headers[:]
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is None:  # 先頭
-            for output_attr_name in reversed(output_attr_names):
-                new_headers.insert(0, output_attr_name)
-        else:  # 指定位置
-            for output_attr_name in reversed(output_attr_names):
-                new_headers.insert(output_attr_new_index + 1, output_attr_name)
-        context.output(new_headers)
-
-        # context.output(headers + output_attr_names)
+        context.output(self.headers)
 
     def process_record(self, record, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        separator = context.get_param("separator")
-        limit = context.get_data("limit")
+        original = record[self.input_attr_idx]
+        splits = self.re_separator.split(
+            original, maxsplit=len(self.output_attr_idxs) - 1)
+        
+        new_record = record + [""] * (len(self.headers) - len(record))
+        for i, new_val in enumerate(splits):
+            new_record[self.output_attr_idxs[i]] = new_val
 
-        splited_values = split(record[input_attr_idx], separator=separator, limit=limit)
-
-        values = [splited_values[n] if len(splited_values) > n else "" for n in range(limit)]
-
-        # 移動
-        # output_attr_new_index = context.get_param("output_attr_new_index")
-        # if output_attr_new_index is None:  # 先頭
-        #     record.insert(0, header.pop(self.output_attr_index))
-        # else:  # 指定位置
-        #     record.insert(output_attr_new_index + 1, header.pop(self.output_attr_index))
-
-        context.output(record + values)
+        context.output(new_record)
 
 
-class PivotColFilter(filters.Filter):
+class SplitRowFilter(filters.Filter):
     """
-    文字列を分割して複数の行にするフィルターです。
+    概要
+        指定した列を区切り文字で複数行に分割します。
+
+    コンバータ名
+        "explode_col"
+
+    パラメータ
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "separator": 区切り文字（正規表現） [","]
+
+    注釈
+        - 分割前の行は削除されます。
+        - 区切り文字が末尾の場合、対象列が空欄の行も出力されます。
+
+    サンプル
+        「アクセス方法」列を「。」で区切り、複数行に分割します。
+
+        .. code-block :: json
+
+            {
+                "convertor": "split_row",
+                "params": {
+                    "input_attr_idx": "アクセス方法",
+                    "separator": "。",
+                }
+            }
+
     """
 
     class Meta:
-        key = "pivotal_col"
-        name = "列の展開"
+        key = "split_row"
+        name = "列を分割して行に展開"
         description = """
         列を指定された文字列で分割して、複数の行を生成します。
         """
         help_text = None
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="入力列", description="処理をする対象の列", required=True),
-            params.StringParam("separator", label="区切り文字", required=True, default_value=","),
+            params.InputAttributeParam(
+                "input_attr_idx",
+                label="入力列",
+                description="処理をする対象の列",
+                required=True
+            ),
+            params.StringParam(
+                "separator",
+                label="区切り文字",
+                required=True,
+                default_value=","
+            ),
         )
 
     @classmethod
@@ -156,15 +180,15 @@ class PivotColFilter(filters.Filter):
             return False
         return True
 
-    def initial(self, context):
-        pass
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.re_separator = re.compile(context.get_param("separator"))
+        self.input_attr_idx = context.get_param("input_attr_idx")
 
     def process_record(self, record, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        separator = context.get_param("separator")
-        splited_values = split(record[input_attr_idx], separator=separator)
+        splits = self.re_separator.split(record[self.input_attr_idx])
 
-        for value in splited_values:
-            new_record = [v for v in record]
-            new_record[input_attr_idx] = value
+        for value in splits:
+            new_record = record[:]  # 元のレコードを複製
+            new_record[self.input_attr_idx] = value
             context.output(new_record)

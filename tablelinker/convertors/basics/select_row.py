@@ -27,6 +27,7 @@ class StringMatchSelectRowFilter(filters.Filter):
                     "query": "東京都",
                 }
             }
+
     """
 
     class Meta:
@@ -85,6 +86,7 @@ class StringContainSelectRowFilter(filters.Filter):
                     "query": "市",
                 }
             }
+
     """
 
     class Meta:
@@ -143,6 +145,7 @@ class PatternMatchSelectRowFilter(filters.Filter):
                     "input_attr_idx":0,
                     "pattern":"(.+区部$|.+市$)"}
             }
+
     """
 
     class Meta:
