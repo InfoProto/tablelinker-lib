@@ -24,7 +24,7 @@ if __name__ == '__main__':
             "input_attr_idx": "住所",
             "output_attr_name": "都道府県コード又は市区町村コード",
             "withCheckDigit": False,
-            "output_attr_new_index": 1,
+            "output_attr_idx": 1,
         })
     table = table.convert(
         convertor='geocoder_latlong',

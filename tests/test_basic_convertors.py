@@ -15,6 +15,7 @@ original_sakurai_header = (
     "連絡先内線番号,画像,画像_ライセンス,URL,備考"
 )
 
+
 def test_calc_col():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
@@ -113,15 +114,17 @@ def test_delete_string_match():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         lines = 0
-        for row in csv:
-            assert len(row) == 15
-            assert row[0] != ""
+        for row in reader:
+            assert len(row) == 15  # 列数チェック
+            if lines > 0:
+                assert row[0] != ""   # "" の行は削除
+
             lines += 1
 
         # 出力行数をチェック
-        assert lines == 71
+        assert lines == 72
 
 
 def test_delete_string_contains():
@@ -135,15 +138,17 @@ def test_delete_string_contains():
         },
     )
 
-    with table.open() as csv:
-    lines = 0
-    for row in dictreader:
-        assert len(row) == 15
-        assert "市" not in row[""]
-        lines += 1
+    with table.open() as reader:
+        lines = 0
+        for row in reader:
+            assert len(row) == 15
+            if lines > 0:
+                assert "市" not in row[0]
+
+            lines += 1
 
     # 出力行数をチェック
-    assert lines == 53
+    assert lines == 54
 
 
 def test_delete_pattern_match():
@@ -153,21 +158,23 @@ def test_delete_pattern_match():
         convertor="delete_pattern_match",
         params={
             "input_attr_idx": 0,
-            "pattern":"(^$|.+区部$|.+市$)",
+            "pattern": "(^$|.+区部$|.+市$)",
         },
     )
 
-    dictreader = table.open(as_dict=True)
-    lines = 0
-    for row in dictreader:
-        assert len(row) == 15
-        assert row[""] != ""
-        assert not row[""].endswith("区部")
-        assert not row[""].endswith("市")
-        lines += 1
+    with table.open() as reader:
+        lines = 0
+        for row in reader:
+            assert len(row) == 15
+            if lines > 0:
+                assert row[0] != ""
+                assert not row[0].endswith("区部")
+                assert not row[0].endswith("市")
+
+            lines += 1
 
     # 出力行数をチェック
-    assert lines == 50
+    assert lines == 51
 
 
 def test_insert_col():
@@ -204,7 +211,7 @@ def test_insert_cols():
         params={
             "output_attr_idx": "所在地",
             "output_attr_names": ["都道府県名", "市区町村名"],
-             "values": ["東京都", "八丈町"],
+            "values": ["東京都", "八丈町"],
         },
     )
 
@@ -223,6 +230,7 @@ def test_insert_cols():
                 assert row[1] == "東京都"
                 # 市区町村名に「八丈町」が追加されていることを確認
                 assert row[2] == "八丈町"
+
 
 def test_mapping_cols():
     table = Table(os.path.join(
@@ -297,3 +305,165 @@ def test_rename_col():
                     "都道府県名,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,"
                     "周産期死亡数,,,婚姻件数,離婚件数")
 
+
+def test_reorder_cols():
+    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="reorder_cols",
+        params={
+            "column_list": [
+                "所在地",
+                "経度",
+                "緯度",
+                "説明"
+            ]
+        },
+    )
+
+    with table.open() as csv:
+        for lineno, row in enumerate(csv):
+            assert len(row) == 4
+            if lineno == 0:
+                assert row == ["所在地", "経度", "緯度", "説明"]
+
+
+def test_select_string_match():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="select_string_match",
+        params={
+            "input_attr_idx": 0,
+            "query": "13 東京都"
+        },
+    )
+
+    with table.open() as csv:
+        lines = 0
+        for row in csv:
+            assert len(row) == 15
+            if lines > 0:
+                assert row[0] == "13 東京都"
+
+            lines += 1
+
+        assert lines == 2
+
+
+def test_select_string_contains():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="select_string_contains",
+        params={
+            "input_attr_idx": 0,
+            "query": "東京都"
+        },
+    )
+
+    with table.open() as csv:
+        lines = 0
+        for row in csv:
+            assert len(row) == 15
+            if lines > 0:
+                assert row[0] in ("13 東京都", "50 東京都の区部",)
+
+            lines += 1
+
+        assert lines == 3
+
+
+def test_select_pattern_match():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="select_pattern_match",
+        params={
+            "input_attr_idx": 0,
+            "pattern": ".*東京都?$"
+        },
+    )
+
+    with table.open() as csv:
+        lines = 0
+        for row in csv:
+            assert len(row) == 15
+            if lines > 0:
+                assert row[0] == "13 東京都"
+
+            lines += 1
+
+        assert lines == 2
+
+
+def test_split_col():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="split_col",
+        params={
+            "input_attr_idx": 0,
+            "output_attr_idxs": ["コード", "地域名"],
+            "separator": r"\s+",
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        """
+        as_dict == True をセットした場合、列名が同じ列は
+        最初の列にしかアクセスできない点に注意。
+        列数もその分減少する（15 -> 10）。
+        """
+        lines = 0
+        for row in dictreader:
+            assert len(row) == 12  # "コード", "地域名" の2列追加
+            if lines > 0:
+                assert " " not in row["コード"]
+
+            lines += 1
+
+
+def test_split_row():
+    table = Table(
+        os.path.join(sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
+    table = table.convert(
+        convertor="split_row",
+        params={
+            "input_attr_idx": "アクセス方法",
+            "separator": "。"
+        }
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        lines = 0
+        for row in dictreader:
+            assert len(row) == 30  # 列数は変わらない
+            assert "。" not in row["アクセス方法"]
+            lines += 1
+
+        assert lines == 51  # 列に分割するので増える
+
+
+def test_truncate():
+    table = Table(os.path.join(
+        sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="truncate",
+        params={
+            "input_attr_idx": "説明",
+            "length": 20,
+            "ellipsis": "...",
+            "overwrite": True
+        },
+    )
+
+    with table.open() as csv:
+        for lineno, row in enumerate(csv):
+            assert len(row) == 7
+            if lineno == 0:
+                # 「説明」列は最後に移動
+                assert ",".join(row) == (
+                    "観光スポット名称,所在地,緯度,経度,座標系,"
+                    "八丈町ホームページ記載,説明")
+                continue
+
+            # レコードの最後列が切り詰められていることを確認
+            value = row[-1]
+            if len(value) > 20:
+                assert value.endswith("...")

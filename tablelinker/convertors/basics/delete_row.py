@@ -54,11 +54,13 @@ class StringMatchDeleteRowFilter(filters.Filter):
             return False
         return True
 
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.query = context.get_param("query")
+
     def process_record(self, record, context):
-        attr = context.get_param("input_attr_idx")
-        query = context.get_param("query")
-        value = record[attr]
-        if query != value:
+        if self.query != record[self.input_attr_idx]:
             context.output(record)
 
 
@@ -113,11 +115,13 @@ class StringContainDeleteRowFilter(filters.Filter):
             return False
         return True
 
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.query = context.get_param("query")
+
     def process_record(self, record, context):
-        attr = context.get_param("input_attr_idx")
-        query = context.get_param("query")
-        value = record[attr]
-        if query not in value:
+        if self.query not in record[self.input_attr_idx]:
             context.output(record)
 
 
@@ -176,12 +180,11 @@ class PatternMatchDeleteRowFilter(filters.Filter):
 
     def initial_context(self, context):
         super().initial_context(context)
-        headers = context.get_data("headers")
+        self.input_attr_idx = context.get_param("input_attr_idx")
         self.re_pattern = re.compile(context.get_param('pattern'))
 
     def process_record(self, record, context):
-        attr = context.get_param("input_attr_idx")
-        value = record[attr]
+        value = record[self.input_attr_idx]
         m = self.re_pattern.match(value)
         if m is None:
             context.output(record)

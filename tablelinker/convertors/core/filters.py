@@ -1,5 +1,9 @@
 from abc import ABC
+from logging import getLogger
+
 from . import params
+
+logger = getLogger(__name__)
 
 
 class FilterMeta(object):
@@ -117,6 +121,10 @@ class Filter(ABC):
         :return: boolean
         """
         if context.get_data("num_of_columns") != len(record):
+            logger.warning(
+                "num_of_columns: {:d} but record has {:d} fields.".format(
+                    context.get_data("num_of_columns"),
+                    len(record)))
             return False
         else:
             return True
@@ -147,7 +155,11 @@ class InputOutputFilter(Filter):
         _meta = FilterMeta(cls.Meta)
         _meta.params = params.ParamSet(
             [
-                params.InputAttributeParam("input_attr_idx", label="入力列", description="処理をする対象の列", required=True),
+                params.InputAttributeParam(
+                    "input_attr_idx",
+                    label="入力列",
+                    description="処理をする対象の列",
+                    required=True),
                 params.OutputAttributeParam(
                     "output_attr_name",
                     label="出力列名",
@@ -156,7 +168,7 @@ class InputOutputFilter(Filter):
                     required=False,
                 ),
                 params.AttributeParam(
-                    "output_attr_new_index",
+                    "output_attr_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",
                     label_suffix="の後",
@@ -185,65 +197,75 @@ class InputOutputFilter(Filter):
             return False
         return True
 
-    def initial(self, context):
-        self.output_attr_index = None
-        self.new_attr = None
-        self.overwrite = None
-
-    def process_header(self, header, context):
-        output_attr_name = context.get_param("output_attr_name")
-        input_attr_idx = context.get_param("input_attr_idx")
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.output_attr_name = context.get_param("output_attr_name")
         self.overwrite = context.get_param("overwrite")
 
-        if output_attr_name is None:
-            # Noneの場合は既存列を置換する
-            self.output_attr_index = input_attr_idx
-            self.overwrite = True
-            self.new_attr = False
+    def process_header(self, header, context):
+        if self.output_attr_name is None:
+            # 出力列名が指定されていない場合は既存列名を利用する
+            self.output_attr_name = header[self.input_attr_idx]
+            self.del_attr = self.input_attr_idx
         else:
-            # 既存列か調べる
+            # 出力列名が存在するかどうか調べる
             try:
-                self.output_attr_index = header.index(output_attr_name)
-                self.new_attr = False
+                idx = header.index(self.output_attr_name)
+                self.del_attr = idx
             except ValueError:
-                # 新規列の追加
-                self.output_attr_index = len(header)
-                self.new_attr = True
-                header.append(output_attr_name)
+                # 存在しない場合は新規列
+                self.del_attr = None
+                self.overwrite = True
 
-        # 移動
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is not None:
-            # 指定位置へ
-            header.insert(output_attr_new_index, header.pop(self.output_attr_index))
+        if self.output_attr_idx is None:
+            # 出力列番号が指定されていない場合は末尾に追加
+            self.output_attr_idx = len(header)
+
+        header = self.reorder(
+            original=header,
+            del_idx=self.del_attr,
+            insert_idx=self.output_attr_idx,
+            insert_value=self.output_attr_name)
 
         context.output(header)
 
     def process_record(self, record, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-
-        if self.output_attr_index < len(record):
-            if self.overwrite or \
-                    record[self.output_attr_index] == "":
-                value = self.process_filter(input_attr_idx, record, context)
-                record[self.output_attr_index] = value
-            else:
-                # 値が存在する場合は上書きしない
-                pass
+        need_value = False
+        if self.overwrite:
+            need_value = True
         else:
-            value = self.process_filter(input_attr_idx, record, context)
-            record.insert(self.output_attr_index, value)
+            # 置き換える列に空欄があるかどうか
+            if self.del_attr >= len(record) or \
+                    record[self.del_attr] == "":
+                need_value = True
 
-        # 移動
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is not None:
-            # 指定位置へ
-            record.insert(output_attr_new_index, record.pop(self.output_attr_index))
+        if need_value:
+            value = self.process_filter(record, context)
+        else:
+            value = record[self.del_attr]
+
+        record = self.reorder(
+            original=record,
+            del_idx=self.del_attr,
+            insert_idx=self.output_attr_idx,
+            insert_value=value)
 
         context.output(record)
 
-    def process_filter(self, input_attr_idx, record, context):
-        return record[input_attr_idx]
+    def process_filter(self, record, context):
+        return record[self.input_attr_idx]
+
+    def reorder(self, original, del_idx, insert_idx, insert_value):
+        new_list = original[:]
+        if del_idx is not None:
+            new_list.pop(del_idx)
+            if del_idx < insert_idx:
+                insert_idx -= 1
+
+        new_list.insert(insert_idx, insert_value)
+        return new_list
 
 
 class InputOutputsFilter(Filter):
@@ -256,7 +278,11 @@ class InputOutputsFilter(Filter):
         _meta = FilterMeta(cls.Meta)
         _meta.params = params.ParamSet(
             [
-                params.InputAttributeParam("input_attr_idx", label="入力列", description="処理をする対象の列", required=True),
+                params.InputAttributeParam(
+                    "input_attr_idx",
+                    label="入力列",
+                    description="処理をする対象の列",
+                    required=True),
                 params.OutputAttributeListParam(
                     "output_attr_names",
                     label="出力列名のリスト",
@@ -265,7 +291,7 @@ class InputOutputsFilter(Filter):
                     required=True,
                 ),
                 params.AttributeParam(
-                    "output_attr_new_index",
+                    "output_attr_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",
                     label_suffix="の後",
@@ -295,70 +321,84 @@ class InputOutputsFilter(Filter):
             return False
         return True
 
-    def initial(self, context):
+    def initial_context(self, context):
+        super().initial_context(context)
         self.del_attr_indexes = []
         self.new_attr = None
-        self.input_attr_idx = None
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.output_attr_names = context.get_param("output_attr_names")
 
     def process_header(self, header, context):
-        output_attr_names = context.get_param("output_attr_names")
-        self.input_attr_idx = context.get_param("input_attr_idx")
-
         # 既存列は削除
-        for output_attr_name in output_attr_names:
+        for output_attr_name in self.output_attr_names:
             if output_attr_name in header:
                 idx = header.index(output_attr_name)
                 self.del_attr_indexes.append(idx)
-                del header[idx]
             else:
                 self.del_attr_indexes.append(None)
 
         # 指定列に挿入
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is None or \
-                output_attr_new_index >= len(header):  # 末尾
-            header = header + output_attr_names
-        else:  # 指定位置
-            header = header[0:output_attr_new_index] + \
-                output_attr_names + \
-                header[output_attr_new_index:]
+        if self.output_attr_idx is None or \
+                self.output_attr_idx >= len(header):  # 末尾
+            self.output_attr_idx = len(header)
 
+        header = self.reorder(
+            original=header,
+            delete_idxs=self.del_attr_indexes,
+            insert_idx=self.output_attr_idx,
+            insert_values=self.output_attr_names
+        )
         context.output(header)
 
     def process_record(self, record, context):
-        values = self.process_filter(self.input_attr_idx, record, context)
-
         old_values = []
         for idx in self.del_attr_indexes:
             if idx is None:
                 old_values.append("")
             else:
                 old_values.append(record[idx])
-                del record[idx]
 
         if context.get_param("overwrite"):
-            new_values = values
+            new_values = self.process_filter(
+                record, context)
         else:
+            values = None
             new_values = []
             for i, old_value in enumerate(old_values):
                 if old_value == "":
+                    if values is None:
+                        values = self.process_filter(
+                            record, context)
+
                     new_values.append(values[i])
                 else:
                     new_values.append(old_value)
 
-        # 指定列に挿入
-        output_attr_new_index = context.get_param("output_attr_new_index")
-        if output_attr_new_index is None or \
-                output_attr_new_index >= len(record):  # 末尾
-            record = record + new_values
-        else:  # 指定位置
-            record = record[0:output_attr_new_index] + \
-                new_values + record[output_attr_new_index:]
-
+        record = self.reorder(
+            original=record,
+            delete_idxs=self.del_attr_indexes,
+            insert_idx=self.output_attr_idx,
+            insert_values=new_values)
         context.output(record)
 
-    def process_filter(self, input_attr_idx, record, context):
-        return record[input_attr_idx]
+    def process_filter(self, record, context):
+        return record[self.input_attr_idx]
+
+    def reorder(self, original, delete_idxs, insert_idx, insert_values):
+        new_list = original[:]
+        for delete_idx in delete_idxs:
+            if delete_idx is None:
+                continue
+
+            new_list.pop(delete_idx)
+            if delete_idx < insert_idx:
+                insert_idx -= 1
+
+        new_list = new_list[0:insert_idx] + insert_values \
+            + new_list[insert_idx:]
+
+        return new_list
 
 
 class NoopFilter(Filter):

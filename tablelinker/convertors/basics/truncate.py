@@ -1,38 +1,83 @@
 from ..core import filters, params, validators
 
 
-def truncate(string, length, omission="..."):
-    """文字列を切り詰める
-
-    string: 対象の文字列
-    length: 切り詰め後の長さ
-    ellipsis: 省略記号
-    """
-    return string[:length] + (omission if string[length:] else "")
-
-
 class TruncateFilter(filters.InputOutputFilter):
     """
-    長い文字を省略して表示
+    概要
+        指定した列を指定文字数まで切り詰めます。
+
+    コンバータ名
+        "truncate"
+
+    パラメータ（InputOutputFilter 共通）
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "output_attr_idx": 分割した結果を出力する列番号または
+          列名のリスト
+        * "output_attr_name": 結果を出力する列名
+        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+
+    パラメータ（コンバータ特有）
+        * "length": 最大文字数 [10]
+        * "ellipsis": 切り詰めた場合に追加される記号 ["…"]
+
+    注釈（InputOutputFilter 共通）
+        - ``output_attr_name`` が省略された場合、
+          ``input_attr_idx`` 列の列名が出力列名として利用されます。
+        - ``output_attr_idx`` が省略された場合、
+          出力列名が存在する列名ならばその列の位置に出力し、
+          存在しないならば最後尾に追加します。
+
+    注釈
+        - 切り詰め処理は列名には適用されません。
+        - もともとの文字数が ``length`` 以下の場合は
+          ``ellipsis`` は追加されません。
+
+    サンプル
+        「説明」列を 120 文字で切り詰めます。
+
+        .. code-block :: json
+
+            {
+                "convertor": "truncate",
+                "params": {
+                    "input_attr_idx": "説明",
+                    "length": 120,
+                    "ellipsis": "..."
+                }
+            }
+
     """
 
     class Meta:
         key = "truncate"
-        name = "文字列を短くする"
+        name = "文字列を切り詰める"
         description = "文字列を指定された文字数で切り取ります"
         help_text = None
         params = params.ParamSet(
             params.IntParam(
                 "length",
-                label="長さ",
+                label="最大文字列長",
                 required=True,
-                validators=(validators.IntValidator(), validators.RangeValidator(min=1, max=100),),
+                validators=(
+                    validators.IntValidator(),
+                    validators.RangeValidator(min=1),),
                 default_value="10",
             ),
-            params.StringParam("omission", label="省略文字", default_value="…"),
+            params.StringParam(
+                "ellipsis",
+                label="省略記号",
+                default_value="…"
+            ),
         )
 
-    def process_filter(self, input_attr_idx, record, context):
-        length = context.get_param("length")
-        omission = context.get_param("omission")
-        return truncate(record[input_attr_idx], length, omission=omission)
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.length = context.get_param("length")
+        self.ellipsis = context.get_param("ellipsis")
+
+    def process_filter(self, record, context):
+        value = record[self.input_attr_idx]
+        if len(value) > self.length:
+            value = value[:self.length] + self.ellipsis
+
+        return value

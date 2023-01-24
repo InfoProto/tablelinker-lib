@@ -81,10 +81,11 @@ class ToCodeFilter(filters.InputOutputFilter):
         super().initial(context)
         initialize_jageocoder()
 
-    def process_filter(self, input_attr_idx, record, context):
+    def process_filter(self, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
+            candidates = jageocoder.searchNode(
+                str(record[self.input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 if context.get_param("withCheckDigit"):
@@ -134,10 +135,11 @@ class ToPrefectureFilter(filters.InputOutputFilter):
         super().initial(context)
         initialize_jageocoder()
 
-    def process_filter(self, input_attr_idx, record, context):
+    def process_filter(self, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
+            candidates = jageocoder.searchNode(
+                str(record[self.input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 result = node.get_pref_name()
@@ -177,10 +179,11 @@ class ToMunicipalitiesFilter(filters.InputOutputFilter):
         super().initial(context)
         initialize_jageocoder()
 
-    def process_filter(self, input_attr_idx, record, context):
+    def process_filter(self, record, context):
         result = context.get_param("default")
         try:
-            candidates = jageocoder.searchNode(str(record[input_attr_idx]))
+            candidates = jageocoder.searchNode(
+                str(record[self.input_attr_idx]))
             if len(candidates) > 0:
                 node = candidates[0][0]
                 if node.level >= 3:
@@ -218,8 +221,8 @@ class ToLatitudeFilter(filters.InputOutputFilter):
         super().initial(context)
         initialize_jageocoder()
 
-    def process_filter(self, input_attr_idx, record, context):
-        geocode = jageocoder.search(str(record[input_attr_idx]))
+    def process_filter(self, record, context):
+        geocode = jageocoder.search(str(record[self.input_attr_idx]))
         result = ""
         if geocode["candidates"]:
             candidates = [str(candidate["y"]) for candidate in geocode["candidates"]]
@@ -254,8 +257,9 @@ class ToLongitudeFilter(filters.InputOutputFilter):
         super().initial(context)
         initialize_jageocoder()
 
-    def process_filter(self, input_attr_idx, record, context):
-        geocode = jageocoder.search(str(record[input_attr_idx]))
+    def process_filter(self, record, context):
+        geocode = jageocoder.search(
+            str(record[self.input_attr_idx]))
         result = ""
         if geocode["candidates"]:
             candidates = [str(candidate["x"]) for candidate in geocode["candidates"]]
@@ -289,6 +293,8 @@ class ToLatLongFilter(filters.InputOutputsFilter):
 
     @check_jageocoder
     def initial(self, context):
+        super().initial(context)
+
         # 出力列名が3つ指定されていることを確認
         output_attr_names = context.get_param("output_attr_names")
         if isinstance(output_attr_names, str) or \
@@ -298,10 +304,10 @@ class ToLatLongFilter(filters.InputOutputsFilter):
                 "requires 3 column names for latitude, longitude and level."))
 
         initialize_jageocoder()
-        super().initial(context)
 
-    def process_filter(self, input_attr_idx, record, context):
-        geocode = jageocoder.search(str(record[input_attr_idx]))
+    def process_filter(self, record, context):
+        geocode = jageocoder.search(
+            str(record[self.input_attr_idx]))
         result = ["", ""]
         if geocode["candidates"]:
             lats = [str(candidate["y"]) for candidate in geocode["candidates"]]

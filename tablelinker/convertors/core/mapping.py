@@ -270,7 +270,7 @@ class ItemsPair(object):
             return self.mxsim, self.mxed
 
         if self.__class__.similarity is None:
-            self.__class__.simirarity = Similarity()
+            self.__class__.similarity = Similarity()
 
         vec0 = [self.__class__.similarity.item2vec(name) for name in self.items0]
         vec1 = [self.__class__.similarity.item2vec(name) for name in self.items1]
