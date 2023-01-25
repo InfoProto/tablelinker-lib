@@ -36,6 +36,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.delete_col.DeleteColFilter
 
 .. autoclass::
+    tablelinker.convertors.basics.delete_col.DeleteColsFilter
+
+.. autoclass::
     tablelinker.convertors.basics.insert_col.InsertColFilter
 
 .. autoclass::
@@ -43,6 +46,18 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 
 .. autoclass::
     tablelinker.convertors.basics.mapping_col.MappingColsFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.move_col.MoveColFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.rename_col.RenameColFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.rename_col.RenameColsFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.reorder_col.ReorderColsFilter
 
 
 行操作
@@ -58,18 +73,6 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowFilter
 
 .. autoclass::
-    tablelinker.convertors.basics.move_col.MoveColFilter
-
-.. autoclass::
-    tablelinker.convertors.basics.rename_col.RenameColFilter
-
-.. autoclass::
-    tablelinker.convertors.basics.rename_col.RenameColsFilter
-
-.. autoclass::
-    tablelinker.convertors.basics.reorder_col.ReorderColsFilter
-
-.. autoclass::
     tablelinker.convertors.basics.select_row.StringMatchSelectRowFilter
 
 .. autoclass::
@@ -78,26 +81,52 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 .. autoclass::
     tablelinker.convertors.basics.select_row.PatternMatchSelectRowFilter
 
+
+値の操作
+^^^^^^^^
+
 .. autoclass::
     tablelinker.convertors.basics.split_col.SplitColFilter
 
 .. autoclass::
-    tablelinker.convertors.basics.split_col.PivotColFilter
+    tablelinker.convertors.basics.split_col.SplitRowFilter
 
 .. autoclass::
     tablelinker.convertors.basics.truncate.TruncateFilter
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToHarfAlphanumericFilter
+    tablelinker.convertors.basics.zenkaku.ToHankakuFilter
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToHarfNumberFilter
+    tablelinker.convertors.basics.zenkaku.ToZenkakuFilter
+
+
+拡張コンバータ
+--------------
+
+西暦和暦変換
+^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToHarfSymbolFilter
+    tablelinker.convertors.extras.wareki.ToSeirekiFilter
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToWholeAlphanumericFilter
+    tablelinker.convertors.extras.wareki.ToWarekiFilter
+
+住所ジオコーダ
+^^^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToWholeSymbolFilter
+    tablelinker.convertors.extras.geocoder.ToCodeFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.geocoder.ToPrefectureFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.geocoder.ToMunicipalityFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.geocoder.ToLatLongFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.mapping_col.AutoMappingColsFilter

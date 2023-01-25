@@ -288,7 +288,8 @@ class InputOutputsFilter(Filter):
                     label="出力列名のリスト",
                     description="変換結果を出力する列名のリストです。",
                     help_text="既存の列名が指定された場合、置換となります。",
-                    required=True,
+                    required=False,
+                    default_value=[],
                 ),
                 params.AttributeParam(
                     "output_attr_idx",
@@ -323,25 +324,38 @@ class InputOutputsFilter(Filter):
 
     def initial_context(self, context):
         super().initial_context(context)
+        self.old_attr_indexes = []
         self.del_attr_indexes = []
-        self.new_attr = None
         self.input_attr_idx = context.get_param("input_attr_idx")
         self.output_attr_idx = context.get_param("output_attr_idx")
         self.output_attr_names = context.get_param("output_attr_names")
 
     def process_header(self, header, context):
-        # 既存列は削除
+        # 既存列をチェック
         for output_attr_name in self.output_attr_names:
             if output_attr_name in header:
                 idx = header.index(output_attr_name)
-                self.del_attr_indexes.append(idx)
+                self.old_attr_indexes.append(idx)
             else:
-                self.del_attr_indexes.append(None)
+                self.old_attr_indexes.append(None)
 
-        # 指定列に挿入
+        # 挿入する位置
         if self.output_attr_idx is None or \
                 self.output_attr_idx >= len(header):  # 末尾
             self.output_attr_idx = len(header)
+
+        # 列を一つずつ削除した場合に正しい列番号になるよう調整
+        self.del_attr_indexes = self.old_attr_indexes[:]
+        for i, del_index in enumerate(self.del_attr_indexes):
+            if del_index is None:
+                continue
+
+            if del_index < self.output_attr_idx:
+                self.output_attr_idx -= 1
+
+            for j, d in enumerate(self.del_attr_indexes[i + 1:]):
+                if d is not None and del_index < d:
+                    self.del_attr_indexes[i + j + 1] -= 1
 
         header = self.reorder(
             original=header,
@@ -353,7 +367,7 @@ class InputOutputsFilter(Filter):
 
     def process_record(self, record, context):
         old_values = []
-        for idx in self.del_attr_indexes:
+        for idx in self.old_attr_indexes:
             if idx is None:
                 old_values.append("")
             else:
@@ -386,14 +400,26 @@ class InputOutputsFilter(Filter):
         return record[self.input_attr_idx]
 
     def reorder(self, original, delete_idxs, insert_idx, insert_values):
+        """
+        列の削除と追加を行う。
+
+        Parameters
+        ----------
+        original: list[str]
+            入力行。
+        delete_idxs: list[(int, None)]
+            削除する列番号、 None の場合は削除しない。
+        insert_idx: int
+            追加する列番号
+        insert_values: list[str]
+            追加する文字列のリスト
+        """
         new_list = original[:]
         for delete_idx in delete_idxs:
             if delete_idx is None:
                 continue
 
-            new_list.pop(delete_idx)
-            if delete_idx < insert_idx:
-                insert_idx -= 1
+            del new_list[delete_idx]
 
         new_list = new_list[0:insert_idx] + insert_values \
             + new_list[insert_idx:]

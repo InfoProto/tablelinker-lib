@@ -58,7 +58,7 @@ class Table(object):
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         ホタル水路,,33.108218,139.80102,JGD2011,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01
         >>> import io
-        >>> stream = io.StringIO("国名,3文字コード\\nアメリカ合衆国,USA\\n日本,JPN\\n")
+        >>> stream = io.StringIO("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
         >>> table = Table(stream)
         >>> table.write()
         国名,3文字コード

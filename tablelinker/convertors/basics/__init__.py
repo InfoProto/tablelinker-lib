@@ -37,11 +37,8 @@ selectable_filters = (
     split_col.SplitColFilter,
     split_col.SplitRowFilter,
     truncate.TruncateFilter,
-    zenkaku.ToHarfAlphanumericFilter,
-    zenkaku.ToHarfNumberFilter,
-    zenkaku.ToHarfSymbolFilter,
-    zenkaku.ToWholeAlphanumericFilter,
-    zenkaku.ToWholeSymbolFilter,
+    zenkaku.ToHankakuFilter,
+    zenkaku.ToZenkakuFilter,
 )
 
 

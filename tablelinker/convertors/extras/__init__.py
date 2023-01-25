@@ -10,13 +10,12 @@ from . import (
 selectable_filters = (
     geocoder.ToCodeFilter,
     geocoder.ToPrefectureFilter,
-    geocoder.ToMunicipalitiesFilter,
-    geocoder.ToLongitudeFilter,
-    geocoder.ToLatitudeFilter,
+    geocoder.ToMunicipalityFilter,
     geocoder.ToLatLongFilter,
     mapping_col.AutoMappingColsFilter,
     mtab.MtabFilter,
     wareki.ToSeirekiFilter,
+    wareki.ToWarekiFilter,
 )
 
 

@@ -16,7 +16,7 @@ class TruncateFilter(filters.InputOutputFilter):
         * "output_attr_name": 結果を出力する列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
-    パラメータ（コンバータ特有）
+    パラメータ（コンバータ固有）
         * "length": 最大文字数 [10]
         * "ellipsis": 切り詰めた場合に追加される記号 ["…"]
 

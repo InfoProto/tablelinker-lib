@@ -1,201 +1,205 @@
+from logging import getLogger
+
+import jaconv
+
 from ..core import filters, params
 
-
-def to_harf_number(value):
-    """
-    全角数字を半角数字に変換します。
-    value: 文字列
-    """
-    return value.translate(
-        str.maketrans({"１": "1", "２": "2", "３": "3", "４": "4", "５": "5",
-                       "６": "6", "７": "7", "８": "8", "９": "9", "０": "0"})
-    )
+logger = getLogger(__name__)
 
 
-def to_harf_symbol(value):
+class ToHankakuFilter(filters.InputOutputFilter):
     """
-    全角記号を半角記号に変換します
-    value: 文字列
-    """
-    return value.translate(
-        str.maketrans(
+    概要
+        全角文字を半角文字に変換します。
+
+    コンバータ名
+        "to_hankaku"
+
+    パラメータ（InputOutputFilter 共通）
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "output_attr_idx": 分割した結果を出力する列番号または
+          列名のリスト
+        * "output_attr_name": 結果を出力する列名
+        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+
+    パラメータ（コンバータ固有）
+        * "kana": カナ文字を変換対象に含める [True]
+        * "ascii": アルファベットと記号を対象に含める [True]
+        * "digit": 数字を対象に含める [True]
+        * "ignore_chars": 対象に含めない文字 [""]
+
+    注釈（InputOutputFilter 共通）
+        - ``output_attr_name`` が省略された場合、
+          ``input_attr_idx`` 列の列名が出力列名として利用されます。
+        - ``output_attr_idx`` が省略された場合、
+          出力列名が存在する列名ならばその列の位置に出力し、
+          存在しないならば最後尾に追加します。
+
+    注釈
+        - 変換処理は列名には適用されません。
+
+    サンプル
+        「説明」列に含まれる全角数字を半角数字に置き換えます。
+
+        .. code-block :: json
+
             {
-                "＂": '"',
-                "＼": "\\",
-                "！": "!",
-                "＃": "#",
-                "＄": "$",
-                "％": "%",
-                "＆": "&",
-                "＇": "'",
-                "（": "(",
-                "）": ")",
-                "＊": "*",
-                "＋": "+",
-                "，": ",",
-                "－": "-",
-                "．": ".",
-                "／": "/",
-                "：": ":",
-                "；": ";",
-                "＜": "<",
-                "＝": "=",
-                "＞": ">",
-                "？": "?",
-                "＠": "@",
-                "［": "[",
-                "］": "]",
-                "＾": "^",
-                "＿": "_",
-                "｀": "`",
-                "｛": "{",
-                "｜": "|",
-                "｝": "}",
-                "～": "~",
+                "convertor": "to_hankaku",
+                "params": {
+                    "input_attr_idx": "説明",
+                    "output_attr_idx": "説明",
+                    "kana": false,
+                    "ascii": false,
+                    "digit": true,
+                    "overwrite": true
+                }
             }
-        )
-    )
 
-
-def to_whole_symbol(value):
-    """
-    半角記号を全角記号に変換します。
-    value: 文字列
-    """
-    return value.translate(
-        str.maketrans(
-            {
-                '"': "＂",
-                "\\": "＼",
-                "!": "！",
-                "#": "＃",
-                "$": "＄",
-                "%": "％",
-                "&": "＆",
-                "'": "＇",
-                "(": "（",
-                ")": "）",
-                "*": "＊",
-                "+": "＋",
-                ",": "，",
-                "-": "－",
-                ".": "．",
-                "/": "／",
-                ":": "：",
-                ";": "；",
-                "<": "＜",
-                "=": "＝",
-                ">": "＞",
-                "?": "？",
-                "@": "＠",
-                "[": "［",
-                "]": "］",
-                "^": "＾",
-                "_": "＿",
-                "`": "｀",
-                "{": "｛",
-                "|": "｜",
-                "}": "｝",
-                "~": "～",
-            }
-        )
-    )
-
-
-def to_harf_alphanumeric(value):
-    """
-    全角英数字記号を半角英数字記号に変換します
-    value: 文字列
-    """
-    return value.translate(str.maketrans({chr(0xFF01 + i): chr(0x21 + i) for i in range(94)}))
-
-
-def to_whole_alphanumeric(value):
-    """
-    半角英数字記号を全角英数字記号に変換します
-    value: 文字列
-    """
-    return value.translate(str.maketrans({chr(0x0021 + i): chr(0xFF01 + i) for i in range(94)}))
-
-
-class ToHarfNumberFilter(filters.InputOutputFilter):
-
-    """
-    全角数字を半角数字に変換するフィルターです。
     """
 
     class Meta:
-        key = "to_harf_number"
-        name = "数字（全角→半角）変換"
+        key = "to_hankaku"
+        name = "全角→半角変換"
         description = """
-          全角数字を半角数字に変換します
+          全角文字を半角文字に変換します
           """
         help_text = None
-        params = params.ParamSet()
+        params = params.ParamSet(
+            params.BooleanParam(
+                "kana",
+                label="カナ文字を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.BooleanParam(
+                "ascii",
+                label="アルファベットと記号を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.BooleanParam(
+                "digit",
+                label="数字を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.StringParam(
+                "ignore_chars",
+                label="対象に含めない文字",
+                required=False,
+                default_value="",
+            ),
+        )
 
-    def process_filter(self, input_attr_idx, record, context):
-        return to_harf_number(record[input_attr_idx])
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.kana = context.get_param("kana")
+        self.ascii = context.get_param("ascii")
+        self.digit = context.get_param("digit")
+        self.ignore_chars = context.get_param("ignore_chars") 
+
+    def process_filter(self, record, context):
+        return jaconv.z2h(
+            record[self.input_attr_idx],
+            kana=self.kana,
+            ascii=self.ascii,
+            digit=self.digit,
+            ignore=self.ignore_chars)
 
 
-class ToHarfSymbolFilter(filters.InputOutputFilter):
-    class Meta:
-        key = "to_harf_symbol"
-        name = "全角記号（全角→半角）変換"
-        description = """
-        全角記号を半角記号に変換します
-        """
-        help_text = None
-        params = params.ParamSet()
-
-    def process_filter(self, output_attr_name, record, context):
-        return to_harf_symbol(record[output_attr_name])
-
-
-class ToWholeSymbolFilter(filters.InputOutputFilter):
+class ToZenkakuFilter(filters.InputOutputFilter):
     """
-    半角記号を全角記号に変換するフィルターです。
+    概要
+        半角文字を全角文字に変換します。
+
+    コンバータ名
+        "to_zenkaku"
+
+    パラメータ（InputOutputFilter 共通）
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "output_attr_idx": 分割した結果を出力する列番号または
+          列名のリスト
+        * "output_attr_name": 結果を出力する列名
+        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+
+    パラメータ（コンバータ固有）
+        * "kana": カナ文字を変換対象に含める [True]
+        * "ascii": アルファベットと記号を対象に含める [True]
+        * "digit": 数字を対象に含める [True]
+        * "ignore_chars": 対象に含めない文字 [""]
+
+    注釈（InputOutputFilter 共通）
+        - ``output_attr_name`` が省略された場合、
+          ``input_attr_idx`` 列の列名が出力列名として利用されます。
+        - ``output_attr_idx`` が省略された場合、
+          出力列名が存在する列名ならばその列の位置に出力し、
+          存在しないならば最後尾に追加します。
+
+    注釈
+        - 変換処理は列名には適用されません。
+
+    サンプル
+        「所在地」列に含まれる半角文字を全角文字に置き換えます。
+
+        .. code-block :: json
+
+            {
+                "convertor": "to_zenkaku",
+                "params": {
+                    "input_attr_idx": "所在地",
+                    "output_attr_idx": "所在地",
+                    "kana": true,
+                    "ascii": true,
+                    "digit": true,
+                    "overwrite": true
+                }
+            }
+
     """
 
     class Meta:
-        key = "to_whole_symbol"
-        name = "半角記号（半角→全角）変換"
-        description = """
-        半角記号を全角記号に変換します
-        """
+        key = "to_zenkaku"
+        name = "半角→全角変換"
+        description = "半角文字を全角文字に変換します"
         help_text = None
-        params = params.ParamSet()
+        params = params.ParamSet(
+            params.BooleanParam(
+                "kana",
+                label="カナ文字を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.BooleanParam(
+                "ascii",
+                label="アルファベットと記号を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.BooleanParam(
+                "digit",
+                label="数字を対象に含める",
+                required=False,
+                default_value=True,
+            ),
+            params.StringParam(
+                "ignore_chars",
+                label="対象に含めない文字",
+                required=False,
+                default_value="",
+            ),
+        )
 
-    def process_filter(self, output_attr_name, record, context):
-        return to_whole_symbol(record[output_attr_name])
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.kana = context.get_param("kana")
+        self.ascii = context.get_param("ascii")
+        self.digit = context.get_param("digit")
+        self.ignore_chars = context.get_param("ignore_chars") 
 
-
-class ToHarfAlphanumericFilter(filters.InputOutputFilter):
-    class Meta:
-        key = "to_harf_alphanumeric"
-        name = "全角英数字記号（全角→半角）変換"
-        description = """
-        全角英数字記号を半角英数字記号に変換します
-        """
-        help_text = None
-        params = params.ParamSet()
-
-    def process_filter(self, output_attr_name, record, context):
-        return to_harf_alphanumeric(record[output_attr_name])
-
-
-class ToWholeAlphanumericFilter(filters.InputOutputFilter):
-    """
-    半角英数字記号を全角英数字記号に変換するフィルターです。
-    """
-
-    class Meta:
-        key = "to_whole_alphanumeric"
-        name = "半角英数字記号（半角→全角）変換"
-        description = """
-        半角英数字記号を全角英数字記号に変換します
-        """
-        help_text = None
-        params = params.ParamSet()
-
-    def process_filter(self, output_attr_name, record, context):
-        return to_whole_alphanumeric(record[output_attr_name])
+    def process_filter(self, record, context):
+        return jaconv.h2z(
+            record[self.input_attr_idx],
+            kana=self.kana,
+            ascii=self.ascii,
+            digit=self.digit,
+            ignore=self.ignore_chars)

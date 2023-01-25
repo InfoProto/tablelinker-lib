@@ -1,19 +1,11 @@
+import io
 import os
+import re
 import sys
 
 from tablelinker import Table
 
 sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
-
-original_sakurai_header = (
-    "市区町村コード,NO,都道府県名,市区町村名,"
-    "名称,名称_カナ,名称_英語,POIコード,"
-    "住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
-    "利用可能日時特記事項,料金(基本),料金(詳細),"
-    "説明,説明_英語,アクセス方法,駐車場情報,"
-    "バリアフリー情報,連絡先名称,連絡先電話番号,"
-    "連絡先内線番号,画像,画像_ライセンス,URL,備考"
-)
 
 
 def test_calc_col():
@@ -100,7 +92,9 @@ def test_delete_col():
                 # レコードから座標系列が削除されていることを確認
                 assert ",".join(row[0:4]) == "ホタル水路,,33.108218,139.80102"
                 assert row[4].startswith("八丈島は伊豆諸島で唯一、")
-                assert row[5] == "http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01"
+                assert row[5] == (
+                    "http://www.town.hachijo.tokyo.jp/kankou_spot/"
+                    "mitsune.html#01")
 
 
 def test_delete_string_match():
@@ -467,3 +461,77 @@ def test_truncate():
             value = row[-1]
             if len(value) > 20:
                 assert value.endswith("...")
+
+
+def test_truncate_replace():
+    table = Table(os.path.join(
+        sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="truncate",
+        params={
+            "input_attr_idx": "説明",
+            "output_attr_idx": "説明",
+            "length": 20,
+            "ellipsis": "...",
+            "overwrite": True
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 7
+            if lineno == 0:
+                # 「説明」列は元の場所に残る
+                assert ",".join(row) == (
+                    "観光スポット名称,所在地,緯度,経度,座標系,"
+                    "説明,八丈町ホームページ記載")
+                continue
+
+            # 説明列が切り詰められていることを確認
+            value = row["説明"]
+            if len(value) > 20:
+                assert value.endswith("...")
+
+
+def test_to_hankaku():
+    stream = io.StringIO((
+        "機関名,部署名,連絡先電話番号\n"
+        "国立情報学研究所,総務チーム,０３－４２１２－２０００\n"
+        "国立情報学研究所,広報チーム,０３－４２１２－２１６４\n"))
+    table = Table(stream)
+    table = table.convert(
+        convertor="to_hankaku",
+        params={
+            "input_attr_idx": "連絡先電話番号",
+            "overwrite": True,
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 3
+            if lineno > 0:
+                # 「連絡先電話番号」列は半角文字に変換
+                assert re.match(r'^[0-9\-]*$', row["連絡先電話番号"])
+
+
+def test_to_zenkaku():
+    stream = io.StringIO((
+        "機関名,所在地\n"
+        "国立情報学研究所,千代田区一ツ橋2-1-2\n"
+        "デジタル庁,千代田区紀尾井町1番3号 19階,20階\n"))
+    table = Table(stream)
+    table = table.convert(
+        convertor="to_zenkaku",
+        params={
+            "input_attr_idx": "所在地",
+            "overwrite": True,
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 2
+            if lineno > 0:
+                # 「所在地」列は全角文字に変換
+                assert re.match(r'^[^0-9\-]*$', row["所在地"])
