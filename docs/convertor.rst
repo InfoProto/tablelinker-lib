@@ -104,6 +104,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 拡張コンバータ
 --------------
 
+拡張コンバータは辞書の読み込み等の前処理を行う必要があるため、
+先に ``tablelinker.useExtraConvertors()`` を実行してください。
+
 西暦和暦変換
 ^^^^^^^^^^^^
 
@@ -128,5 +131,15 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 .. autoclass::
     tablelinker.convertors.extras.geocoder.ToLatLongFilter
 
+MTab アノテーション
+^^^^^^^^^^^^^^^^^^^
+
+.. autoclass::
+    tablelinker.convertors.extras.mtab.MtabWikilinkFilter
+
+列の自動マッピング
+^^^^^^^^^^^^^^^^^^
+
 .. autoclass::
     tablelinker.convertors.extras.mapping_col.AutoMappingColsFilter
+

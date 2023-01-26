@@ -1,21 +1,136 @@
+import csv
+import io
+import json
+import os
+import tempfile
+
+import requests
+
 from ..core import filters, params
 
-from ...mtab.mtab import MTabResult
+MTAB_URL = "https://mtab.app/api/v1/mtab"
 
 
-class MtabFilter(filters.InputOutputFilter):
+class MTabResult(object):
     """
-    Mtabデータからwikidataと、dbpediaの列を追加する。
+    Mtab のレスポンスを解析するクラス
     """
 
+    def __init__(self, mtab_response: dict = None):
+        self.run_time = None
+        self.structure_data = None
+        self.cta_data = None
+        self.cea_data = None
+
+        if mtab_response is not None:
+            self.analyze(mtab_response)
+
+    def analyze(self, mtab_response: dict):
+        self.analyze_structure(mtab_response)
+        self.analyze_cta(mtab_response)
+        self.analyze_cea(mtab_response)
+
+    def analyze_structure(self, result_json):
+        if result_json and result_json["tables"]:
+            self.run_time = result_json["tables"][0]["run_time"]
+            self.structure_data = result_json["tables"][0]["structure"]
+
+    def analyze_cta(self, result_json):
+        if result_json and result_json["tables"]:
+            self.cta_data = result_json["tables"][0]["semantic"]["cta"]
+
+    def analyze_cea(self, result_json):
+        if result_json and result_json["tables"]:
+            self.cea_data = result_json["tables"][0]["semantic"]["cea"]
+
+
+def query_mtab(context, max_lines=None):
+    # Mtab に送信するデータを作成
+    with context._input as f_in:
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        lines = 0
+        for row in f_in:
+            writer.writerow(row)
+            lines += 1
+            if max_lines is not None and lines == max_lines:
+                break
+
+        data = buf.getvalue()
+
+    # Mtab に問い合わせ
+    try:
+        files = {"file": ("mtab.csv", data, "text/csv")}
+        response = requests.post(MTAB_URL, files=files)
+
+        if response.status_code == 200:
+            response_json = response.json()
+
+    except Exception as message:
+        raise message
+
+    mtab_result = MTabResult(response_json)
+    return mtab_result
+
+
+class MtabWikilinkFilter(filters.InputOutputFilter):
+    """
+    概要
+        Mtab を利用して、各行の情報に合致する
+        Wikidata へのリンクを計算します。
+
+
+    コンバータ名
+        "geocoder_code"
+
+    パラメータ（InputOutputFilter 共通）
+        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "output_attr_name": 結果を出力する列名
+        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+
+    パラメータ（コンバータ固有）
+        * "lines": 処理する最大の行数を指定します [無制限]
+
+    注釈（InputOutputFilter 共通）
+        - ``output_attr_name`` が省略された場合、
+          ``input_attr_idx`` 列の列名が出力列名として利用されます。
+        - ``output_attr_idx`` が省略された場合、
+          出力列名が存在する列名ならばその列の位置に出力し、
+          存在しないならば最後尾に追加します。
+
+    サンプル
+        先頭列の要素に対応する Wikidata へのリンクを末尾に追加します。
+        最大100行まで処理します。
+
+        .. code-block :: json
+
+            {
+                "convertor": "mtab_wikilink",
+                "params": {
+                    "input_attr_idx": 0,
+                    "output_attr_name": "Wikilink",
+                    "lines": "100"
+                }
+            }
+
+    """
     class Meta:
-        key = "mtab"
-        name = "Mtabデータからwikidataと、dbpediaの列を追加する"
+        key = "mtab_wikilink"
+        name = "Mtabデータからwikidata列を追加する"
         description = """
         Mtabデータからwikidataの列を追加します
         """
         help_text = ""
-        params = params.ParamSet()
+        params = params.ParamSet(
+            params.IntParam(
+                "lines",
+                label="処理する最大行数",
+                required=False,
+                help_text="処理する最大行数を指定します。"
+            ),
+
+        )
 
     @classmethod
     def can_apply(cls, attrs):
@@ -25,28 +140,37 @@ class MtabFilter(filters.InputOutputFilter):
         """
         return True
 
-    def initial(self, context):
-        mtab_file = context._input._dataset.mtab_file
-        mtab_result = None
+    def initial_context(self, context):
+        super().initial_context(context)
+        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.lines = context.get_param("lines")
+        self.wikidata = None
 
-        if mtab_file and mtab_file.size > 0:
-            mtab_result = MTabResult()
-            mtab_result.analyze(mtab_file)
-
+        mtab_result = query_mtab(context, max_lines=self.lines)
         if mtab_result:
-            input_attr_idx = context.get_param("input_attr_idx")
-            wikidata_map = {}
+            wikidata_map = []
             for data in mtab_result.cea_data:
                 row = data["target"][0]
                 col = data["target"][1]
-                if col == input_attr_idx:
+                if col == self.input_attr_idx:
                     wikidata = data["annotation"]["wikidata"]
-                    wikidata_map[row] = wikidata
-            context.set_data("wikidata", wikidata_map)
+                    if len(wikidata_map) < row + 1:
+                        wikidata_map += [""] * (row - len(wikidata_map) + 1)
 
-    def process_filter(self, input_attr_idx, record, context):
-        wikidata = context.get_data("wikidata")
-        if wikidata:
-            return wikidata[input_attr_idx]
+                    wikidata_map[row] = wikidata
+
+            self.wikidata = wikidata_map
+
+    def process_header(self, headers, context):
+        super().process_header(headers, context)
+        # ヘッダ行分のデータを削除する
+        if len(self.wikidata) > 0:
+            wikilink = self.wikidata.pop(0)
+
+    def process_filter(self, record, context):
+        if len(self.wikidata) > 0:
+            wikilink = self.wikidata.pop(0)
         else:
-            return None
+            wikilink = ""
+
+        return wikilink

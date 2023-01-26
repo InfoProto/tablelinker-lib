@@ -13,7 +13,7 @@ selectable_filters = (
     geocoder.ToMunicipalityFilter,
     geocoder.ToLatLongFilter,
     mapping_col.AutoMappingColsFilter,
-    mtab.MtabFilter,
+    mtab.MtabWikilinkFilter,
     wareki.ToSeirekiFilter,
     wareki.ToWarekiFilter,
 )

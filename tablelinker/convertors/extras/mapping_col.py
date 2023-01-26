@@ -4,8 +4,46 @@ from ..core.mapping import ItemsPair
 
 class AutoMappingColsFilter(filters.Filter):
     """
-    指定したカラムのリストにマッピングします。
-    カラムのマッピングは語ベクトルと表記の類似度によって決定します。
+    概要
+        指定した列名リストに合わせて既存の列をマッピングします。
+        マッピングは語ベクトルと表記の類似度によって決定します。
+
+    コンバータ名
+        "auto_mapping_cols"
+
+    パラメータ
+        * "column_list": 出力したい列名のリスト [必須]
+        * "keep_colname": 元の列名を保持するか [False]
+        * "threshold": 列をマッピングするしきい値 [40]
+
+    注釈
+        - 元の列のうち、マッピング先の列との類似度が ``threshold`` 
+          以下のものは削除されます。
+        - ``threshold`` は 0 - 100 の整数で指定します。
+          値が大きいほど一致度が高いものしか残りません。
+        - ``keep_colname`` に True を指定すると、元の列名と
+          マッピング先の列名が異なる場合に出力列名を
+          `<マッピング先の列名> / <元の列名>` に変更します。
+
+    サンプル
+        出力したい列名のリストに合わせてマッピングします。
+
+        .. code-block:: json
+
+            {
+                "convertor": "auto_mapping_cols",
+                "params": {
+                    "column_list": [
+                        "名称",
+                        "所在地",
+                        "経度",
+                        "緯度",
+                        "説明"
+                    ],
+                    "keep_colname": true
+                }
+            }
+
     """
 
     class Meta:
@@ -31,7 +69,7 @@ class AutoMappingColsFilter(filters.Filter):
                 label="しきい値",
                 description="カラムが一致すると判定するしきい値(0-100)",
                 required=False,
-                default_value=70),
+                default_value=40),
         )
 
     def process_header(self, headers, context):

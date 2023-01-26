@@ -196,3 +196,53 @@ def test_geocoder_latlong():
                 assert int(row[5]) >= 3  # 町以上まで一致している
 
 
+def test_mtab_wikilink():
+    stream = io.StringIO((
+        "col0,col1,col2,col3\n"
+        "2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735\n"
+        "2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,11.818755055646479\n"
+        "2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955\n"
+        "2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303\n"
+    ))
+    table = Table(stream)
+    table = table.convert(
+        convertor="mtab_wikilink",
+        params={
+            "input_attr_idx": "col0",
+            "output_attr_name": "Wikilink",
+            "overwrite": True,
+        },
+    )
+
+    with table.open() as csv:
+        for lineno, row in enumerate(csv):
+            assert len(row) == 5
+            if lineno == 0:
+                # 最後尾に "Wikilink" が追加されていることを確認
+                assert ",".join(row) == "col0,col1,col2,col3,Wikilink"
+            else:
+                assert row[4].startswith("http://www.wikidata.org/entity/")
+
+
+def test_auto_mapping_cols():
+    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="auto_mapping_cols",
+        params={
+            "column_list": ["名称", "所在地", "経度", "緯度", "説明"],
+            "keep_colname": True,
+        }
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 5
+            if lineno == 0:
+                # マッピングの結果を確認
+                assert ",".join(row) == (
+                    "名称 / 観光スポット名称,所在地,経度,緯度,説明")
+            else:  # 経度列と緯度列が入れ替わっていることを確認
+                assert float(row["緯度"]) > 25.0 and \
+                    float(row["緯度"]) < 50.0
+                assert float(row["経度"]) > 120.0 and \
+                    float(row["経度"]) < 150.0
