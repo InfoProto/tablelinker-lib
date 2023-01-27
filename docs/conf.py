@@ -6,16 +6,16 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import tablelinker
 project = 'tablelinker'
 copyright = '2023, NII-CPS'
 author = 'NII-CPS'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
-import tablelinker
 extensions = [
-	'sphinx.ext.autodoc',
-	'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
 ]
 
 templates_path = ['_templates']

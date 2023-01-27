@@ -62,6 +62,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 .. autoclass::
     tablelinker.convertors.basics.reorder_col.ReorderColsFilter
 
+.. autoclass::
+    tablelinker.convertors.basics.generate_pk.GeneratePkFilter
+
 
 行操作
 ^^^^^^

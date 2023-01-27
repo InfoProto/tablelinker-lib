@@ -46,13 +46,13 @@ class Table(object):
         file: os.PathLike
             表形式 CSV データを含むファイルのパス、または
             CSV データを読みだせる file-like オブジェクト。
-        sheet: str, optional [None]
+        sheet: str, optional (default:None)
             入力データに複数のシートが含まれる場合、対象とするシート名。
             省略した場合、最初のシートを利用する。
-        is_tempfile: bool [False]
+        is_tempfile: bool (default:False)
             参照しているファイルが一時ファイルかどうかを
             指定するフラグ。
-        need_cleaning: bool [True]
+        need_cleaning: bool (default:True)
             CSV データを読み込む際にクリーニングを
             行うかどうかを指定するフラグ。
 
@@ -170,30 +170,32 @@ class Table(object):
         - CSV データのクリーニングはこのメソッドが呼ばれたときに
           実行される。
         """
-        # エクセルファイルチェック
+        # エクセルファイルとして読み込む
         try:
             df = pd.read_excel(self.file, sheet_name=self.sheet)
-            sheets = list(df.keys())
             if self.sheet is None:
-                sheet = sheets[0]
-            elif self.sheet not in sheets:
-                logger.error((
-                    "対象にはシート '{}' は含まれていません。"
-                    "候補: ({})").format(",".join(sheets)))
-                raise ValueError("Invalid sheet name.")
-            else:
-                sheet = self.sheet
+                sheets = list(df.keys())
+                df = df[sheets[0]]
 
-            data = df[sheet].to_csv()
+            data = df.to_csv(index=False)
             self._reader = core.CsvInputCollection(
                 file_or_path=io.StringIO(data),
                 need_cleaning=False).open(
                     as_dict=as_dict, **kwargs)
             return self
 
-        except (ValueError, TypeError, ) as e:
-            pass
+        except ValueError as e:
+            if str(e).lower().startswith(
+                    "excel file format cannot be determined"):
+                # Excel ファイルではない
+                pass
+            elif self.sheet is not None:
+                logger.error(
+                    "対象にはシート '{}' は含まれていません。".format(
+                        self.sheet))
+                raise ValueError("Invalid sheet name.")
 
+        # CSV 読み込み
         self._reader = core.CsvInputCollection(
             self.file,
             need_cleaning=self.need_cleaning).open(
@@ -310,12 +312,11 @@ class Table(object):
         >>> table.save("hachijo_sightseeing_utf8.csv", quoting=csv.QUOTE_ALL)
 
         """
-        if self.file is not None:
-            with open(path, mode="w", newline="", encoding=encoding) as f:
-                writer = csv.writer(f, **fmtparams)
-                input = self.open()
-                for row in input:
-                    writer.writerow(row)
+        with self.open() as reader, \
+                open(path, mode="w", newline="", encoding=encoding) as f:
+            writer = csv.writer(f, **fmtparams)
+            for row in reader:
+                writer.writerow(row)
 
     def write(self, lines: int = -1, file=None, **fmtparams):
         """
@@ -346,10 +347,9 @@ class Table(object):
         if file is None:
             file = sys.stdout
 
-        if self.file is not None:
+        with self.open() as reader:
             writer = csv.writer(file, **fmtparams)
-            input = self.open()
-            for n, row in enumerate(input):
+            for n, row in enumerate(reader):
                 if n == lines:
                     break
 
@@ -399,11 +399,11 @@ class Table(object):
           変換結果ファイルが残る場合がある。
         - 利用できるコンバータのリストは自動的に読み込む。
         """
+        self.open()
         csv_out = tempfile.NamedTemporaryFile(
             delete=False,
             prefix='table_').name
-        input = core.CsvInputCollection(
-            self.file, need_cleaning=self.need_cleaning)
+        input = self._reader
         output = core.CsvOutputCollection(csv_out)
         filter = core.filter_find_by(convertor)
         if filter is None:

@@ -19,13 +19,14 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} [-d] [-i <file>] [-o <file>] [--no-cleaning] [<task>]
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>]
   {p} mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
 
 Options:
   -h --help              このヘルプを表示
   -d --debug             デバッグメッセージを表示
   -i, --input=<file>     入力ファイルを指定（省略時は標準入力）
+  -s, --sheet=<sheet>    入力ファイルのうち対象とするシート（省略時は先頭）
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
   --headers=<headers>    列名リスト（カンマ区切り）
@@ -81,7 +82,10 @@ def convert(args: dict):
                 fout.write(sys.stdin.buffer.read())
 
         logger.debug("Start convertor(s)...")
-        table = Table(csv_in, need_cleaning=need_cleaning)
+        table = Table(
+            csv_in,
+            sheet = args['--sheet'],
+            need_cleaning=need_cleaning)
 
         if isinstance(tasks, dict):
             # コンバータが一つだけ指定されている場合

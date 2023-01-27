@@ -65,7 +65,8 @@ class MoveColFilter(filters.Filter):
 
     def process_header(self, headers, context):
         self.input_attr_idx = context.get_param("input_attr_idx")
-        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.output_attr_idx = context.get_param("output_attr_idx") or \
+            len(headers)
         if self.output_attr_idx > self.input_attr_idx:
             self.output_attr_idx -= 1
 
