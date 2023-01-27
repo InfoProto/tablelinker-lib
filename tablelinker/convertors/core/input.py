@@ -73,7 +73,7 @@ class ArrayInputCollection(InputCollection):
 
 class CsvInputCollection(InputCollection):
 
-    def __init__(self, file_or_path, need_cleaning=True):
+    def __init__(self, file_or_path, skip_cleaning=False):
         # file_or_path パラメータが File-like か PathLike か判別
         if all(hasattr(file_or_path, attr)
                for attr in ('seek', 'close', 'read')):
@@ -86,32 +86,20 @@ class CsvInputCollection(InputCollection):
             self.path = file_or_path
             logger.debug("Detect path-like object.")
 
-        self.need_cleaning = need_cleaning
+        self.skip_cleaning = skip_cleaning
         self._reader = None
 
     def open(self, as_dict: bool = False, **kwargs):
         """
         ファイルを開く。
-        need_cleaning が True の場合、のコンテンツを読み込み
+        skip_cleaning が False の場合、コンテンツを読み込み
         CSVCleaner で整形したバッファを開く。
         """
         reader = csv.reader
         if as_dict is True:
             reader = csv.DictReader
 
-        if self.need_cleaning:
-            # ファイルの内容を読む
-            if self.path is not None:
-                with open(self.path, "rb") as fb:
-                    content = fb.read()
-            else:
-                self.fp.seek(0)
-                content = self.fp.read()
-
-            # クリーニング
-            self._reader = CSVCleaner(data=content)
-            self._reader.open(as_dict=as_dict, **kwargs)
-        else:
+        if self.skip_cleaning:
             # ファイルをそのまま開く
             if self.path is not None:
                 if self.fp is not None:
@@ -131,6 +119,18 @@ class CsvInputCollection(InputCollection):
                 else:
                     # テキストストリーム
                     self._reader = reader(self.fp, **kwargs)
+        else:
+            # ファイルの内容を読み込んでクリーニングする
+            if self.path is not None:
+                with open(self.path, "rb") as fb:
+                    content = fb.read()
+            else:
+                self.fp.seek(0)
+                content = self.fp.read()
+
+            # クリーニング
+            self._reader = CSVCleaner(data=content)
+            self._reader.open(as_dict=as_dict, **kwargs)
 
         return self
 

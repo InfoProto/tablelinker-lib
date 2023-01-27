@@ -55,7 +55,7 @@ templates/sightseeing_spots.csv
 
 def convert(args: dict):
     taskfile = args['<task>']
-    need_cleaning = args['--no-cleaning'] is False
+    skip_cleaning = bool(args['--no-cleaning'])
 
     if taskfile is None:
         tasks = []
@@ -85,7 +85,7 @@ def convert(args: dict):
         table = Table(
             csv_in,
             sheet = args['--sheet'],
-            need_cleaning=need_cleaning)
+            skip_cleaning=skip_cleaning)
 
         if isinstance(tasks, dict):
             # コンバータが一つだけ指定されている場合

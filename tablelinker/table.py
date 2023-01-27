@@ -26,10 +26,45 @@ class Table(object):
     file: File-like, Path-like
         このテーブルが管理する入力 CSV ファイルのパス、
         または file-like オブジェクト。
+    sheet: str, None
+        入力ファイルが Excel の場合など、複数の表データを含む場合に
+        対象を指定するためのシート名。省略された場合は最初の表。
     is_tempfile: bool
         入力 CSV ファイルが一時ファイルかどうかを表すフラグ。
         True の場合、オブジェクトが消滅するときに file が
         指すパスにあるファイルも削除する。
+    skip_cleaning: bool
+        CSV データを読み込む際にクリーニングをスキップするか
+        どうかを指定するフラグ。
+        True を指定した場合、 UTF-8 でカンマ区切りの CSV ファイルで
+        先頭部分に余計な行が含まれていない必要がある。
+
+    Examples
+    --------
+    >>> from tablelinker import Table
+    >>> table = Table("sample/hachijo_sightseeing.csv")
+    >>> table.write(lines=2)
+    観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
+    ホタル水路,,33.108218,139.80102,JGD2011,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01
+    >>> import io
+    >>> stream = io.StringIO("国名,3文字コード\\nアメリカ合衆国,USA\\n日本,JPN\\n")
+    >>> table = Table(stream)
+    >>> table.write()
+    国名,3文字コード
+    アメリカ合衆国,USA
+    日本,JPN
+
+    Notes
+    -----
+    - ``is_tempfile`` に True を指定した場合、
+      オブジェクト削除時に ``file`` が指すファイルも削除される。
+    - CSV データが UTF-8、カンマ区切りの CSV であることが
+      確実な場合、 ``skip_cleaning`` に True を指定することで
+      クリーニング処理をスキップして高速に処理できる。
+      ``skip_cleaning`` を省略または False を指定した場合、
+      一度 CSV データ全体を読み込んでクリーニングを行うため、
+      余分なメモリと処理時間が必要になる。
+
     """
 
     def __init__(
@@ -37,9 +72,10 @@ class Table(object):
             file,
             sheet: Optional[str] = None,
             is_tempfile: bool = False,
-            need_cleaning: bool = True):
+            skip_cleaning: bool = False):
         """
         オブジェクトを初期化する。
+        ファイルは開かない。
 
         Parameters
         ----------
@@ -52,39 +88,14 @@ class Table(object):
         is_tempfile: bool (default:False)
             参照しているファイルが一時ファイルかどうかを
             指定するフラグ。
-        need_cleaning: bool (default:True)
-            CSV データを読み込む際にクリーニングを
-            行うかどうかを指定するフラグ。
-
-        Examples
-        --------
-        >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
-        >>> table.write(lines=2)
-        観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
-        ホタル水路,,33.108218,139.80102,JGD2011,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01
-        >>> import io
-        >>> stream = io.StringIO("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
-        >>> table = Table(stream)
-        >>> table.write()
-        国名,3文字コード
-        アメリカ合衆国,USA
-        日本,JPN
-
-        Notes
-        -----
-        - ``is_tempfile`` に True を指定した場合、
-          オブジェクト削除時に ``file`` が指すファイルも削除される。
-        - ``need_cleaning`` を省略または True を指定した場合、
-          一度 CSV データ全体を読み込んでクリーニングを行うため、
-          余分なメモリと処理時間が必要になる。
-          CSV データが UTF-8、カンマ区切りの CSV であることが
-          確実な場合、 False を指定することで高速に処理できる。
+        skip_cleaning: bool (default:False)
+            CSV データを読み込む際にクリーニングをスキップするか
+            どうかを指定するフラグ。
         """
         self.file = file
         self.sheet = sheet
         self.is_tempfile = is_tempfile
-        self.need_cleaning = need_cleaning
+        self.skip_cleaning = skip_cleaning
         self._reader = None
 
     def __del__(self):
@@ -170,35 +181,36 @@ class Table(object):
         - CSV データのクリーニングはこのメソッドが呼ばれたときに
           実行される。
         """
-        # エクセルファイルとして読み込む
-        try:
-            df = pd.read_excel(self.file, sheet_name=self.sheet)
-            if self.sheet is None:
-                sheets = list(df.keys())
-                df = df[sheets[0]]
+        if not self.skip_cleaning:
+            # エクセルファイルとして読み込む
+            try:
+                df = pd.read_excel(self.file, sheet_name=self.sheet)
+                if self.sheet is None:
+                    sheets = list(df.keys())
+                    df = df[sheets[0]]
 
-            data = df.to_csv(index=False)
-            self._reader = core.CsvInputCollection(
-                file_or_path=io.StringIO(data),
-                need_cleaning=False).open(
-                    as_dict=as_dict, **kwargs)
-            return self
+                data = df.to_csv(index=False)
+                self._reader = core.CsvInputCollection(
+                    file_or_path=io.StringIO(data),
+                    skip_cleaning=True).open(
+                        as_dict=as_dict, **kwargs)
+                return self
 
-        except ValueError as e:
-            if str(e).lower().startswith(
-                    "excel file format cannot be determined"):
-                # Excel ファイルではない
-                pass
-            elif self.sheet is not None:
-                logger.error(
-                    "対象にはシート '{}' は含まれていません。".format(
-                        self.sheet))
-                raise ValueError("Invalid sheet name.")
+            except ValueError as e:
+                if str(e).lower().startswith(
+                        "excel file format cannot be determined"):
+                    # Excel ファイルではない
+                    pass
+                elif self.sheet is not None:
+                    logger.error(
+                        "対象にはシート '{}' は含まれていません。".format(
+                            self.sheet))
+                    raise ValueError("Invalid sheet name.")
 
         # CSV 読み込み
         self._reader = core.CsvInputCollection(
             self.file,
-            need_cleaning=self.need_cleaning).open(
+            skip_cleaning=self.skip_cleaning).open(
                 as_dict=as_dict, **kwargs)
         return self
 
@@ -253,7 +265,7 @@ class Table(object):
             table = Table(
                 f.name,
                 is_tempfile=True,
-                need_cleaning=False)
+                skip_cleaning=True)
 
         return table
 
@@ -429,7 +441,7 @@ class Table(object):
                 new_table = Table(
                     csv_out,
                     is_tempfile=True,
-                    need_cleaning=False)
+                    skip_cleaning=True)
                 return new_table
 
             except RuntimeError as e:
