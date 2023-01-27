@@ -7,7 +7,7 @@ from tablelinker import Table
 
 sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
 
-Table.useExtraConvertors()
+# Table.useExtraConvertors()
 
 
 def test_to_seireki():

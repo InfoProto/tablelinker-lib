@@ -243,6 +243,10 @@ class InputOutputFilter(Filter):
 
         if need_value:
             value = self.process_filter(record, context)
+            if value is False:
+                # コンバータの process_filter で False を返す行はスキップされる
+                return
+
         else:
             value = record[self.del_attr]
 

@@ -19,7 +19,7 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} [-d] [-i <file>] [-o <file>] [--no-cleaning] <task>
+  {p} [-d] [-i <file>] [-o <file>] [--no-cleaning] [<task>]
   {p} mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
 
 Options:
@@ -53,29 +53,29 @@ templates/sightseeing_spots.csv
 
 
 def convert(args: dict):
-    import tablelinker.convertors.basics as basic_convertors
-    import tablelinker.convertors.extras as extra_convertors
-    basic_convertors.register()
-    extra_convertors.register()
-
     taskfile = args['<task>']
     need_cleaning = args['--no-cleaning'] is False
-    with open(taskfile, 'r') as jsonf:
-        logger.debug("Reading tasks from '{}'.".format(
-            taskfile))
-        try:
-            tasks = json.load(jsonf)
-        except json.decoder.JSONDecodeError as e:
-            logger.error((
-                "タスクファイル '{}' の JSON 表記が正しくありません。"
-                "json.decoder.JSONDecodeError: {}").format(taskfile, e))
-            sys.exit(-1)
+
+    if taskfile is None:
+        tasks = []
+    else:
+        with open(taskfile, 'r') as jsonf:
+            logger.debug("Reading tasks from '{}'.".format(
+                taskfile))
+            try:
+                tasks = json.load(jsonf)
+            except json.decoder.JSONDecodeError as e:
+                logger.error((
+                    "タスクファイル '{}' の JSON 表記が正しくありません。"
+                    "json.decoder.JSONDecodeError: {}").format(taskfile, e))
+                sys.exit(-1)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
             csv_in = args['--input']
         else:
             logger.debug("Reading csv data from STDIN...")
+            # sys.stdin は seek できないので、一時ファイルに保存する
             csv_in = os.path.join(tmpdir, 'input.csv')
             with open(csv_in, 'wb') as fout:
                 fout.write(sys.stdin.buffer.read())

@@ -33,6 +33,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.concat_col.ConcatColFilter
 
 .. autoclass::
+    tablelinker.convertors.basics.concat_col.ConcatColsFilter
+
+.. autoclass::
     tablelinker.convertors.basics.delete_col.DeleteColFilter
 
 .. autoclass::
@@ -105,7 +108,7 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 --------------
 
 拡張コンバータは辞書の読み込み等の前処理を行う必要があるため、
-先に ``tablelinker.useExtraConvertors()`` を実行してください。
+最初に利用する際に少し時間がかかることがあります。
 
 西暦和暦変換
 ^^^^^^^^^^^^

@@ -1,5 +1,5 @@
 {
-    "convertor": "concat",
+    "convertor": "concat_col",
     "params": {
         "input_attr_idx1": "都道府県名",
         "input_attr_idx2": "市区町村名",

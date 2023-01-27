@@ -1,8 +1,10 @@
 import csv
+import io
 from logging import getLogger
 import os
 import sys
 import tempfile
+from typing import Optional, Union
 
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -33,6 +35,7 @@ class Table(object):
     def __init__(
             self,
             file,
+            sheet: Optional[str] = None,
             is_tempfile: bool = False,
             need_cleaning: bool = True):
         """
@@ -41,8 +44,11 @@ class Table(object):
         Parameters
         ----------
         file: os.PathLike
-            入力 CSV データを含むファイルのパス、または
+            表形式 CSV データを含むファイルのパス、または
             CSV データを読みだせる file-like オブジェクト。
+        sheet: str, optional [None]
+            入力データに複数のシートが含まれる場合、対象とするシート名。
+            省略した場合、最初のシートを利用する。
         is_tempfile: bool [False]
             参照しているファイルが一時ファイルかどうかを
             指定するフラグ。
@@ -76,6 +82,7 @@ class Table(object):
           確実な場合、 False を指定することで高速に処理できる。
         """
         self.file = file
+        self.sheet = sheet
         self.is_tempfile = is_tempfile
         self.need_cleaning = need_cleaning
         self._reader = None
@@ -107,9 +114,12 @@ class Table(object):
         return self._reader.__exit__(
             exception_type, exception_value, traceback)
 
-    def open(self, as_dict: bool = False, **kwargs):
+    def open(
+            self,
+            as_dict: bool = False,
+            **kwargs):
         """
-        CSV データを開き、 csv.reader オブジェクトを返す。
+        表データを開き、 csv.reader オブジェクトを返す。
 
         Parameters
         ----------
@@ -156,9 +166,34 @@ class Table(object):
 
         Notes
         -----
+        - CSV、タブ区切りテキスト、 Excel に対応。
         - CSV データのクリーニングはこのメソッドが呼ばれたときに
           実行される。
         """
+        # エクセルファイルチェック
+        try:
+            df = pd.read_excel(self.file, sheet_name=self.sheet)
+            sheets = list(df.keys())
+            if self.sheet is None:
+                sheet = sheets[0]
+            elif self.sheet not in sheets:
+                logger.error((
+                    "対象にはシート '{}' は含まれていません。"
+                    "候補: ({})").format(",".join(sheets)))
+                raise ValueError("Invalid sheet name.")
+            else:
+                sheet = self.sheet
+
+            data = df[sheet].to_csv()
+            self._reader = core.CsvInputCollection(
+                file_or_path=io.StringIO(data),
+                need_cleaning=False).open(
+                    as_dict=as_dict, **kwargs)
+            return self
+
+        except (ValueError, TypeError, ) as e:
+            pass
+
         self._reader = core.CsvInputCollection(
             self.file,
             need_cleaning=self.need_cleaning).open(
@@ -362,6 +397,7 @@ class Table(object):
           変換結果ファイルも自動的に削除される。
         - ただしエラーや中断により途中で停止した場合には、
           変換結果ファイルが残る場合がある。
+        - 利用できるコンバータのリストは自動的に読み込む。
         """
         csv_out = tempfile.NamedTemporaryFile(
             delete=False,
@@ -370,6 +406,10 @@ class Table(object):
             self.file, need_cleaning=self.need_cleaning)
         output = core.CsvOutputCollection(csv_out)
         filter = core.filter_find_by(convertor)
+        if filter is None:
+            # 拡張コンバータも読み込み、もう一度確認する
+            self.useExtraConvertors()
+            filter = core.filter_find_by(convertor)
 
         if filter is None:
             raise ValueError("コンバータ '{}' は未登録です".format(

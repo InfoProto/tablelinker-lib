@@ -3,6 +3,8 @@ import os
 import re
 import sys
 
+import pytest
+
 from tablelinker import Table
 
 sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
@@ -39,34 +41,70 @@ def test_concat_col():
     table = Table(os.path.join(
         sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
     table = table.convert(
-        convertor="concat",
+        convertor="concat_col",
         params={
             "input_attr_idx1": "都道府県名",
             "input_attr_idx2": "市区町村名",
-            "separator": " ",
             "output_attr_name": "自治体名",
-            "delete_col": True
+            "output_attr_idx": "名称",
+            "separator": " "
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
-            assert len(row) == 29
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 31
             if lineno == 0:
-                # ヘッダから「都道府県名」「市区町村名」が削除され、
-                # 「自治体名」が追加されていることを確認
+                # ヘッダの「名称」列の前に「自治体名」が追加される
                 assert ",".join(row) == (
-                    "市区町村コード,NO,名称,名称_カナ,名称_英語,POIコード,"
-                    "住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
-                    "利用可能日時特記事項,料金(基本),料金(詳細),"
-                    "説明,説明_英語,アクセス方法,駐車場情報,"
-                    "バリアフリー情報,連絡先名称,連絡先電話番号,"
-                    "連絡先内線番号,画像,画像_ライセンス,URL,備考,自治体名"
+                    "市区町村コード,NO,都道府県名,市区町村名,自治体名,名称,"
+                    "名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,"
+                    "利用可能曜日,開始時間,終了時間,利用可能日時特記事項,"
+                    "料金(基本),料金(詳細),説明,説明_英語,アクセス方法,"
+                    "駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,"
+                    "連絡先内線番号,画像,画像_ライセンス,URL,備考"
                 )
 
             elif lineno > 0:
                 # 結合結果を確認
-                assert row[-1] == "山口県 柳井市"
+                assert row["自治体名"] == "山口県 柳井市"
+
+
+def test_concat_cols():
+    table = Table(os.path.join(
+        sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
+    table = table.convert(
+        convertor="concat_cols",
+        params={
+            "input_attr_idxs": [
+                "連絡先名称", "連絡先電話番号", "連絡先内線番号"
+            ],
+            "output_attr_name": "連絡先情報",
+            "output_attr_idx": "画像",
+            "separator": ";"
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 31
+            if lineno == 0:
+                # ヘッダの「画像」列の前に「連絡先情報」が追加される
+                assert ",".join(row) == (
+                    "市区町村コード,NO,都道府県名,市区町村名,名称,"
+                    "名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,"
+                    "利用可能曜日,開始時間,終了時間,利用可能日時特記事項,"
+                    "料金(基本),料金(詳細),説明,説明_英語,アクセス方法,"
+                    "駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,"
+                    "連絡先内線番号,連絡先情報,画像,画像_ライセンス,URL,備考"
+                )
+
+            elif lineno > 0:
+                # 結合結果を確認
+                assert row["連絡先情報"] == ";".join([
+                    row["連絡先名称"],
+                    row["連絡先電話番号"],
+                    row["連絡先内線番号"]])
 
 
 def test_delete_col():
@@ -169,6 +207,79 @@ def test_delete_pattern_match():
 
     # 出力行数をチェック
     assert lines == 51
+
+
+def test_generate_pk():
+    table = Table(os.path.join(
+        sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="generate_pk",
+        params={
+            "input_attr_idx": "観光スポット名称",
+            "output_attr_name": "pk",
+            "output_attr_idx": 0,
+        },
+    )
+
+    with table.open() as csv:
+        keys = {}
+        for lineno, row in enumerate(csv):
+            assert len(row) == 8
+            if lineno == 0:
+                # 先頭列に「pk」が追加されていることを確認
+                assert ",".join(row) == (
+                    "pk,観光スポット名称,所在地,緯度,経度,"
+                    "座標系,説明,八丈町ホームページ記載")
+
+            else:
+                # pk 欄には一意のキー文字列
+                assert len(row[0]) == 6
+                assert row[0] not in keys
+                keys[row[0]] = True
+
+
+def test_generate_pk_not_unique():
+    table = Table(os.path.join(
+        sample_dir, "hachijo_sightseeing.csv"))
+
+    with pytest.raises(ValueError) as excinfo:
+        table = table.convert(
+            convertor="generate_pk",
+            params={
+                "input_attr_idx": "座標系",
+                "output_attr_name": "pk",
+                "output_attr_idx": 0,
+            },
+        )
+
+    table = table.convert(
+        convertor="generate_pk",
+        params={
+            "input_attr_idx": "座標系",
+            "output_attr_name": "pk",
+            "output_attr_idx": 0,
+            "error_if_not_unique": False,
+            "skip_if_not_unique": True,
+        },
+    )
+
+    with table.open() as csv:
+        keys = {}
+        for lineno, row in enumerate(csv):
+            assert len(row) == 8
+            if lineno == 0:
+                # 先頭列に「pk」が追加されていることを確認
+                assert ",".join(row) == (
+                    "pk,観光スポット名称,所在地,緯度,経度,"
+                    "座標系,説明,八丈町ホームページ記載")
+
+            else:
+                # pk 欄には一意のキー文字列
+                assert len(row[0]) == 6
+                assert row[0] not in keys
+                keys[row[0]] = True
+
+        assert lineno == 1  # 先頭の行以外はスキップされる
 
 
 def test_insert_col():
