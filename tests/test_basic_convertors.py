@@ -107,6 +107,31 @@ def test_concat_cols():
                     row["連絡先内線番号"]])
 
 
+def test_concat_title():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="concat_title",
+        params={
+            "lines": 3,
+            "empty_value": "",
+            "separator": "",
+            "hierarchical_heading": True,
+        },
+    )
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 15
+            if lineno == 0:
+                # ヘッダ確認
+                assert ",".join(row) == (
+                    ",人口,出生数,死亡数,（再掲）乳児死亡数,"
+                    "（再掲）新生児死亡数,自　然増減数,"
+                    "死産数総数,死産数自然死産,死産数人工死産,"
+                    "周産期死亡数総数,周産期死亡数22週以後の死産数,"
+                    "周産期死亡数早期新生児死亡数,婚姻件数,離婚件数")
+
+
 def test_delete_col():
     table = Table(os.path.join(
         sample_dir, "hachijo_sightseeing.csv"))

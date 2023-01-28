@@ -19,8 +19,8 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>]
   {p} mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
+  {p} [convert] [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>...]
 
 Options:
   -h --help              このヘルプを表示
@@ -32,7 +32,7 @@ Options:
   --headers=<headers>    列名リスト（カンマ区切り）
 
 Parameters:
-  <task>        コンバータとパラメータを記述した JSON ファイル
+  <task>        タスクファイル（コンバータとパラメータを記述した JSON）
   <template>    表データのテンプレート CSV ファイル
 
 Examples:
@@ -54,22 +54,23 @@ templates/sightseeing_spots.csv
 
 
 def convert(args: dict):
-    taskfile = args['<task>']
+    taskfiles = args['<task>']
+    tasks = []
+
     skip_cleaning = bool(args['--no-cleaning'])
 
-    if taskfile is None:
-        tasks = []
-    else:
-        with open(taskfile, 'r') as jsonf:
-            logger.debug("Reading tasks from '{}'.".format(
-                taskfile))
-            try:
-                tasks = json.load(jsonf)
-            except json.decoder.JSONDecodeError as e:
-                logger.error((
-                    "タスクファイル '{}' の JSON 表記が正しくありません。"
-                    "json.decoder.JSONDecodeError: {}").format(taskfile, e))
-                sys.exit(-1)
+    if len(taskfiles) > 0:
+        for taskfile in taskfiles:
+            with open(taskfile, 'r') as jsonf:
+                logger.debug("Reading tasks from '{}'.".format(
+                    taskfile))
+                try:
+                    tasks.append(json.load(jsonf))
+                except json.decoder.JSONDecodeError as e:
+                    logger.error((
+                        "タスクファイル '{}' の JSON 表記が正しくありません。"
+                        "json.decoder.JSONDecodeError: {}").format(taskfile, e))
+                    sys.exit(-1)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
@@ -87,17 +88,18 @@ def convert(args: dict):
             sheet = args['--sheet'],
             skip_cleaning=skip_cleaning)
 
-        if isinstance(tasks, dict):
-            # コンバータが一つだけ指定されている場合
-            logger.debug("Running {}".format(tasks["convertor"]))
-            table = table.convert(
-                tasks["convertor"], tasks["params"])
-        elif isinstance(tasks, list):
-            # 複数のコンバータがリストで指定されている場合
-            for task in tasks:
+        for task in tasks:
+            if isinstance(task, dict):
+                # コンバータが一つだけ指定されている場合
                 logger.debug("Running {}".format(task["convertor"]))
                 table = table.convert(
                     task["convertor"], task["params"])
+            elif isinstance(task, list):
+                # 複数のコンバータがリストで指定されている場合
+                for t in task:
+                    logger.debug("Running {}".format(t["convertor"]))
+                    table = table.convert(
+                        t["convertor"], t["params"])
 
         # 結果を出力
         if args['--output'] is None:

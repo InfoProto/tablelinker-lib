@@ -4,7 +4,7 @@
 ====================
 
 Tablelinker モジュールをコマンドラインから呼び出すと、
-CSV ファイルの読み込みやクリーニング、さまざまな変換処理を
+表データの読み込みやクリーニング、さまざまな変換処理を
 コマンドのように実行できます。
 
 Python プログラムを書かずに CSV ファイルに対する変換処理を
@@ -12,11 +12,13 @@ Python プログラムを書かずに CSV ファイルに対する変換処理�
 
 .. code-block:: bash
 
-    $ python -m tablelinker
+    $ python -m tablelinker -h
     Usage:
       tablelinker -h
-      tablelinker [-d] [-i <file>] [-o <file>] [--no-cleaning] <task>
+      tablelinker [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>]
       tablelinker mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
+
+    ...
 
 このページでは、 Tablelinker モジュールを呼び出すコマンドの
 ``python -m tablelinker`` を便宜上「Tablelinker コマンド」と呼びます。
@@ -41,7 +43,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 
 .. code-block:: bash
 
-    $ python -m tablelinker [-d] [-i <file>] [-o <file>] [--no-cleaning] <task>
+    $ python -m tablelinker タスクファイル(後述)
 
 - サンプルデータ
 
@@ -58,9 +60,10 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 に記述しておいて、 Tablelinker コマンドの実行時に
 ``<task>`` パラメータとしてそのファイル名を指定します。
 
-例として、列名を変更する ``rename_col`` コンバータを利用し、
-0 列目の名前を「都道府県名」に変更する以下の内容のファイルを
-``task1.json`` という名前で作成します。
+例として、列名を変更する
+:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColFilter>`
+コンバータを利用し、0 列目の名前を「都道府県名」に変更する
+以下の内容のファイルを ``task1.json`` という名前で作成します。
 
 .. code-block:: json
 
@@ -74,8 +77,6 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 
 ``convertor`` には利用するコンバータ名を、``params`` には
 コンバータごとに定義されているパラメータを記述します。
-利用可能なコンバータおよびパラメータについては
-:ref:`convertor` を参照してください。
 
 .. note::
     Tablelinker コマンドでは、 ``convertor`` と ``params`` を含む
@@ -103,14 +104,15 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 コンバータの連続適用
 ^^^^^^^^^^^^^^^^^^^^
 
-上記の例のように、 Tablelinker コマンドは CSV データを
+上記の例のように、 Tablelinker コマンドは表データを
 標準入力から読み込み、変換結果を標準出力に表示するので、
 複数のタスクファイルを用意してパイプで接続すれば
 連続してコンバータを適用できます。
 
-列の選択と並び替えを行う ``reorder_cols`` コンバータを利用して、
-「都道府県名、人口、出生数、死亡数」の4列を抜き出すタスクファイル
-``task2.json`` を作成します。
+列の選択と並び替えを行う
+:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsFilter>`
+コンバータを利用して、「都道府県名」「人口」「出生数」「死亡数」の
+4列を抜き出すタスクファイル ``task2.json`` を作成します。
 
 .. code-block:: json
 
@@ -187,6 +189,12 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 同じ結果が得られます。このようによく利用する一連の変換処理を
 1つのタスクファイルにまとめておくと、簡単に再利用できて便利です。
 
+.. note::
+
+    利用可能なコンバータおよびパラメータについては
+    :ref:`convertor` を参照してください。
+
+
 コマンドラインオプション
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -199,7 +207,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
 - 入力ファイル指定
 
     ``-i <file>`` または ``--input=<file>`` を指定すると、
-    標準入力ではなく ``<file>`` から CSV データを読み込みます。
+    標準入力ではなく ``<file>`` から表データを読み込みます。
 
     つまり上記の ``task1.json`` を適用する処理は、次のように
     書いても同じです。 ::
@@ -213,25 +221,58 @@ Tablelinker コマンドは以下のオプションを指定できます。
 
 - クリーニング省略
 
-    ``--no-cleaning`` を指定すると、入力 CSV データに対する
+    ``--no-cleaning`` を指定すると、入力表データに対する
     クリーニング処理を実行しません。
 
-    デフォルトでは、入力 CSV データの文字エンコーディングや
-    フィールド区切り文字の自動判定、先頭部のコメントを
-    スキップするといったクリーニング処理を行います。
+    デフォルトでは、入力表データのファイル種別の判断や、
+    文字エンコーディング・フィールド区切り文字の自動判定、
+    先頭部のコメントをスキップするといったクリーニング処理を行います。
     そのため一度ファイル全体を読み込む必要があります。
 
-    入力 CSV が UTF-8 で記述され、カンマ区切りの CSV で
+    入力表データが UTF-8 で記述され、カンマ区切りの CSV で
     あることが事前に分かっている場合、クリーニング処理を
-    実行しないことで、使用するメモリや実行時間を節約できます。
+    実行しないことで使用するメモリや実行時間を節約できます。
 
-    上記の ``ma0300000.csv`` は Shift JIS なので、
+    しかし上記の ``ma0300000.csv`` は Shift JIS なので、
     このオプションを指定するとエラーになります。 ::
 
         $ cat ma030000.csv | python -m tablelinker --no-cleaning task1.json
         Traceback (most recent call last):
         ...
         UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97 in position 0: invalid start byte
+
+その他の Tips
+^^^^^^^^^^^^^
+
+- Excel ファイル入力
+
+    Tablelinker コマンドの入力となる表データには Excel ファイルも
+    利用できます。 ::
+
+        $ cat sample.xlsx | python -m tablelinker task1.json
+        または
+        $ python -m tablelinker -i sample.xlsx task1.json
+
+    Excel ファイルに複数のシートが含まれている場合、最初のシートが
+    選択されます。それ以外のシートを読み込みたい場合は
+    ``--sheet=シート名`` オプションで対象のシートを指定してください。
+
+        $ python -m tablelinker -i sample.xlsx --sheet=シート1 task1.json
+
+- Excel から CSV へ変換
+    タスクファイルを指定しないで Tablelinker コマンドを実行すると、
+    入力表データを CSV に変換してクリーニングした結果を出力します。
+
+    この機能を利用すると、 Excel ファイルを CSV に変換することができます。 ::
+
+        $ python -m tablelinker -i sample.xlsx
+
+- 複数のタスクファイルを指定
+
+    複数のタスクファイルを連続適用したい場合、上述したようにパイプで
+    接続する他、タスクファイル名を複数指定することもできます。 ::
+
+        $ python -m tablelinker -i ma030000.csv task1.json task2.json
 
 見出し列のマッピング
 --------------------
@@ -247,23 +288,24 @@ Tablelinker コマンドは以下のオプションを指定できます。
     からダウンロードできる ``xxxxxx_tourism.csv`` をテンプレートとして
     利用します。
 
-作成したい CSV と入力 CSV の列名が少し異なっていたり、
+作成したい CSV と入力表データの列名が少し異なっていたり、
 列の順番が入れ替わっている場合、定義した対応表に従って
-入力 CSV と出力 CSV の列を入れ替える ``mapping_cols`` 
+入力表データと出力 CSV の列を入れ替える
+:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsFilter>`
 コンバータを利用すれば、一括変換できます。
 
-しかし CSV ごとの対応表をゼロから作成するのは手間がかかります。
+しかし入力表ごとの対応表をゼロから作成するのは手間がかかります。
 そこで Tablelinker コマンドに ``mapping`` を指定すると、
-``mapping_cols`` コンバータ用のタスクを作成する機能を利用できます。
+``mapping_cols`` コンバータ用のタスクを作成することができます。
 
 たとえば `「八丈島の主な観光スポット一覧（CSVファイル）」 <https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000002/resource/080dfc76-6027-4681-a2f9-dd4b40a06b13>`_ からダウンロードした
 ``sightseeing.csv`` を、デジタル庁の推奨データセット
 「5 観光施設一覧」の `CSV <https://www.digital.go.jp/assets/contents/node/basic_page/field_ref_resources/0066e8a8-6734-44ab-a9a9-8e09ba9cb508/xxxxxx_tourism.csv>`_ 
 からダウンロードした ``xxxxxx_tourism.csv`` の形式に合わせることを考えます。
 
-まず次のコマンドで、 ``mapping_cols`` コンバータを利用して
-``sightseeing.csv`` を ``xxxxxx_tourism.csv`` に合わせるタスクの
-たたき台を作成します。
+まず次のコマンドで、``sightseeing.csv`` を ``xxxxxx_tourism.csv`` に合わせる
+:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsFilter>`
+コンバータ用タスクのたたき台を作成します。
 
 .. code-block:: bash
 
@@ -307,14 +349,14 @@ Tablelinker コマンドは以下のオプションを指定できます。
     }
 
 ``column_map`` が入力列と出力列の対応表で、左側（キー）が
-出力列名、右側（値）が入力列名です。
-値が ``null`` になっている列は、入力 CSV に対応する列が
+出力列名、右側（値）が入力列名を表します。
+値が ``null`` になっている列は、入力表データに対応する列が
 見つからなかったことを意味します。
 
 「緯度」「経度」「説明」列は、同じ名前の列がテンプレートにも
 存在するのでそのままマップされます。また、「観光スポット名称」列が
 「名称」列に、「所在地」列が「住所」列にマップされています。
-このマッピングには列名の類似度が用いられています。
+このマッピングには列名の類似度を用いています。
 
 この結果をタスクファイル ``mapping_task.json`` に保存して、
 手作業で修正します。ここでは「八丈島ホームページ記載」は
@@ -384,7 +426,7 @@ Tablelinker コマンドの mapping モードでは以下のオプションを�
 - 入力ファイル指定
 
     ``-i <file>`` または ``--input=<file>`` を指定すると、
-    標準入力ではなく ``<file>`` から CSV データを読み込みます。
+    標準入力ではなく ``<file>`` から表データを読み込みます。
 
 - 出力ファイル指定
 

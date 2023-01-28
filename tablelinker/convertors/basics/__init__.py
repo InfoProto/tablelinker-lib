@@ -3,6 +3,7 @@ from ..core import filters
 from . import (
     calc_col,
     concat_col,
+    concat_title,
     delete_col,
     delete_row,
     generate_pk,
@@ -21,6 +22,7 @@ selectable_filters = (
     calc_col.CalcColFilter,
     concat_col.ConcatColFilter,
     concat_col.ConcatColsFilter,
+    concat_title.ConcatTitleFilter,
     delete_col.DeleteColFilter,
     delete_col.DeleteColsFilter,
     delete_row.StringMatchDeleteRowFilter,

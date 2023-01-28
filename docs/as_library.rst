@@ -4,14 +4,13 @@
 ====================
 
 Tablelinker を Python アプリケーションやスクリプトに読み込むと、
-CSV ファイルの読み込みやクリーニングなどの処理を
-簡単に実装できます。
+表データの読み込みやクリーニングなどの処理を簡単に実装できます。
 
 変換した表データは CSV ファイルとして保存したり、
-一行ずつ取り出してコード内で利用できます。
+一行ずつ取り出して Python コード内で利用できます。
 
 より高度な使い方として、 `pandas <http://pandas.pydata.org/>`_
-の DataFrame から表データとして Tablelinker に読み込んだり、
+の DataFrame を Tablelinker に読み込んだり、
 Tablelinker で変換した結果の表データを DataFrame に
 変換することもできます。
 詳細は :ref:`use_with_pandas` を参照してください。
@@ -25,9 +24,9 @@ Tablelinker で変換した結果の表データを DataFrame に
 CSV を開く
 ----------
 
-表データは Table クラスのオブジェクトとして管理します。
-CSV ファイルから Table オブジェクトを作成するコードの例を
-示します。
+表データは :py:class:`~tablelinker.table.Table` クラスの
+オブジェクトとして管理します。
+CSV ファイルから Table オブジェクトを作成するコードの例を示します。
 
 .. code-block:: python
 
@@ -43,10 +42,12 @@ CSV ファイルから Table オブジェクトを作成するコードの例を
 表データの表示
 --------------
 
-``table`` が参照している CSV ファイルを表示するには、 ``write()``
+:py:class:`~tablelinker.table.Table` オブジェクトが管理している
+CSV ファイルを表示するには、 :py:meth:`~tablelinker.table.Table.write`
 メソッドを呼び出します。
-``lines`` オプションパラメータで表示する行数を制限できます
-（省略すると全行表示します）。
+
+``lines`` オプションパラメータで表示する
+行数を制限できます（省略すると全行表示します）。
 
 .. code-block:: python
 
@@ -65,26 +66,32 @@ CSV ファイルから Table オブジェクトを作成するコードの例を
 コンバータの適用
 ----------------
 
-Table オブジェクトに :ref:`convertor` を適用することで、
-さまざまな変換処理を行うことができます。
-コンバータを適用するには ``convert()`` メソッドを呼び出します。
+:py:class:`~tablelinker.table.Table` オブジェクトに
+:ref:`convertor` を適用することで、さまざまな変換処理を行うことができます。
+コンバータを適用するには :py:meth:`~tablelinker.table.Table.convert`
+メソッドを呼び出します。
+
 メソッドのパラメータとして、利用するコンバータ名を表す ``convertor`` と、
 そのコンバータに渡すパラメータ ``params`` を指定する必要があります。
 
-まず先頭の列名が空欄なので、列名を変更する ``rename_col`` コンバータを
-利用して「都道府県名」に変更します。
+まず先頭の列名が空欄なので、列名を変更する
+:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColFilter>`
+コンバータを利用して「都道府県名」に変更します。
 
 .. code-block:: python
 
     >>> table = table.convert(
     ...     convertor='rename_col',
     ...     params={
-    ...         'input_attr_idx':0,
-    ...         'new_col_name':'都道府県名',
-    ...     })
+    ...         'input_attr_idx': 0,
+    ...         'output_attr_name': '都道府県名',
+    ...    }
+    ... )
 
-次に列の選択と並び替えを行う ``reorder_cols`` コンバータを利用して
-「都道府県名、人口、出生数、死亡数」の4列を抜き出します。
+次に列の選択と並び替えを行う
+:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsFilter>`
+コンバータを利用して、「都道府県名」「人口」「出生数」「死亡数」の
+4列を抜き出します。
 
 .. code-block:: python
 
@@ -94,13 +101,16 @@ Table オブジェクトに :ref:`convertor` を適用することで、
     ...         'column_list':['都道府県名','人口','出生数','死亡数'],
     ...     })
 
-利用できるコンバータおよびパラメータについては
-:ref:`convertor` を参照してください。
+.. note::
+
+    利用できるコンバータおよびパラメータについては
+    :ref:`convertor` を参照してください。
 
 CSV ファイルに保存
 ------------------
 
-変換した結果を ``save()`` メソッドで CSV ファイルに保存します。
+変換した結果を :py:meth:`~tablelinker.table.Table.save()`
+メソッドで CSV ファイルに保存します。
 
 .. code-block:: python
 
@@ -126,11 +136,12 @@ CSV ファイルに保存
 表データにアクセス
 ------------------
 
-Python プログラム内で、 table オブジェクトが参照する
-表データを CSV ファイルに保存せずに利用したい場合、
-``open()`` メソッドで csv.reader オブジェクトを取得できます。
+Python プログラム内で、Table オブジェクトが参照する表データに
+ファイルを経由せずに直接アクセスしたい場合、
+:py:meth:`~tablelinker.table.Table.open` メソッドで
+``csv.reader`` オブジェクトを取得できます。
 
-都道府県名が空欄の行をスキップするコードは次のように書けます。
+たとえば都道府県名が空欄の行をスキップするコードは次のように書けます。
 
 .. code-block:: python
 
@@ -161,11 +172,11 @@ Tablelinker のコンバータにはない複雑な変換処理を
 .. note::
 
     Excel ファイルや RDBMS の入出力に必要なライブラリ
-    （openpyxl, xlrd, sqlalchemy など）は
-    別途インストールする必要があります。
+    （xlrd, sqlalchemy など）を別途インストールする必要があります。
 
 pandas.DataFrame から Table オブジェクトを作成するには
-Table クラスメソッド ``fromPandas()`` を利用します。
+Table クラスメソッド
+:py:meth:`~tablelinker.table.Table.fromPandas` を利用します。
 
 .. code-block:: python
 
@@ -182,7 +193,7 @@ Table クラスメソッド ``fromPandas()`` を利用します。
     岩手県,1203203
 
 Table オブジェクトから pandas.DataFrame を作成するには、
-``toPandas()`` メソッドを呼び出します。
+:py:meth:`~tablelinker.table.Table.toPandas` メソッドを呼び出します。
 
 .. code-block:: python
 
@@ -192,6 +203,8 @@ Table オブジェクトから pandas.DataFrame を作成するには、
     >>> new_df.to_json(force_ascii=False)
     '{"都道府県名":{"0":"北海道","1":"青森県","2":"岩手県"},"人口":{"0":5188441,"1":1232227,"2":1203203}}'
 
-DataFrame オブジェクトが利用可能なメソッドは 
-`Pandas API reference (DataFrame) <https://pandas.pydata.org/docs/reference/frame.html>`_
-を参照してください。
+.. note::
+
+    DataFrame オブジェクトが利用可能なメソッドは 
+    `Pandas API reference (DataFrame) <https://pandas.pydata.org/docs/reference/frame.html>`_
+    を参照してください。

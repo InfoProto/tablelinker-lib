@@ -70,6 +70,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 ^^^^^^
 
 .. autoclass::
+    tablelinker.convertors.basics.concat_title.ConcatTitleFilter
+
+.. autoclass::
     tablelinker.convertors.basics.delete_row.StringMatchDeleteRowFilter
 
 .. autoclass::
@@ -148,4 +151,3 @@ MTab アノテーション
 
 .. autoclass::
     tablelinker.convertors.extras.mapping_col.AutoMappingColsFilter
-
