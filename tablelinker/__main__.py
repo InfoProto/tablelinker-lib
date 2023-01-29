@@ -13,41 +13,44 @@ from tablelinker import Table
 logger = getLogger(__name__)
 
 HELP = """
-'tablelinker' は CSV 形式の表データを読み込み、
+'tablelinker' は表データ（CSV, TSV, Excel）を読み込み、
 さまざまなコンバータを適用して変換・加工し、
 目的のフォーマットの表データを生成するツールです。
 
 Usage:
   {p} -h
-  {p} mapping [-d] [-i <file>] [-o <file>] (<template>|--headers=<headers>)
+  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-a]\
+ ([-t <sheet>] <template>|--headers=<headers>)
   {p} [convert] [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>...]
 
 Options:
   -h --help              このヘルプを表示
   -d --debug             デバッグメッセージを表示
   -i, --input=<file>     入力ファイルを指定（省略時は標準入力）
-  -s, --sheet=<sheet>    入力ファイルのうち対象とするシート（省略時は先頭）
+  -s, --sheet=<sheet>    入力ファイルのうち対象とするシート名（省略時は先頭）
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
+  -a, --auto             マッピング情報ではなくマッピング結果を出力する
+  -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
   --headers=<headers>    列名リスト（カンマ区切り）
 
 Parameters:
   <task>        タスクファイル（コンバータとパラメータを記述した JSON）
-  <template>    表データのテンプレート CSV ファイル
+  <template>    テンプレート列を含む表データファイル
 
 Examples:
 
-- CSV ファイルを変換して標準出力に表示します
+- CSV ファイル ma030000.csv を変換して標準出力に表示します
 
-  python -m tablelinker -i sample/ma0300000.csv sample/task.json
+  python -m tablelinker -i ma030000.csv task.json
 
-  適用するコンバータやパラメータは <task> に JSON 形式で記述します。
+  適用するコンバータやパラメータは task.json ファイルに JSON 形式で記述します。
 
-- CSV ファイルをテンプレートに合わせるマッピング情報を生成します
+- Excel ファイル hachijo_sightseeing.xlsx をテンプレート\
+  xxxxxx_tourism.csv に合わせるマッピング情報を生成します
 
   python -m tablelinker mapping \
--i sample/sakurai_sightseeing_spots_sjis.csv \
-templates/sightseeing_spots.csv
+-i hachijo_sightseeing.xlsx templates/xxxxxx_tourism.csv
 
   マッピング情報はタスクとして利用できる JSON 形式で出力されます。
 """.format(p='tablelinker')
@@ -117,6 +120,8 @@ def mapping(args: dict):
         if args['--input'] is not None:
             csv_in = args['--input']
         else:
+            # 標準入力のデータを一時ファイルに保存する
+            # Note: stdin は seek() が利用できないため
             logger.debug("Reading csv data from STDIN...")
             csv_in = os.path.join(tmpdir, 'input.csv')
             with open(csv_in, 'wb') as fout:
@@ -127,17 +132,19 @@ def mapping(args: dict):
         th = 20
 
         # 入力 CSV の見出し行を取得
-        with core.CsvInputCollection(csv_in) as f:
-            headers = f.next()
+        table = Table(csv_in, sheet=args['--sheet'])
+        with table.open() as reader:
+            headers = reader.__next__()
 
         # テンプレート CSV の見出し行を取得
         if args['<template>']:
-            # ファイル名指定
-            with open(
-                    args['<template>'],
-                    mode='r', newline='') as f:
-                reader = csv.reader(f)
+            # ファイル名を指定
+            template = Table(
+                file=args['<template>'],
+                sheet=args['--template-sheet'])
+            with template.open() as reader:
                 template_headers = reader.__next__()
+
         elif args['--headers']:
             with io.StringIO(
                     args['--headers'], newline='') as stream:
@@ -160,17 +167,36 @@ def mapping(args: dict):
             else:
                 mapping[output] = header
 
-        # 結果出力
-        result = json.dumps({
-            "convertor": "mapping_cols",
-            "params": {"column_map": dict(mapping)},
-        }, indent=2, ensure_ascii=False)
+        if args["--auto"] is False:
+            # 結果出力
+            result = json.dumps({
+                "convertor": "mapping_cols",
+                "params": {"column_map": dict(mapping)},
+            }, indent=2, ensure_ascii=False)
 
-        if args['--output']:
-            with open(args['--output'], 'w') as f:
-                print(result, file=f)
+            if args['--output']:
+                with open(args['--output'], 'w') as f:
+                    print(result, file=f)
+            else:
+                print(result)
+
         else:
-            print(result)
+            # "--auto" オプションが指定されている場合は変換結果を出力
+            table = table.convert(
+                convertor='mapping_cols',
+                params={'column_map':dict(mapping)})
+            if args['--output']:
+                with open(args['--output'], 'w', newline='') as fout,\
+                        table.open() as reader:
+                    writer = csv.writer(fout)
+                    for row in reader:
+                        writer.writerow(row)
+
+            else:
+                with table.open() as reader:
+                    writer = csv.writer(sys.stdout)
+                    for row in reader:
+                        writer.writerow(row)
 
 
 if __name__ == '__main__':
