@@ -85,7 +85,7 @@ def convert(args: dict):
         logger.debug("Start convertor(s)...")
         table = Table(
             csv_in,
-            sheet = args['--sheet'],
+            sheet=args['--sheet'],
             skip_cleaning=skip_cleaning)
 
         for task in tasks:

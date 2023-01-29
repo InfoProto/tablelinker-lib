@@ -17,7 +17,7 @@ class AutoMappingColsFilter(filters.Filter):
         * "threshold": 列をマッピングするしきい値 [40]
 
     注釈
-        - 元の列のうち、マッピング先の列との類似度が ``threshold`` 
+        - 元の列のうち、マッピング先の列との類似度が ``threshold``
           以下のものは削除されます。
         - ``threshold`` は 0 - 100 の整数で指定します。
           値が大きいほど一致度が高いものしか残りません。

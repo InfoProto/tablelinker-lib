@@ -159,7 +159,8 @@ class PatternMatchSelectRowFilter(filters.Filter):
         """
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="対象列", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx", label="対象列", required=True),
             params.StringParam("pattern", label="正規表現", required=True),
         )
 
@@ -175,7 +176,6 @@ class PatternMatchSelectRowFilter(filters.Filter):
 
     def initial_context(self, context):
         super().initial_context(context)
-        headers = context.get_data("headers")
         self.re_pattern = re.compile(context.get_param('pattern'))
 
     def process_record(self, record, context):

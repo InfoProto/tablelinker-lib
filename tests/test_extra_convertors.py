@@ -1,7 +1,6 @@
 import io
 import os
 import re
-import sys
 
 from tablelinker import Table
 

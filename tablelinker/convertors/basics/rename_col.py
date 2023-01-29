@@ -1,4 +1,8 @@
+from logging import getLogger
+
 from ..core import filters, params
+
+logger = getLogger(__name__)
 
 
 class RenameColFilter(filters.Filter):

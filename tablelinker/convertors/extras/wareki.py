@@ -72,7 +72,7 @@ class ToSeirekiFilter(filters.InputOutputFilter):
             try:
                 yy = "{:d}年".format(self.j2w.convert(target[0]))
                 result = result.replace(target[0], yy)
-            except ValueError as e:
+            except ValueError:
                 # 和暦ではない
                 continue
 
@@ -152,7 +152,7 @@ class ToWarekiFilter(filters.InputOutputFilter):
                     yy += "年"
 
                 result = result.replace(target[0], yy)
-            except ValueError as e:
+            except ValueError:
                 # 西暦ではない
                 continue
 

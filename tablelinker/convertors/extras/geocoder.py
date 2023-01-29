@@ -136,7 +136,7 @@ class ToCodeFilter(filters.InputOutputFilter):
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         self.with_check_digit = context.get_param("with_check_digit")
-        jageocoder.set_search_config(target_area=self.within) 
+        jageocoder.set_search_config(target_area=self.within)
 
     def process_filter(self, record, context):
         result = self.default
@@ -250,7 +250,7 @@ class ToPrefectureFilter(filters.InputOutputFilter):
         super().initial_context(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
-        jageocoder.set_search_config(target_area=self.within) 
+        jageocoder.set_search_config(target_area=self.within)
 
     def process_filter(self, record, context):
         result = self.default
@@ -352,7 +352,7 @@ class ToMunicipalityFilter(filters.InputOutputFilter):
         super().initial_context(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
-        jageocoder.set_search_config(target_area=self.within) 
+        jageocoder.set_search_config(target_area=self.within)
 
     def process_filter(self, record, context):
         result = self.default
@@ -369,7 +369,7 @@ class ToMunicipalityFilter(filters.InputOutputFilter):
 
         except RuntimeError as e:
             logger.error(e)
-            result = default
+            result = self.default
 
         return result
 
@@ -461,7 +461,7 @@ class ToLatLongFilter(filters.InputOutputsFilter):
         super().initial_context(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
-        jageocoder.set_search_config(target_area=self.within) 
+        jageocoder.set_search_config(target_area=self.within)
 
         # 出力列名が3つ指定されていることを確認
         self.output_attr_names = context.get_param("output_attr_names")
@@ -491,9 +491,12 @@ class ToLatLongFilter(filters.InputOutputsFilter):
         try:
             geocode = jageocoder.search(value)
             if geocode["candidates"]:
-                lats = [str(candidate["y"]) for candidate in geocode["candidates"]]
-                lons = [str(candidate["x"]) for candidate in geocode["candidates"]]
-                lvls = [str(candidate["level"]) for candidate in geocode["candidates"]]
+                lats = [str(candidate["y"])
+                        for candidate in geocode["candidates"]]
+                lons = [str(candidate["x"])
+                        for candidate in geocode["candidates"]]
+                lvls = [str(candidate["level"])
+                        for candidate in geocode["candidates"]]
                 result = [",".join(lats), ",".join(lons), ",".join(lvls)]
         except RuntimeError as e:
             logger.error(e)

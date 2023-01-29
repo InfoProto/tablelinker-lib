@@ -1,7 +1,6 @@
 import io
 import os
 import re
-import sys
 
 import pytest
 
@@ -267,7 +266,7 @@ def test_generate_pk_not_unique():
     table = Table(os.path.join(
         sample_dir, "hachijo_sightseeing.csv"))
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         table = table.convert(
             convertor="generate_pk",
             params={

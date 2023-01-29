@@ -4,7 +4,7 @@ from logging import getLogger
 import os
 import sys
 import tempfile
-from typing import Optional, Union
+from typing import Optional
 
 import pandas as pd
 from pandas.core.frame import DataFrame

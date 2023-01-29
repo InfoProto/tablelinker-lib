@@ -1,8 +1,6 @@
 import csv
 import io
 import os
-import re
-import sys
 import tempfile
 
 import pytest
@@ -31,7 +29,7 @@ def test_excel_open():
     table = Table(
         file=os.path.join(sample_dir, "hachijo_sightseeing.xlsx"),
         sheet="その他")
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         table.open()
 
     # 存在するシート名を指定して Excel ファイルを開く

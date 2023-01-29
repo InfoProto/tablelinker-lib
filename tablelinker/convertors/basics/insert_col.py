@@ -1,4 +1,8 @@
+from logging import getLogger
+
 from ..core import filters, params
+
+logger = getLogger(__name__)
 
 
 class InsertColFilter(filters.Filter):
@@ -201,5 +205,5 @@ class InsertColsFilter(filters.Filter):
 
     def insert_list(self, output_attr_idx, value_list, target_list):
         new_list = target_list[0:output_attr_idx] + value_list \
-                + target_list[output_attr_idx:]
+            + target_list[output_attr_idx:]
         return new_list

@@ -65,11 +65,32 @@ class ConcatColFilter(filters.Filter):
         help_text = ""
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx1", label="対象列1", required=True),
-            params.InputAttributeParam("input_attr_idx2", label="対象列2", required=True),
-            params.OutputAttributeParam("output_attr_name", label="新しい列名"),
-            params.AttributeParam("output_attr_idx", label="出力する位置"),
-            params.StringParam("separator", label="区切り文字", default_value=""),
+            params.InputAttributeParam(
+                "input_attr_idx1",
+                label="対象列1",
+                required=True
+            ),
+            params.InputAttributeParam(
+                "input_attr_idx2",
+                label="対象列2",
+                required=True
+            ),
+            params.OutputAttributeParam(
+                "output_attr_name",
+                label="新しい列名",
+                required=False
+            ),
+            params.AttributeParam(
+                "output_attr_idx",
+                label="出力する位置",
+                required=False
+            ),
+            params.StringParam(
+                "separator",
+                label="区切り文字",
+                required=False,
+                default_value=""
+            ),
         )
 
     @classmethod
@@ -84,30 +105,45 @@ class ConcatColFilter(filters.Filter):
 
     def initial_context(self, context):
         super().initial_context(context)
+        headers = context.get_data("headers")
+
         self.attr1 = context.get_param("input_attr_idx1")
         self.attr2 = context.get_param("input_attr_idx2")
         self.output_attr_name = context.get_param("output_attr_name")
         self.output_attr_idx = context.get_param("output_attr_idx")
         self.separator = context.get_param("separator")
-        self.overwrite = False
+        self.del_attr = None
 
         if self.output_attr_name is None:
-            headers = context.get_data("headers")
-            self.output_attr_name = self.separator.join(
-                [headers[self.attr1], headers[self.attr2]])
+            self.output_attr_name = concat(
+                [headers[self.attr1], headers[self.attr2]],
+                self.separator)
 
-    def process_header(self, headers, context):
-        # 出力列名が存在するかどうか調べる
+        # 出力列名が存在するかどうかを確認
         try:
             idx = headers.index(self.output_attr_name)
-            self.overwrite = True
-            headers[self.output_attr_idx] = self.output_attr_name
+            if self.output_attr_idx is None:
+                self.output_attr_idx = idx
+
+            if idx < self.output_attr_idx:
+                self.output_attr_idx -= 1
+                self.del_attr = idx
+            elif idx > self.output_attr_idx:
+                self.del_attr = idx
 
         except ValueError:
-            # 存在しない場合は新規列
-            self.overwrite = False
-            headers.insert(
-                self.output_attr_idx, self.output_attr_name)
+            # 存在しない場合
+            if self.output_attr_idx is None or \
+                    self.output_attr_idx > len(headers):
+                self.output_attr_idx = len(headers)
+
+    def process_header(self, headers, context):
+        if self.del_attr:
+            del headers[self.del_attr]
+
+        headers.insert(
+            self.output_attr_idx,
+            self.output_attr_name)
 
         context.output(headers)
 
@@ -116,10 +152,12 @@ class ConcatColFilter(filters.Filter):
         concated_value = concat(
             value_list, separator=self.separator)
 
-        if self.overwrite:
-            record[self.output_attr_idx] = concated_value
-        else:
-            record.insert(self.output_attr_idx, concated_value)
+        if self.del_attr:
+            del record[self.del_attr]
+
+        record.insert(
+            self.output_attr_idx,
+            concated_value)
 
         context.output(record)
 
@@ -205,28 +243,44 @@ class ConcatColsFilter(filters.Filter):
 
     def initial_context(self, context):
         super().initial_context(context)
+        headers = context.get_data("headers")
+
         self.input_attr_idxs = context.get_param("input_attr_idxs")
         self.output_attr_name = context.get_param("output_attr_name")
         self.output_attr_idx = context.get_param("output_attr_idx")
         self.separator = context.get_param("separator")
+        self.del_attr = None
 
         if self.output_attr_name is None:
-            headers = context.get_data("headers")
-            self.output_attr_name = self.separator.join([
-                headers[x] for x in self.input_attr_idxs])
+            self.output_attr_name = concat([
+                headers[x] for x in self.input_attr_idxs],
+                self.separator)
 
-    def process_header(self, headers, context):
-        # 出力列名が存在するかどうか調べる
+        # 出力列名が存在するかどうかを確認
         try:
             idx = headers.index(self.output_attr_name)
-            self.overwrite = True
-            headers[self.output_attr_idx] = self.output_attr_name
+            if self.output_attr_idx is None:
+                self.output_attr_idx = idx
+
+            if idx < self.output_attr_idx:
+                self.output_attr_idx -= 1
+                self.del_attr = idx
+            elif idx > self.output_attr_idx:
+                self.del_attr = idx
 
         except ValueError:
-            # 存在しない場合は新規列
-            self.overwrite = False
-            headers.insert(
-                self.output_attr_idx, self.output_attr_name)
+            # 存在しない場合
+            if self.output_attr_idx is None or \
+                    self.output_attr_idx > len(headers):
+                self.output_attr_idx = len(headers)
+
+    def process_header(self, headers, context):
+        if self.del_attr:
+            del headers[self.del_attr]
+
+        headers.insert(
+            self.output_attr_idx,
+            self.output_attr_name)
 
         context.output(headers)
 
@@ -235,9 +289,11 @@ class ConcatColsFilter(filters.Filter):
         concated_value = concat(
             value_list, separator=self.separator)
 
-        if self.overwrite:
-            record[self.output_attr_idx] = concated_value
-        else:
-            record.insert(self.output_attr_idx, concated_value)
+        if self.del_attr:
+            del record[self.del_attr]
+
+        record.insert(
+            self.output_attr_idx,
+            concated_value)
 
         context.output(record)

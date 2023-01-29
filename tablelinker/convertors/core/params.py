@@ -111,7 +111,8 @@ class Param(ABC):
             r = (
                 validator(value, errors, input=input, output=output)
                 if callable(validator)
-                else validator.valid(value, errors, self, input=input, output=output)
+                else validator.valid(
+                    value, errors, self, input=input, output=output)
             )
             if r is False:
                 result = False
@@ -172,7 +173,13 @@ class EnumsParam(Param):
     class Meta:
         type = "enums"
 
-    def __init__(self, *args, enums=None, labels=None, default_value: None, **kwargs):
+    def __init__(
+            self,
+            *args,
+            enums=None,
+            labels=None,
+            default_value: None,
+            **kwargs):
         """
         :enums: Enumクラス 例:class Xxxx(Enum):...
         :enums_labels: Enumsのラベルハッシュ
@@ -187,7 +194,9 @@ class EnumsParam(Param):
 
     @property
     def arguments(self):
-        enum_values = [{"value": str(enum.value), "label": self.labels[enum]} for enum in self.enums]
+        enum_values = [{
+            "value": str(enum.value),
+            "label": self.labels[enum]} for enum in self.enums]
         return {
             "enums": json.dumps(enum_values),
         }

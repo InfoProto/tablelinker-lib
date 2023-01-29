@@ -96,7 +96,7 @@ class ToHankakuFilter(filters.InputOutputFilter):
         self.kana = context.get_param("kana")
         self.ascii = context.get_param("ascii")
         self.digit = context.get_param("digit")
-        self.ignore_chars = context.get_param("ignore_chars") 
+        self.ignore_chars = context.get_param("ignore_chars")
 
     def process_filter(self, record, context):
         return jaconv.z2h(
@@ -194,7 +194,7 @@ class ToZenkakuFilter(filters.InputOutputFilter):
         self.kana = context.get_param("kana")
         self.ascii = context.get_param("ascii")
         self.digit = context.get_param("digit")
-        self.ignore_chars = context.get_param("ignore_chars") 
+        self.ignore_chars = context.get_param("ignore_chars")
 
     def process_filter(self, record, context):
         return jaconv.h2z(

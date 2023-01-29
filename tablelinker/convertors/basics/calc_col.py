@@ -85,14 +85,32 @@ class CalcColFilter(filters.Filter):
 
         #
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx1", label="対象列1", required=True),
-            params.InputAttributeParam("input_attr_idx2", label="対象列2", required=True),
-            params.StringParam("output_attr_name", label="新しい列名"),
-            params.EnumsParam(
-                "operator", label="演算子", enums=Calculation,
-                labels=CalculationLabels, default_value=Calculation.Add
+            params.InputAttributeParam(
+                "input_attr_idx1",
+                label="対象列1",
+                required=True
             ),
-            params.BooleanParam("delete_col", label="元の列を消しますか？", default_value=False),
+            params.InputAttributeParam(
+                "input_attr_idx2",
+                label="対象列2",
+                required=True
+            ),
+            params.StringParam(
+                "output_attr_name",
+                label="新しい列名"
+            ),
+            params.EnumsParam(
+                "operator",
+                label="演算子",
+                enums=Calculation,
+                labels=CalculationLabels,
+                default_value=Calculation.Add
+            ),
+            params.BooleanParam(
+                "delete_col",
+                label="元の列を消しますか？",
+                default_value=False
+            ),
         )
 
     @classmethod

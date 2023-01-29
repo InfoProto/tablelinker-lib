@@ -70,11 +70,13 @@ class MoveColFilter(filters.Filter):
         if self.output_attr_idx > self.input_attr_idx:
             self.output_attr_idx -= 1
 
-        headers = self.move_list(self.input_attr_idx, self.output_attr_idx, headers)
+        headers = self.move_list(
+            self.input_attr_idx, self.output_attr_idx, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        record = self.move_list(self.input_attr_idx, self.output_attr_idx, record)
+        record = self.move_list(
+            self.input_attr_idx, self.output_attr_idx, record)
         context.output(record)
 
     def move_list(self, input_attr_idx, output_attr_idx, target_list):

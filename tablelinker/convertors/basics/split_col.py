@@ -71,8 +71,6 @@ class SplitColFilter(filters.Filter):
                 description="文字列を分割する区切り文字を指定します。",
                 help_text="「東京都,千葉県」の場合は、「,」になります。",
             ),
-            # params.AttributeParam("attr", label="対象列", required=True),
-            # params.StringParam("output_attr_name", label="新しい列名", help_text="新しく生成する列の名称です。"),
         )
 
     @classmethod
@@ -100,7 +98,7 @@ class SplitColFilter(filters.Filter):
                 input_header = headers[self.input_attr_idx]
                 self.output_attr_idxs[i] = len(self.headers)
                 self.headers.append(f"{input_header}_{counter:d}")
-                counter +=1
+                counter += 1
 
         context.output(self.headers)
 
@@ -108,7 +106,7 @@ class SplitColFilter(filters.Filter):
         original = record[self.input_attr_idx]
         splits = self.re_separator.split(
             original, maxsplit=len(self.output_attr_idxs) - 1)
-        
+
         new_record = record + [""] * (len(self.headers) - len(record))
         for i, new_val in enumerate(splits):
             new_record[self.output_attr_idxs[i]] = new_val

@@ -11,17 +11,24 @@ class FilterMeta(object):
         self.key = meta.key
         self.name = meta.name
         self.description = meta.description
-        self.message = meta.message if hasattr(meta, "message") else meta.description or ""
+        self.message = getattr(
+            meta, "message", getattr(meta, "description", ""))
         self.help_text = meta.help_text
         self.params = meta.params
 
     @property
     def input_params(self):
-        return [param for param in self.params if param.Meta.type == "input-attribute"]
+        return [
+            param for param in self.params
+            if param.Meta.type == "input-attribute"
+        ]
 
     @property
     def output_params(self):
-        return [param for param in self.params if param.Meta.type == "output-attribute"]
+        return [
+            param for param in self.params
+            if param.Meta.type == "output-attribute"
+        ]
 
 
 class Filter(ABC):
@@ -487,7 +494,10 @@ def filter_meta_list(attrs=[]):
     適用可能なフィルタのメタ情報を取得します。
     """
     _attrs = attrs if attrs is not None else []
-    return [filter.meta() for filter in filter_all() if filter.can_apply(_attrs)]
+    return [
+        filter.meta() for filter in filter_all()
+        if filter.can_apply(_attrs)
+    ]
 
 
 def filter_keys():

@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import tablelinker
+import tablelinker  # noqa
 project = 'tablelinker'
 copyright = '2023, NII-CPS'
 author = 'NII-CPS'

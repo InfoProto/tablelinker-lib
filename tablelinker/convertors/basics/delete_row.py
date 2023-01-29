@@ -40,8 +40,16 @@ class StringMatchDeleteRowFilter(filters.Filter):
         """
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="対象列", required=True),
-            params.StringParam("query", label="文字列", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx",
+                label="対象列",
+                required=True
+            ),
+            params.StringParam(
+                "query",
+                label="文字列",
+                required=True
+            ),
         )
 
     @classmethod
@@ -101,8 +109,16 @@ class StringContainDeleteRowFilter(filters.Filter):
         """
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="対象列", required=True),
-            params.StringParam("query", label="文字列", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx",
+                label="対象列",
+                required=True
+            ),
+            params.StringParam(
+                "query",
+                label="文字列",
+                required=True
+            ),
         )
 
     @classmethod
@@ -164,8 +180,16 @@ class PatternMatchDeleteRowFilter(filters.Filter):
         """
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="対象列", required=True),
-            params.StringParam("pattern", label="正規表現", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx",
+                label="対象列",
+                required=True
+            ),
+            params.StringParam(
+                "pattern",
+                label="正規表現",
+                required=True
+            ),
         )
 
     @classmethod

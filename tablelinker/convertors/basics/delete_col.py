@@ -37,7 +37,12 @@ class DeleteColFilter(filters.Filter):
         help_text = None
 
         params = params.ParamSet(
-            params.InputAttributeParam("input_attr_idx", label="削除する列", description="削除する列", required=True),
+            params.InputAttributeParam(
+                "input_attr_idx",
+                label="削除する列",
+                description="削除する列",
+                required=True
+            ),
         )
 
     @classmethod

@@ -1,7 +1,9 @@
 import hashlib
-from typing import Union
+from logging import getLogger
 
 from ..core import filters, params
+
+logger = getLogger(__name__)
 
 
 class UniqueKeyGenerator(object):
@@ -258,7 +260,9 @@ class GeneratePkFilter(filters.InputOutputFilter):
         key = self.ukgen.gen_key(
             seed=record[self.input_attr_idx],
             length=self.length,
-            check_uniqueness=self.skip_if_not_unique or self.error_if_not_unique,
+            check_uniqueness=(
+                self.skip_if_not_unique or self.error_if_not_unique
+            ),
         )
         if key is None:
             # 同じ値を持つ行が見つかった

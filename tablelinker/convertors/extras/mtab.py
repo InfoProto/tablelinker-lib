@@ -1,8 +1,5 @@
 import csv
 import io
-import json
-import os
-import tempfile
 
 import requests
 
@@ -163,9 +160,9 @@ class MtabWikilinkFilter(filters.InputOutputFilter):
 
     def process_header(self, headers, context):
         super().process_header(headers, context)
-        # ヘッダ行分のデータを削除する
+        # ヘッダ行に対応する wikilink データを削除する
         if len(self.wikidata) > 0:
-            wikilink = self.wikidata.pop(0)
+            self.wikidata.pop(0)
 
     def process_filter(self, record, context):
         if len(self.wikidata) > 0:

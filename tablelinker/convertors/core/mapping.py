@@ -272,8 +272,12 @@ class ItemsPair(object):
         if self.__class__.similarity is None:
             self.__class__.similarity = Similarity()
 
-        vec0 = [self.__class__.similarity.item2vec(name) for name in self.items0]
-        vec1 = [self.__class__.similarity.item2vec(name) for name in self.items1]
+        vec0 = [
+            self.__class__.similarity.item2vec(name)
+            for name in self.items0]
+        vec1 = [
+            self.__class__.similarity.item2vec(name)
+            for name in self.items1]
         dim = max(len(self.items0), len(self.items1))
         self.mxsim = np.zeros((dim, dim))
         self.mxed = np.zeros((dim, dim))
