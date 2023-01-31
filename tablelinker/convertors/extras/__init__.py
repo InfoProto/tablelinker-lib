@@ -9,9 +9,11 @@ from . import (
 
 selectable_filters = (
     geocoder.ToCodeFilter,
-    geocoder.ToPrefectureFilter,
-    geocoder.ToMunicipalityFilter,
     geocoder.ToLatLongFilter,
+    geocoder.ToMunicipalityFilter,
+    geocoder.ToNodeIdFilter,
+    geocoder.ToPostcodeFilter,
+    geocoder.ToPrefectureFilter,
     mapping_col.AutoMappingColsFilter,
     mtab.MtabWikilinkFilter,
     wareki.ToSeirekiFilter,

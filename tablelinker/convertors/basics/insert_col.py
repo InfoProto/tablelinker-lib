@@ -89,6 +89,9 @@ class InsertColFilter(filters.Filter):
     def process_header(self, headers, context):
         new_name = context.get_param("output_attr_name")
         output_attr_idx = context.get_param("output_attr_idx")
+        if output_attr_idx is None:
+            output_attr_idx = len(headers)
+
         headers = self.insert_list(output_attr_idx, new_name, headers)
         context.output(headers)
 
@@ -157,7 +160,7 @@ class InsertColsFilter(filters.Filter):
                 "output_attr_idx",
                 label="新規列を追加する位置",
                 description="新規列の挿入位置です。",
-                required=True,
+                required=False,
             ),
             params.StringListParam(
                 "output_attr_names",
@@ -185,6 +188,7 @@ class InsertColsFilter(filters.Filter):
         self.output_attr_idx = context.get_param("output_attr_idx")
         self.new_names = context.get_param("output_attr_names")
         self.new_values = context.get_param("values")
+
         if isinstance(self.new_values, str):
             self.new_values = [self.new_values] * len(self.new_names)
         elif len(self.new_values) != len(self.new_names):
@@ -194,6 +198,9 @@ class InsertColsFilter(filters.Filter):
                 "the length of 'output_attr_names'."))
 
     def process_header(self, headers, context):
+        if self.output_attr_idx is None:
+            self.output_attr_idx = len(headers)
+
         headers = self.insert_list(
             self.output_attr_idx, self.new_names, headers)
         context.output(headers)

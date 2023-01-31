@@ -214,20 +214,22 @@ class ConcatColsFilter(filters.Filter):
             params.InputAttributeListParam(
                 "input_attr_idxs",
                 label="対象列",
-                required=True
+                required=True,
             ),
             params.OutputAttributeParam(
                 "output_attr_name",
-                label="新しい列名"
+                label="新しい列名",
+                required=True,
             ),
             params.AttributeParam(
                 "output_attr_idx",
-                label="出力する位置"
+                label="出力する位置",
+                required=False,
             ),
             params.StringParam(
                 "separator",
                 label="区切り文字",
-                default_value=""
+                default_value="",
             ),
         )
 
@@ -260,9 +262,9 @@ class ConcatColsFilter(filters.Filter):
         try:
             idx = headers.index(self.output_attr_name)
             if self.output_attr_idx is None:
+                self.del_attr = idx
                 self.output_attr_idx = idx
-
-            if idx < self.output_attr_idx:
+            elif idx < self.output_attr_idx:
                 self.output_attr_idx -= 1
                 self.del_attr = idx
             elif idx > self.output_attr_idx:

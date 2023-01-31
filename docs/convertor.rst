@@ -132,13 +132,19 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.extras.geocoder.ToCodeFilter
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToPrefectureFilter
+    tablelinker.convertors.extras.geocoder.ToLatLongFilter
 
 .. autoclass::
     tablelinker.convertors.extras.geocoder.ToMunicipalityFilter
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToLatLongFilter
+    tablelinker.convertors.extras.geocoder.ToNodeIdFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.geocoder.ToPostcodeFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.geocoder.ToPrefectureFilter
 
 MTab アノテーション
 ^^^^^^^^^^^^^^^^^^^

@@ -34,6 +34,7 @@ class Context(object):
         filter_meta = self._filter.meta()
         declared_params = filter_meta.params
         filter_key = filter_meta.key
+
         for key in self._filter_params.keys():
             if key in declared_params:
                 continue

@@ -6,8 +6,6 @@ from tablelinker import Table
 
 sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
 
-# Table.useExtraConvertors()
-
 
 def test_to_seireki():
     # 気象庁「過去に発生した火山災害」より作成
@@ -116,57 +114,6 @@ def test_geocoder_code():
                 assert row[0] == "13401"  # 八丈町コード
 
 
-def test_geocoder_prefecture():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
-    table = table.convert(
-        convertor="geocoder_prefecture",
-        params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "都道府県名",
-            "output_attr_idx": 0,
-            "default": "東京都"
-        }
-    )
-
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
-            assert len(row) == 8
-            if lineno == 0:
-                # ヘッダに「都道府県名」が追加されていることを確認
-                assert ",".join(row) == (
-                    '都道府県名,観光スポット名称,所在地,'
-                    '緯度,経度,座標系,説明,八丈町ホームページ記載')
-            else:
-                assert row[0] == "東京都"
-
-
-def test_geocoder_municipality():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
-    table = table.convert(
-        convertor="geocoder_municipality",
-        params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "市区町村名",
-            "output_attr_idx": 0,
-            "within": ["東京都"],
-            "default": "不明"
-        }
-    )
-
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
-            assert len(row) == 8
-            if lineno == 0:
-                # ヘッダに「市区町村名」が追加されていることを確認
-                assert ",".join(row) == (
-                    '市区町村名,観光スポット名称,所在地,'
-                    '緯度,経度,座標系,説明,八丈町ホームページ記載')
-            elif row[2] == "":
-                assert row[0] == "不明"
-            else:
-                assert row[0] == "八丈町"
-
-
 def test_geocoder_latlong():
     table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
     table = table.convert(
@@ -193,6 +140,152 @@ def test_geocoder_latlong():
                 assert row[5] == ""
             else:
                 assert int(row[5]) >= 3  # 町以上まで一致している
+
+
+def test_geocoder_municipality():
+    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="geocoder_municipality",
+        params={
+            "input_attr_idx": "所在地",
+            "output_attr_names": ["市区町村名"],
+            "output_attr_idx": 0,
+            "within": ["東京都"],
+            "default": "不明"
+        }
+    )
+
+    with table.open() as csv:
+        for lineno, row in enumerate(csv):
+            assert len(row) == 8
+            if lineno == 0:
+                # ヘッダに「市区町村名」が追加されていることを確認
+                assert ",".join(row) == (
+                    '市区町村名,観光スポット名称,所在地,'
+                    '緯度,経度,座標系,説明,八丈町ホームページ記載')
+            elif row[2] == "":
+                assert row[0] == "不明"
+            else:
+                assert row[0] == "八丈町"
+
+
+def test_geocoder_municipality_seirei():
+    # https://www.library.city.chiba.jp/facilities/index.html より作成
+    stream = io.StringIO((
+        "施設名,所在地,連絡先電話番号\n"
+        "中央図書館,中央区弁天3-7-7,043-287-3980\n"
+        "みやこ図書館白旗分館,中央区白旗1-3-16,043-264-8566\n"
+        "稲毛図書館,稲毛区小仲台5-1-1,043-254-1845\n"
+        "若葉図書館泉分館,若葉区野呂町622-10,043-228-2982\n"
+        "緑図書館土気図書室,緑区土気町1634,043-294-1666\n"
+        "みずほハスの花図書館,花見川区瑞穂1-1花見川区役所１階,043-275-6330\n"
+        "花見川図書館,花見川区こてはし台5-9-7,043-250-2851\n"
+        "若葉図書館,若葉区千城台西2-1-1,043-237-9361\n"
+        "緑図書館,緑区おゆみ野3-15-2,043-293-5080\n"
+        "美浜図書館,美浜区高洲3-12-1,043-277-3003\n"
+        "みやこ図書館,中央区都町3-11-3,043-233-8333\n"
+        "花見川図書館花見川団地分館,花見川区花見川3-31-101,043-250-5111\n"
+        "若葉図書館西都賀分館,若葉区西都賀2-8-8,043-254-8681\n"
+        "緑図書館あすみが丘分館,緑区あすみが丘7-2-4,043-295-0200\n"
+        "美浜図書館打瀬分館,美浜区打瀬2丁目13番地（幕張ベイタウン・コア内）,043-272-4646\n"
+    ))
+    table = Table(stream)
+    table = table.convert(
+        convertor="geocoder_municipality",
+        params={
+            "input_attr_idx": "所在地",
+            "output_attr_names": ["市町村名", "区名"],
+            "default": ""
+        }
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 5
+            if lineno == 0:
+                # ヘッダに市町村名と区名が追加されていることを確認
+                assert ",".join(row) == \
+                    '施設名,所在地,連絡先電話番号,市町村名,区名'
+            else:
+                assert row["市町村名"] == "千葉市"
+                assert row["区名"].endswith("区")
+
+
+def test_geocoder_nodeid():
+    stream = io.StringIO((
+        "機関名,部署名,所在地,連絡先電話番号\n"
+        "国立情報学研究所,総務チーム,千代田区一ツ橋２－１－２,03-4212-2000\n"
+        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n"))
+    table = Table(stream)
+    table = table.convert(
+        convertor="geocoder_nodeid",
+        params={
+            "input_attr_idx": "所在地",
+            "output_attr_name": "ノードID"
+        }
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 5
+            if lineno == 0:
+                # ヘッダに「ノードID」が追加されていることを確認
+                assert ",".join(row) == \
+                    '機関名,部署名,所在地,連絡先電話番号,ノードID'
+            else:
+                assert re.match(r'^\d+$', row["ノードID"])
+
+
+def test_geocoder_postcode():
+    stream = io.StringIO((
+        "機関名,部署名,所在地,連絡先電話番号\n"
+        "国立情報学研究所,総務チーム,千代田区一ツ橋２－１－２,03-4212-2000\n"
+        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n"))
+    table = Table(stream)
+    table = table.convert(
+        convertor="geocoder_postcode",
+        params={
+            "input_attr_idx": "所在地",
+            "output_attr_name": "郵便番号",
+            "output_attr_idx": "所在地",
+            "hiphen": True,
+            "default": ""
+        }
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 5
+            if lineno == 0:
+                # ヘッダに「郵便番号」が追加されていることを確認
+                assert ",".join(row) == \
+                    '機関名,部署名,郵便番号,所在地,連絡先電話番号'
+            else:
+                assert row["郵便番号"] == "101-0003"
+
+
+def test_geocoder_prefecture():
+    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = table.convert(
+        convertor="geocoder_prefecture",
+        params={
+            "input_attr_idx": "所在地",
+            "output_attr_name": "都道府県名",
+            "output_attr_idx": 0,
+            "default": "東京都"
+        }
+    )
+
+    with table.open() as csv:
+        for lineno, row in enumerate(csv):
+            assert len(row) == 8
+            if lineno == 0:
+                # ヘッダに「都道府県名」が追加されていることを確認
+                assert ",".join(row) == (
+                    '都道府県名,観光スポット名称,所在地,'
+                    '緯度,経度,座標系,説明,八丈町ホームページ記載')
+            else:
+                assert row[0] == "東京都"
 
 
 def test_mtab_wikilink():
