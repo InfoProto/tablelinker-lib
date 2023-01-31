@@ -581,7 +581,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
-        * "default": 郵便番号が計算できなかった場合の値 ""
+        * "default": 郵便番号が計算できなかった場合の値 [""]
         * "hiphen": 3桁目と4桁目の間にハイフンをいれるかどうか [False]
 
     注釈（InputOutputsFilter 共通）

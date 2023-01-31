@@ -116,8 +116,14 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 拡張コンバータは辞書の読み込み等の前処理を行う必要があるため、
 最初に利用する際に少し時間がかかることがあります。
 
-西暦和暦変換
-^^^^^^^^^^^^
+日時抽出・変換
+^^^^^^^^^^^^^^
+
+.. autoclass::
+    tablelinker.convertors.extras.date_extract.DateExtractFilter
+
+.. autoclass::
+    tablelinker.convertors.extras.date_extract.DatetimeExtractFilter
 
 .. autoclass::
     tablelinker.convertors.extras.wareki.ToSeirekiFilter

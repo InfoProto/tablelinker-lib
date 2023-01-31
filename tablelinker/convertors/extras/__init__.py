@@ -1,6 +1,7 @@
 from ..core import filters
 
 from . import (
+    date_extract,
     geocoder,
     mapping_col,
     mtab,
@@ -8,6 +9,8 @@ from . import (
 )
 
 selectable_filters = (
+    date_extract.DateExtractFilter,
+    date_extract.DatetimeExtractFilter,
     geocoder.ToCodeFilter,
     geocoder.ToLatLongFilter,
     geocoder.ToMunicipalityFilter,

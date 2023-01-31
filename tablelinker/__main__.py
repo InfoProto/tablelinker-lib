@@ -55,10 +55,39 @@ Examples:
   マッピング情報はタスクとして利用できる JSON 形式で出力されます。
 """.format(p='tablelinker')
 
+def _validate_task(task: dict):
+    """
+    タスクの書式をチェックします。
+
+    Notes
+    -----
+    書式に問題があれば ValueError 例外を送出します。
+    """
+    if not isinstance(task, dict):
+        raise ValueError("タスクが object ではありません。")
+
+    unrecognized_keys = []
+    for key in task.keys():
+        if key not in ("convertor", "params", "note",):
+            unrecognized_keys.append(key)
+
+    if len(unrecognized_keys) > 0:
+        raise ValueError("未定義のキー '{}' が使われています。".format(
+            ",".join(unrecognized_keys)))
+
+    undefined_keys = []
+    for key in ("convertor", "params",):
+        if key not in task:
+            undefined_keys.append(key)
+
+    if len(undefined_keys) > 0:
+        raise ValueError("キー '{}' が必要です。".format(
+            ",".join(undefined_keys)))
+
 
 def convert(args: dict):
     taskfiles = args['<task>']
-    tasks = []
+    all_tasks = []
 
     skip_cleaning = bool(args['--no-cleaning'])
 
@@ -68,12 +97,34 @@ def convert(args: dict):
                 logger.debug("Reading tasks from '{}'.".format(
                     taskfile))
                 try:
-                    tasks.append(json.load(jsonf))
+                    tasks = json.load(jsonf)
                 except json.decoder.JSONDecodeError as e:
                     logger.error((
                         "タスクファイル '{}' の JSON 表記が正しくありません。"
                         "json.decoder.JSONDecodeError: {}").format(taskfile, e))
                     sys.exit(-1)
+
+            if isinstance(tasks, dict):
+                # コンバータが一つだけ指定されている場合
+                tasks = [tasks]
+
+            try:
+                if isinstance(tasks, list):
+                    # 複数のコンバータがリストで指定されている場合
+                    for task in tasks:
+                        # タスクファイルのフォーマットチェック
+                        _validate_task(task)
+
+                else:
+                    raise ValueError("タスクリストが Array ではありません。")
+
+            except ValueError as e:
+                logger.error((
+                    "タスクファイル '{}' のフォーマットが"
+                    "正しくありません。詳細：{}").format(taskfile, str(e)))
+                sys.exit(-1)
+
+            all_tasks += tasks
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
@@ -91,18 +142,21 @@ def convert(args: dict):
             sheet=args['--sheet'],
             skip_cleaning=skip_cleaning)
 
-        for task in tasks:
-            if isinstance(task, dict):
-                # コンバータが一つだけ指定されている場合
+        for task in all_tasks:
+            try:
+                # タスク実行
+                if "note" in task:
+                    logger.info(task["note"])
+
                 logger.debug("Running {}".format(task["convertor"]))
                 table = table.convert(
                     task["convertor"], task["params"])
-            elif isinstance(task, list):
-                # 複数のコンバータがリストで指定されている場合
-                for t in task:
-                    logger.debug("Running {}".format(t["convertor"]))
-                    table = table.convert(
-                        t["convertor"], t["params"])
+
+            except RuntimeError as e:
+                logger.error((
+                    "タスク '{}' の実行中にエラーが発生しました。"
+                    "詳細：{}").format(task["convertor"], str(e)))
+                sys.exit(-1)
 
         # 結果を出力
         if args['--output'] is None:
@@ -207,11 +261,11 @@ if __name__ == '__main__':
     if args['--debug']:
         log_level = logging.DEBUG
     else:
-        log_level = logging.WARNING
+        log_level = logging.INFO
 
     logging.basicConfig(
         level=log_level,
-        format='%(levelname)s:%(module)s:%(lineno)d:%(message)s')
+        format='%(asctime)s:%(levelname)s:%(module)s:%(lineno)d:%(message)s')
 
     if args['--input'] is not None:
         if args['--input'].lower() in ('-', 'stdin'):

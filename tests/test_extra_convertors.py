@@ -7,6 +7,66 @@ from tablelinker import Table
 sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
 
 
+def test_date_extract():
+    # 東京国立博物館「展示・催し物」より作成
+    # https://www.tnm.jp/modules/r_calender/index.php
+    stream = io.StringIO((
+        "展示名,会場,期間\n"
+        "令和5年 新指定 国宝・重要文化財,平成館 企画展示室,2023年1月31日（火） ～ 2023年2月19日（日）\n"
+        "特別企画「大安寺の仏像」,本館 11室,2023年1月2日（月・休） ～ 2023年3月19日（日）\n"
+        "未来の国宝―東京国立博物館　書画の逸品―,本館 2室,2023年1月31日（火） ～ 2023年2月26日（日）\n"
+        "創立150年記念特集　王羲之と蘭亭序,東洋館 8室,2023年1月31日（火） ～ 2023年4月23日（日）\n"
+
+        "創立150年記念特集　近世能狂言面名品選 ー「天下一」号を授かった面打ー,本館 14室,2023年1月2日（月・休） ～ 2023年2月26日（日）\n"
+    ))
+    table = Table(stream)
+    table = table.convert(
+        convertor="date_extract",
+        params={
+            "input_attr_idx": "期間",
+            "output_attr_name": "開始日",
+            "overwrite": True,
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 4
+            if lineno > 0:
+                assert re.match(r'^\d{4}\-\d{2}-\d{2}', row["開始日"])
+
+def test_datetime_extract():
+    stream = io.StringIO((
+        "発生時刻,震源地,マグニチュード,最大震度\n"
+        "2023年1月31日 4時15分ごろ,宮城県沖,4.3,2\n"
+        "2023年1月30日 18時16分ごろ,富山県西部,3.4,2\n"
+        "2023年1月30日 9時32分ごろ,栃木県南部,3.5,1\n"
+        "2023年1月29日 21時20分ごろ,神奈川県西部,4.8,3\n"
+        "2023年1月29日 12時07分ごろ,茨城県北部,2.9,1\n"
+        "2023年1月29日 9時18分ごろ,和歌山県北部,2.7,1\n"
+        "2023年1月27日 15時03分ごろ,福島県沖,4.2,2\n"
+        "2023年1月27日 13時51分ごろ,岐阜県美濃中西部,2.7,1\n"
+        "2023年1月27日 13時49分ごろ,岐阜県美濃中西部,3.0,1\n"
+        "2023年1月27日 13時28分ごろ,福島県沖,3.6,1\n"
+    ))
+    table = Table(stream)
+    table = table.convert(
+        convertor="datetime_extract",
+        params={
+            "input_attr_idx": "発生時刻",
+            "output_attr_name": "正規化日時",
+            "format": "%Y-%m-%dT%H:%M:00+0900",
+        },
+    )
+
+    with table.open(as_dict=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 5
+            if lineno > 0:
+                assert re.match(
+                    r'^\d{4}\-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}',
+                    row["正規化日時"])
+
 def test_to_seireki():
     # 気象庁「過去に発生した火山災害」より作成
     # https://www.data.jma.go.jp/vois/data/tokyo/STOCK/kaisetsu/volcano_disaster.htm
