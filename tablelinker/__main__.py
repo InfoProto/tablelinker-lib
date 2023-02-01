@@ -21,7 +21,9 @@ Usage:
   {p} -h
   {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-a]\
  ([-t <sheet>] <template>|--headers=<headers>)
-  {p} [convert] [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>...]
+  {p} convert [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning]\
+  -c <convertor> -p <params>
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>...]
 
 Options:
   -h --help              このヘルプを表示
@@ -33,6 +35,8 @@ Options:
   -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
   --headers=<headers>    列名リスト（カンマ区切り）
+  -c, --convertor=<convertor>   コンバータ名
+  -p, --params=<params>  パラメータ（JSON）
 
 Parameters:
   <task>        タスクファイル（コンバータとパラメータを記述した JSON）
@@ -85,11 +89,12 @@ def _validate_task(task: dict):
             ",".join(undefined_keys)))
 
 
-def convert(args: dict):
+def parse_taskfiles(args: dict):
+    """
+    タスクファイルを解析・検証してタスクリストを作成します。
+    """
     taskfiles = args['<task>']
     all_tasks = []
-
-    skip_cleaning = bool(args['--no-cleaning'])
 
     if len(taskfiles) > 0:
         for taskfile in taskfiles:
@@ -125,6 +130,14 @@ def convert(args: dict):
                 sys.exit(-1)
 
             all_tasks += tasks
+
+    return all_tasks
+
+def process_tasks(args: dict, all_tasks: list):
+    """
+    すべての task を実行します。
+    """
+    skip_cleaning = bool(args['--no-cleaning'])
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
@@ -277,5 +290,11 @@ if __name__ == '__main__':
 
     if args['mapping']:
         mapping(args)
+    elif args['convert'] and args["--convertor"]:
+        tasks = [{
+            "convertor": args["--convertor"],
+            "params": json.loads(args["--params"]),
+        }]
+        process_tasks(args, tasks)
     else:
-        convert(args)
+        process_tasks(args, parse_taskfiles(args))
