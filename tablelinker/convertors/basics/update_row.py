@@ -1,9 +1,9 @@
 import re
 
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class StringMatchUpdateRowFilter(filters.Filter):
+class StringMatchUpdateRowConvertor(convertors.Convertor):
     """
     概要
         指定した列の値が指定した文字列と完全に一致する行の値を
@@ -84,7 +84,7 @@ class StringMatchUpdateRowFilter(filters.Filter):
         context.output(record)
 
 
-class StringContainUpdateRowFilter(filters.Filter):
+class StringContainUpdateRowConvertor(convertors.Convertor):
     """
     概要
         指定した列の値が指定した文字列を含む場合、
@@ -167,7 +167,7 @@ class StringContainUpdateRowFilter(filters.Filter):
         context.output(record)
 
 
-class PatternMatchUpdateRowFilter(filters.Filter):
+class PatternMatchUpdateRowConvertor(convertors.Convertor):
     """
     概要
         指定した列の値が指定した正規表現と一致する場合、

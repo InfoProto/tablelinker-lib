@@ -1,7 +1,7 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class ReorderColsFilter(filters.Filter):
+class ReorderColsConvertor(convertors.Convertor):
     """
     概要
         指定した順番に列を並べ替えます。

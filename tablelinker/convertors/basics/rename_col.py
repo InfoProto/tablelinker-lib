@@ -1,11 +1,11 @@
 from logging import getLogger
 
-from ..core import filters, params
+from ..core import convertors, params
 
 logger = getLogger(__name__)
 
 
-class RenameColFilter(filters.Filter):
+class RenameColConvertor(convertors.Convertor):
     """
     概要
         列名を変更します。
@@ -74,7 +74,7 @@ class RenameColFilter(filters.Filter):
         context.output(headers)
 
 
-class RenameColsFilter(filters.Filter):
+class RenameColsConvertor(convertors.Convertor):
     """
     概要
         すべての列名を一括変更します。

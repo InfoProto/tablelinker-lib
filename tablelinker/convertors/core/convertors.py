@@ -6,7 +6,7 @@ from . import params
 logger = getLogger(__name__)
 
 
-class FilterMeta(object):
+class ConvertorMeta(object):
     def __init__(self, meta):
         self.key = meta.key
         self.name = meta.name
@@ -31,14 +31,14 @@ class FilterMeta(object):
         ]
 
 
-class Filter(ABC):
+class Convertor(ABC):
     """
     変換処理
     """
 
     @classmethod
     def meta(cls):
-        return FilterMeta(cls.Meta)
+        return ConvertorMeta(cls.Meta)
 
     @classmethod
     def key(cls):
@@ -76,7 +76,7 @@ class Filter(ABC):
                 if isinstance(val, str):
                     try:
                         idx = headers.index(val)
-                        context._filter_params[key] = idx
+                        context._convertor_params[key] = idx
                     except ValueError:
                         raise RuntimeError((
                             "パラメータ '{}' で指定された列 '{}' は"
@@ -87,7 +87,7 @@ class Filter(ABC):
                         if isinstance(v, str):
                             try:
                                 idx = headers.index(v)
-                                context._filter_params[key][i] = idx
+                                context._convertor_params[key][i] = idx
                             except ValueError:
                                 raise RuntimeError((
                                     "パラメータ '{}' の {} 番目で指定された列 '{}' は"
@@ -102,7 +102,7 @@ class Filter(ABC):
                     except ValueError:
                         idx = len(headers)
 
-                    context._filter_params[key] = idx
+                    context._convertor_params[key] = idx
                 elif isinstance(val, list):
                     for i, v in enumerate(val):
                         if isinstance(v, str):
@@ -112,7 +112,7 @@ class Filter(ABC):
                                 idx = len(headers)
                                 headers.append(v)
 
-                            context._filter_params[key][i] = idx
+                            context._convertor_params[key][i] = idx
 
         context.set_data("headers", headers)
 
@@ -142,7 +142,7 @@ class Filter(ABC):
     @classmethod
     def can_apply(cls, attrs):
         """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
+        対象の属性がこのコンバータに適用可能かどうかを返します。
         attrs: 属性のリスト({name, attr_type, data_type})
         """
         return True
@@ -156,10 +156,10 @@ class Filter(ABC):
         return cls.meta().message.format(**params)
 
 
-class InputOutputFilter(Filter):
+class InputOutputConvertor(Convertor):
     @classmethod
     def meta(cls):
-        _meta = FilterMeta(cls.Meta)
+        _meta = ConvertorMeta(cls.Meta)
         _meta.params = params.ParamSet(
             [
                 params.InputAttributeParam(
@@ -197,7 +197,7 @@ class InputOutputFilter(Filter):
     @classmethod
     def can_apply(cls, attrs):
         """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
+        対象の属性がこのコンバータに適用可能かどうかを返します。
         attrs: 属性のリスト({name, attr_type, data_type})
         """
         if len(attrs) != 1:
@@ -249,9 +249,9 @@ class InputOutputFilter(Filter):
                 need_value = True
 
         if need_value:
-            value = self.process_filter(record, context)
+            value = self.process_convertor(record, context)
             if value is False:
-                # コンバータの process_filter で False を返す行はスキップされる
+                # コンバータの process_convertor で False を返す行はスキップされる
                 return
 
         else:
@@ -265,7 +265,7 @@ class InputOutputFilter(Filter):
 
         context.output(record)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         return record[self.input_attr_idx]
 
     def reorder(self, original, del_idx, insert_idx, insert_value):
@@ -279,14 +279,14 @@ class InputOutputFilter(Filter):
         return new_list
 
 
-class InputOutputsFilter(Filter):
+class InputOutputsConvertor(Convertor):
     """
-    入力列が1, 出力列が複数のフィルタの基底クラス
+    入力列が1, 出力列が複数のコンバータの基底クラス
     """
 
     @classmethod
     def meta(cls):
-        _meta = FilterMeta(cls.Meta)
+        _meta = ConvertorMeta(cls.Meta)
         _meta.params = params.ParamSet(
             [
                 params.InputAttributeParam(
@@ -326,7 +326,7 @@ class InputOutputsFilter(Filter):
     @classmethod
     def can_apply(cls, attrs):
         """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
+        対象の属性がこのコンバータに適用可能かどうかを返します。
         attrs: 属性のリスト({name, attr_type, data_type})
         """
         if len(attrs) != 1:
@@ -385,7 +385,7 @@ class InputOutputsFilter(Filter):
                 old_values.append(record[idx])
 
         if context.get_param("overwrite"):
-            new_values = self.process_filter(
+            new_values = self.process_convertor(
                 record, context)
         else:
             values = None
@@ -393,7 +393,7 @@ class InputOutputsFilter(Filter):
             for i, old_value in enumerate(old_values):
                 if old_value == "":
                     if values is None:
-                        values = self.process_filter(
+                        values = self.process_convertor(
                             record, context)
 
                     new_values.append(values[i])
@@ -407,7 +407,7 @@ class InputOutputsFilter(Filter):
             insert_values=new_values)
         context.output(record)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         return record[self.input_attr_idx]
 
     def reorder(self, original, delete_idxs, insert_idx, insert_values):
@@ -438,7 +438,7 @@ class InputOutputsFilter(Filter):
         return new_list
 
 
-class NoopFilter(Filter):
+class NoopConvertor(Convertor):
     """
     何もしない
     """
@@ -451,7 +451,7 @@ class NoopFilter(Filter):
         params = params.ParamSet()
 
 
-class AttrCopyFilter(InputOutputFilter):
+class AttrCopyConvertor(InputOutputConvertor):
     """
     列コピー
     """
@@ -464,49 +464,49 @@ class AttrCopyFilter(InputOutputFilter):
         params = params.ParamSet()
 
 
-FILTERS = [AttrCopyFilter]
-FILTER_DICT = {}
-for f in FILTERS:
-    FILTER_DICT[f.key()] = f
+CONVERTORS = [AttrCopyConvertor]
+CONVERTOR_DICT = {}
+for f in CONVERTORS:
+    CONVERTOR_DICT[f.key()] = f
 
 
-def registry_filter(filter, selectable=True):
+def registry_convertor(convertor, selectable=True):
     """
-    フィルタを登録します。
-    filter: フィルタクラス
-    selectable: ユーザが選択可能なフィルターかどうか
+    コンバータを登録します。
+    convertor: コンバータクラス
+    selectable: ユーザが選択可能なコンバータかどうか
     """
     if selectable:
-        FILTERS.append(filter)
-    FILTER_DICT[filter.key()] = filter
+        CONVERTORS.append(convertor)
+    CONVERTOR_DICT[convertor.key()] = convertor
 
 
-def filter_find_by(name):
-    return FILTER_DICT.get(name)
+def convertor_find_by(name):
+    return CONVERTOR_DICT.get(name)
 
 
-def filter_all():
-    return [f for f in FILTERS]
+def convertor_all():
+    return [f for f in CONVERTORS]
 
 
-def filter_meta_list(attrs=[]):
+def convertor_meta_list(attrs=[]):
     """
-    適用可能なフィルタのメタ情報を取得します。
+    適用可能なコンバータのメタ情報を取得します。
     """
     _attrs = attrs if attrs is not None else []
     return [
-        filter.meta() for filter in filter_all()
-        if filter.can_apply(_attrs)
+        convertor.meta() for convertor in convertor_all()
+        if convertor.can_apply(_attrs)
     ]
 
 
-def filter_keys():
-    return [f.Meta.key for f in FILTERS]
+def convertor_keys():
+    return [f.Meta.key for f in CONVERTORS]
 
 
-def encode_filter(filter):
-    return [filter.key()]
+def encode_convertor(convertor):
+    return [convertor.key()]
 
 
-def decode_filter(filter):
-    return filter_find_by(filter[0])()
+def decode_convertor(convertor):
+    return convertor_find_by(convertor[0])()

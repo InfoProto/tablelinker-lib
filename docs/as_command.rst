@@ -61,7 +61,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 ``<task>`` パラメータとしてそのファイル名を指定します。
 
 例として、列名を変更する
-:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColFilter>`
+:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColConvertor>`
 コンバータを利用し、0 列目の名前を「都道府県名」に変更する
 以下の内容のファイルを ``task1.json`` という名前で作成します。
 
@@ -110,7 +110,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
 連続してコンバータを適用できます。
 
 列の選択と並び替えを行う
-:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsFilter>`
+:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsConvertor>`
 コンバータを利用して、「都道府県名」「人口」「出生数」「死亡数」の
 4列を抜き出すタスクファイル ``task2.json`` を作成します。
 
@@ -291,7 +291,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
 作成したい CSV と入力表データの列名が少し異なっていたり、
 余計な列や足りない列がある、あるいは列の順番が入れ替わっているといった場合、
 入力列と出力列の対応表を作成して
-:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsFilter>`
+:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsConvertor>`
 コンバータを利用すれば、一括変換できます。
 
 しかし入力表ごとの対応表を一つずつゼロから作成するのはとても手間がかかります。
@@ -310,7 +310,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
 からダウンロードした ``xxxxxx_tourism.csv`` の形式に合わせることを考えます。
 
 まず次のコマンドで、``sightseeing.csv`` を ``xxxxxx_tourism.csv`` に合わせる
-:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsFilter>`
+:py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsConvertor>`
 コンバータ用タスクのたたき台を作成します。
 
 .. code-block:: bash

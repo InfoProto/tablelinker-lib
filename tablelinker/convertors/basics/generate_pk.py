@@ -1,7 +1,7 @@
 import hashlib
 from logging import getLogger
 
-from ..core import filters, params
+from ..core import convertors, params
 
 logger = getLogger(__name__)
 
@@ -171,7 +171,7 @@ class UniqueKeyGenerator(object):
         return key
 
 
-class GeneratePkFilter(filters.InputOutputFilter):
+class GeneratePkConvertor(convertors.InputOutputConvertor):
     """
     概要
         指定した列の文字列をシードとして、
@@ -180,7 +180,7 @@ class GeneratePkFilter(filters.InputOutputFilter):
     コンバータ名
         "generate_pk"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": シードとする列の列番号または列名 [必須]
         * "output_attr_idx": 結果を出力する列番号または列名のリスト
         * "output_attr_name": 結果を出力する列名
@@ -193,7 +193,7 @@ class GeneratePkFilter(filters.InputOutputFilter):
         * "error_if_not_unique": 同じ値の行が存在する場合に
           エラーにするかどうか [True]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -256,7 +256,7 @@ class GeneratePkFilter(filters.InputOutputFilter):
         self.skip_if_not_unique = context.get_param("skip_if_not_unique")
         self.ukgen = UniqueKeyGenerator()
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         key = self.ukgen.gen_key(
             seed=record[self.input_attr_idx],
             length=self.length,

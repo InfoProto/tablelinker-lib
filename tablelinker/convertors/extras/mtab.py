@@ -3,7 +3,7 @@ import io
 
 import requests
 
-from ..core import filters, params
+from ..core import convertors, params
 
 MTAB_URL = "https://mtab.app/api/v1/mtab"
 
@@ -70,7 +70,7 @@ def query_mtab(context, max_lines=None):
     return mtab_result
 
 
-class MtabWikilinkFilter(filters.InputOutputFilter):
+class MtabWikilinkConvertor(convertors.InputOutputConvertor):
     """
     概要
         Mtab を利用して、各行の情報に合致する
@@ -80,7 +80,7 @@ class MtabWikilinkFilter(filters.InputOutputFilter):
     コンバータ名
         "geocoder_code"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -89,7 +89,7 @@ class MtabWikilinkFilter(filters.InputOutputFilter):
     パラメータ（コンバータ固有）
         * "lines": 処理する最大の行数を指定します [無制限]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -164,7 +164,7 @@ class MtabWikilinkFilter(filters.InputOutputFilter):
         if len(self.wikidata) > 0:
             self.wikidata.pop(0)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         if len(self.wikidata) > 0:
             wikilink = self.wikidata.pop(0)
         else:

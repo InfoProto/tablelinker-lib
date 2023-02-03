@@ -1,4 +1,4 @@
-from ..core import filters, params
+from ..core import convertors, params
 from enum import Enum
 
 
@@ -35,7 +35,7 @@ def calc(valueA, valueB, calculation):
         raise "Unknown Calculation"
 
 
-class CalcColFilter(filters.Filter):
+class CalcColConvertor(convertors.Convertor):
     """
     概要
         2つの入力列に対して四則演算を実行し、結果を出力列に保存します。

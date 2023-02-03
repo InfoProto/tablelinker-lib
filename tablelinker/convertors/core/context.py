@@ -10,44 +10,44 @@ class Context(object):
     コンテキスト
     """
 
-    def __init__(self, filter, filter_params, input, output, proxy=None):
+    def __init__(self, convertor, convertor_params, input, output, proxy=None):
         """
         Parameters
         ----------
-        filter: Filter
-            The filter class to be used in this context.
-        filter_params: dict[Param, Any]
+        convertor: Convertor
+            The convertor class to be used in this context.
+        convertor_params: dict[Param, Any]
             The pairs of parameter name and its value.
         input: InputCollection
             The input source of this context.
         output: OutputCollection
             The output source of this context.
         """
-        self._filter = filter
+        self._convertor = convertor
         self._input = input
         self._output = output
-        self._filter_params = filter_params
+        self._convertor_params = convertor_params
         self._current = None
         self._data = {}
 
         # Check parameters
-        filter_meta = self._filter.meta()
-        declared_params = filter_meta.params
-        filter_key = filter_meta.key
+        convertor_meta = self._convertor.meta()
+        declared_params = convertor_meta.params
+        convertor_key = convertor_meta.key
 
-        for key in self._filter_params.keys():
+        for key in self._convertor_params.keys():
             if key in declared_params:
                 continue
 
             msg = ("コンバータ '{}' ではパラメータ '{}' は"
-                   "利用できません").format(filter_key, key)
+                   "利用できません").format(convertor_key, key)
             logger.warning(msg)
 
         for name in declared_params.keys():
             param = declared_params[name]
-            if param.required and name not in self._filter_params:
+            if param.required and name not in self._convertor_params:
                 msg = ("コンバータ '{}' の必須パラメータ '{}' が"
-                       "未指定です").format(filter_key, name)
+                       "未指定です").format(convertor_key, name)
                 logger.error(msg)
                 raise ValueError("Param '{}' is required.".format(name))
 
@@ -90,29 +90,29 @@ class Context(object):
 
     def get_param(self, name):
         # TODO: memo化
-        filter_meta = self._filter.meta()
-        declared_params = filter_meta.params
-        filter_key = filter_meta.key
+        convertor_meta = self._convertor.meta()
+        declared_params = convertor_meta.params
+        convertor_key = convertor_meta.key
         if name not in declared_params:
             msg = (
                 "Accessing param '{}' of the converter '{}' "
-                "which is not declared.").format(name, filter_key)
+                "which is not declared.").format(name, convertor_key)
             logger.error(msg)
             raise ValueError(msg)
 
         param = declared_params[name]
-        if param.required and name not in self._filter_params:
+        if param.required and name not in self._convertor_params:
             logger.error("コンバータ '{}' のパラメータ '{}' は必須です（終了します）".format(
-                filter_key, name))
+                convertor_key, name))
             msg = "Param '{}' of the convertor '{}' is required.".format(
-                filter_key, name)
+                convertor_key, name)
             raise ValueError(msg)
 
-        val = self._filter_params.get(name)
+        val = self._convertor_params.get(name)
         return param.get_value(val, self)
 
     def get_params(self):
         """
         有効なパラメータ名のリストを取得する
         """
-        return self._filter.meta().params.keys()
+        return self._convertor.meta().params.keys()

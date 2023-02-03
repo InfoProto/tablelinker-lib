@@ -1,12 +1,12 @@
 # flake8: noqa
 # isort:skip_file
 from .context import Context
-from .filters import (
-    AttrCopyFilter,
-    Filter,
-    NoopFilter,
-    filter_find_by,
-    filter_keys,
+from .convertors import (
+    AttrCopyConvertor,
+    Convertor,
+    NoopConvertor,
+    convertor_find_by,
+    convertor_keys,
 )
 from .input import (
     ArrayInputCollection,

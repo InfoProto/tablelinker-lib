@@ -75,7 +75,7 @@ CSV ファイルを表示するには、 :py:meth:`~tablelinker.table.Table.writ
 そのコンバータに渡すパラメータ ``params`` を指定する必要があります。
 
 まず先頭の列名が空欄なので、列名を変更する
-:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColFilter>`
+:py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColConvertor>`
 コンバータを利用して「都道府県名」に変更します。
 
 .. code-block:: python
@@ -89,7 +89,7 @@ CSV ファイルを表示するには、 :py:meth:`~tablelinker.table.Table.writ
     ... )
 
 次に列の選択と並び替えを行う
-:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsFilter>`
+:py:class:`reorder_cols <tablelinker.convertors.basics.reorder_col.ReorderColsConvertor>`
 コンバータを利用して、「都道府県名」「人口」「出生数」「死亡数」の
 4列を抜き出します。
 

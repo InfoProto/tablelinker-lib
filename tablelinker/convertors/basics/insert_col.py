@@ -1,11 +1,11 @@
 from logging import getLogger
 
-from ..core import filters, params
+from ..core import convertors, params
 
 logger = getLogger(__name__)
 
 
-class InsertColFilter(filters.Filter):
+class InsertColConvertor(convertors.Convertor):
     """
     概要
         新しい列を追加します。
@@ -106,7 +106,7 @@ class InsertColFilter(filters.Filter):
         return target_list
 
 
-class InsertColsFilter(filters.Filter):
+class InsertColsConvertor(convertors.Convertor):
     """
     概要
         新しい複数の列を追加します。

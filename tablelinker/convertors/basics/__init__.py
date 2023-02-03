@@ -1,4 +1,4 @@
-from ..core import filters
+from ..core import convertors
 
 from . import (
     calc_col,
@@ -19,38 +19,38 @@ from . import (
     zenkaku,
 )
 
-selectable_filters = (
-    calc_col.CalcColFilter,
-    concat_col.ConcatColFilter,
-    concat_col.ConcatColsFilter,
-    concat_title.ConcatTitleFilter,
-    delete_col.DeleteColFilter,
-    delete_col.DeleteColsFilter,
-    delete_row.StringMatchDeleteRowFilter,
-    delete_row.StringContainDeleteRowFilter,
-    delete_row.PatternMatchDeleteRowFilter,
-    generate_pk.GeneratePkFilter,
-    insert_col.InsertColFilter,
-    insert_col.InsertColsFilter,
-    mapping_col.MappingColsFilter,
-    move_col.MoveColFilter,
-    rename_col.RenameColFilter,
-    rename_col.RenameColsFilter,
-    reorder_col.ReorderColsFilter,
-    select_row.StringMatchSelectRowFilter,
-    select_row.StringContainSelectRowFilter,
-    select_row.PatternMatchSelectRowFilter,
-    split_col.SplitColFilter,
-    split_col.SplitRowFilter,
-    truncate.TruncateFilter,
-    update_row.StringMatchUpdateRowFilter,
-    update_row.StringContainUpdateRowFilter,
-    update_row.PatternMatchUpdateRowFilter,
-    zenkaku.ToHankakuFilter,
-    zenkaku.ToZenkakuFilter,
+selectable_convertors = (
+    calc_col.CalcColConvertor,
+    concat_col.ConcatColConvertor,
+    concat_col.ConcatColsConvertor,
+    concat_title.ConcatTitleConvertor,
+    delete_col.DeleteColConvertor,
+    delete_col.DeleteColsConvertor,
+    delete_row.StringMatchDeleteRowConvertor,
+    delete_row.StringContainDeleteRowConvertor,
+    delete_row.PatternMatchDeleteRowConvertor,
+    generate_pk.GeneratePkConvertor,
+    insert_col.InsertColConvertor,
+    insert_col.InsertColsConvertor,
+    mapping_col.MappingColsConvertor,
+    move_col.MoveColConvertor,
+    rename_col.RenameColConvertor,
+    rename_col.RenameColsConvertor,
+    reorder_col.ReorderColsConvertor,
+    select_row.StringMatchSelectRowConvertor,
+    select_row.StringContainSelectRowConvertor,
+    select_row.PatternMatchSelectRowConvertor,
+    split_col.SplitColConvertor,
+    split_col.SplitRowConvertor,
+    truncate.TruncateConvertor,
+    update_row.StringMatchUpdateRowConvertor,
+    update_row.StringContainUpdateRowConvertor,
+    update_row.PatternMatchUpdateRowConvertor,
+    zenkaku.ToHankakuConvertor,
+    zenkaku.ToZenkakuConvertor,
 )
 
 
 def register():
-    for filter in selectable_filters:
-        filters.registry_filter(filter)
+    for convertor in selectable_convertors:
+        convertors.registry_convertor(convertor)

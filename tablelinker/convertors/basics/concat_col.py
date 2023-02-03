@@ -1,4 +1,4 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
 def concat(value_list, separator=""):
@@ -14,7 +14,7 @@ def concat(value_list, separator=""):
     return separator.join(str_value_list)
 
 
-class ConcatColFilter(filters.Filter):
+class ConcatColConvertor(convertors.Convertor):
     """
     概要
         2つの入力列の文字列を結合し、結果を出力列に保存します。
@@ -162,7 +162,7 @@ class ConcatColFilter(filters.Filter):
         context.output(record)
 
 
-class ConcatColsFilter(filters.Filter):
+class ConcatColsConvertor(convertors.Convertor):
     """
     概要
         複数の入力列の文字列を結合し、結果を出力列に保存します。

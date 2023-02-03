@@ -1,4 +1,4 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
 def concat(value_list, separator=""):
@@ -14,7 +14,7 @@ def concat(value_list, separator=""):
     return separator.join(str_value_list)
 
 
-class ConcatTitleFilter(filters.Filter):
+class ConcatTitleConvertor(convertors.Convertor):
     """
     概要
         タイトル行が複数行に分割されている場合に結合して

@@ -3,11 +3,11 @@ import re
 
 from jeraconv import jeraconv
 
-from ..core import filters, params
+from ..core import convertors, params
 from ..core.date_extractor import get_datetime
 
 
-class DatetimeExtractFilter(filters.InputOutputFilter):
+class DatetimeExtractConvertor(convertors.InputOutputConvertor):
     """
     概要
         文字列から日時を抽出します。
@@ -15,7 +15,7 @@ class DatetimeExtractFilter(filters.InputOutputFilter):
     コンバータ名
         "datetime_extract"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -25,7 +25,7 @@ class DatetimeExtractFilter(filters.InputOutputFilter):
         * "format": 日時フォーマット ["%Y-%m-%d %H:%M:%S"]
         * "default": 日時が抽出できなかった場合の値 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -83,7 +83,7 @@ class DatetimeExtractFilter(filters.InputOutputFilter):
         self.format = context.get_param("format")
         self.default = context.get_param("default")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         extracted = get_datetime(record[self.input_attr_idx])
         if len(extracted["datetime"]) == 0:
             return self.default
@@ -145,7 +145,7 @@ class DatetimeExtractFilter(filters.InputOutputFilter):
         return result
 
 
-class DateExtractFilter(filters.InputOutputFilter):
+class DateExtractConvertor(convertors.InputOutputConvertor):
     """
     概要
         文字列から日付を抽出します。
@@ -153,7 +153,7 @@ class DateExtractFilter(filters.InputOutputFilter):
     コンバータ名
         "date_extract"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -163,7 +163,7 @@ class DateExtractFilter(filters.InputOutputFilter):
         * "format": 日時フォーマット ["%Y-%m-%d"]
         * "default": 日時が抽出できなかった場合の値 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -222,7 +222,7 @@ class DateExtractFilter(filters.InputOutputFilter):
         self.format = context.get_param("format")
         self.default = context.get_param("default")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         extracted = get_datetime(record[self.input_attr_idx])
         if len(extracted["datetime"]) == 0:
             return self.default

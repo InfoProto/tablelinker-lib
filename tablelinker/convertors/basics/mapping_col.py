@@ -1,7 +1,7 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class MappingColsFilter(filters.Filter):
+class MappingColsConvertor(convertors.Convertor):
     """
     概要
         既存の列名と新しい列名のマッピングテーブルを利用して、

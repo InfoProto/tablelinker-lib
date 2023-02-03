@@ -1,7 +1,7 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class MoveColFilter(filters.Filter):
+class MoveColConvertor(convertors.Convertor):
     """
     概要
         列の位置を移動します。

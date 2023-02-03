@@ -27,96 +27,96 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 ^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.basics.calc_col.CalcColFilter
+    tablelinker.convertors.basics.calc_col.CalcColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.concat_col.ConcatColFilter
+    tablelinker.convertors.basics.concat_col.ConcatColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.concat_col.ConcatColsFilter
+    tablelinker.convertors.basics.concat_col.ConcatColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.delete_col.DeleteColFilter
+    tablelinker.convertors.basics.delete_col.DeleteColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.delete_col.DeleteColsFilter
+    tablelinker.convertors.basics.delete_col.DeleteColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.insert_col.InsertColFilter
+    tablelinker.convertors.basics.insert_col.InsertColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.insert_col.InsertColsFilter
+    tablelinker.convertors.basics.insert_col.InsertColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.mapping_col.MappingColsFilter
+    tablelinker.convertors.basics.mapping_col.MappingColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.move_col.MoveColFilter
+    tablelinker.convertors.basics.move_col.MoveColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.rename_col.RenameColFilter
+    tablelinker.convertors.basics.rename_col.RenameColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.rename_col.RenameColsFilter
+    tablelinker.convertors.basics.rename_col.RenameColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.reorder_col.ReorderColsFilter
+    tablelinker.convertors.basics.reorder_col.ReorderColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.generate_pk.GeneratePkFilter
+    tablelinker.convertors.basics.generate_pk.GeneratePkConvertor
 
 
 行操作
 ^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.basics.concat_title.ConcatTitleFilter
+    tablelinker.convertors.basics.concat_title.ConcatTitleConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.delete_row.StringMatchDeleteRowFilter
+    tablelinker.convertors.basics.delete_row.StringMatchDeleteRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.delete_row.StringContainDeleteRowFilter
+    tablelinker.convertors.basics.delete_row.StringContainDeleteRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowFilter
+    tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.select_row.StringMatchSelectRowFilter
+    tablelinker.convertors.basics.select_row.StringMatchSelectRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.select_row.StringContainSelectRowFilter
+    tablelinker.convertors.basics.select_row.StringContainSelectRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.select_row.PatternMatchSelectRowFilter
+    tablelinker.convertors.basics.select_row.PatternMatchSelectRowConvertor
 
 
 値の操作
 ^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.basics.split_col.SplitColFilter
+    tablelinker.convertors.basics.split_col.SplitColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.split_col.SplitRowFilter
+    tablelinker.convertors.basics.split_col.SplitRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.truncate.TruncateFilter
+    tablelinker.convertors.basics.truncate.TruncateConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.StringMatchUpdateRowFilter
+    tablelinker.convertors.basics.update_row.StringMatchUpdateRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.StringContainUpdateRowFilter
+    tablelinker.convertors.basics.update_row.StringContainUpdateRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.PatternMatchUpdateRowFilter
+    tablelinker.convertors.basics.update_row.PatternMatchUpdateRowConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToHankakuFilter
+    tablelinker.convertors.basics.zenkaku.ToHankakuConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.zenkaku.ToZenkakuFilter
+    tablelinker.convertors.basics.zenkaku.ToZenkakuConvertor
 
 
 拡張コンバータ
@@ -129,46 +129,46 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 ^^^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.extras.date_extract.DateExtractFilter
+    tablelinker.convertors.extras.date_extract.DateExtractConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.date_extract.DatetimeExtractFilter
+    tablelinker.convertors.extras.date_extract.DatetimeExtractConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.wareki.ToSeirekiFilter
+    tablelinker.convertors.extras.wareki.ToSeirekiConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.wareki.ToWarekiFilter
+    tablelinker.convertors.extras.wareki.ToWarekiConvertor
 
 住所ジオコーダ
 ^^^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToCodeFilter
+    tablelinker.convertors.extras.geocoder.ToCodeConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToLatLongFilter
+    tablelinker.convertors.extras.geocoder.ToLatLongConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToMunicipalityFilter
+    tablelinker.convertors.extras.geocoder.ToMunicipalityConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToNodeIdFilter
+    tablelinker.convertors.extras.geocoder.ToNodeIdConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToPostcodeFilter
+    tablelinker.convertors.extras.geocoder.ToPostcodeConvertor
 
 .. autoclass::
-    tablelinker.convertors.extras.geocoder.ToPrefectureFilter
+    tablelinker.convertors.extras.geocoder.ToPrefectureConvertor
 
 MTab アノテーション
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.extras.mtab.MtabWikilinkFilter
+    tablelinker.convertors.extras.mtab.MtabWikilinkConvertor
 
 列の自動マッピング
 ^^^^^^^^^^^^^^^^^^
 
 .. autoclass::
-    tablelinker.convertors.extras.mapping_col.AutoMappingColsFilter
+    tablelinker.convertors.extras.mapping_col.AutoMappingColsConvertor

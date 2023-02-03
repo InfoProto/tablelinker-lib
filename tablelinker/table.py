@@ -417,23 +417,23 @@ class Table(object):
             prefix='table_').name
         input = self._reader
         output = core.CsvOutputCollection(csv_out)
-        filter = core.filter_find_by(convertor)
-        if filter is None:
+        conv = core.convertor_find_by(convertor)
+        if conv is None:
             # 拡張コンバータも読み込み、もう一度確認する
             self.useExtraConvertors()
-            filter = core.filter_find_by(convertor)
+            conv = core.convertor_find_by(convertor)
 
-        if filter is None:
+        if conv is None:
             raise ValueError("コンバータ '{}' は未登録です".format(
                 convertor))
 
         with core.Context(
-                filter=filter,
-                filter_params=params,
+                convertor=conv,
+                convertor_params=params,
                 input=input,
                 output=output) as context:
             try:
-                filter().process(context)
+                conv().process(context)
                 logger.debug((
                     "ファイル '{}' にコンバータ '{}' を適用し"
                     "一時ファイル '{}' に出力しました。").format(

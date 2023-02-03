@@ -1,7 +1,7 @@
-from ..core import filters, params, validators
+from ..core import convertors, params, validators
 
 
-class TruncateFilter(filters.InputOutputFilter):
+class TruncateConvertor(convertors.InputOutputConvertor):
     """
     概要
         指定した列を指定文字数まで切り詰めます。
@@ -9,7 +9,7 @@ class TruncateFilter(filters.InputOutputFilter):
     コンバータ名
         "truncate"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_idx": 分割した結果を出力する列番号または
           列名のリスト
@@ -20,7 +20,7 @@ class TruncateFilter(filters.InputOutputFilter):
         * "length": 最大文字数 [10]
         * "ellipsis": 切り詰めた場合に追加される記号 ["…"]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -75,7 +75,7 @@ class TruncateFilter(filters.InputOutputFilter):
         self.length = context.get_param("length")
         self.ellipsis = context.get_param("ellipsis")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         value = record[self.input_attr_idx]
         if len(value) > self.length:
             value = value[:self.length] + self.ellipsis

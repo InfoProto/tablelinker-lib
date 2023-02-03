@@ -1,9 +1,9 @@
 import re
 
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class StringMatchSelectRowFilter(filters.Filter):
+class StringMatchSelectRowConvertor(convertors.Convertor):
     """
     概要
         指定した列が、指定した文字列と一致する行を選択します。
@@ -62,7 +62,7 @@ class StringMatchSelectRowFilter(filters.Filter):
             context.output(record)
 
 
-class StringContainSelectRowFilter(filters.Filter):
+class StringContainSelectRowConvertor(convertors.Convertor):
     """
     概要
         指定した列に、指定した文字列を含む行を選択します。
@@ -121,7 +121,7 @@ class StringContainSelectRowFilter(filters.Filter):
             context.output(record)
 
 
-class PatternMatchSelectRowFilter(filters.Filter):
+class PatternMatchSelectRowConvertor(convertors.Convertor):
     """
     概要
         指定した列が指定した正規表現と一致する行を選択します。

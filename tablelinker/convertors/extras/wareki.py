@@ -2,10 +2,10 @@ import re
 
 from jeraconv import jeraconv
 
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class ToSeirekiFilter(filters.InputOutputFilter):
+class ToSeirekiConvertor(convertors.InputOutputConvertor):
     """
     概要
         和暦から西暦を計算します。
@@ -13,13 +13,13 @@ class ToSeirekiFilter(filters.InputOutputFilter):
     コンバータ名
         "to_seireki"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -64,7 +64,7 @@ class ToSeirekiFilter(filters.InputOutputFilter):
 
         self.re_pattern = re.compile(r"(..(元|\d+)年?)")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = record[self.input_attr_idx]
 
         targets = self.re_pattern.findall(result)
@@ -79,7 +79,7 @@ class ToSeirekiFilter(filters.InputOutputFilter):
         return result
 
 
-class ToWarekiFilter(filters.InputOutputFilter):
+class ToWarekiConvertor(convertors.InputOutputConvertor):
     """
     概要
         西暦から和暦を計算します。
@@ -87,13 +87,13 @@ class ToWarekiFilter(filters.InputOutputFilter):
     コンバータ名
         "to_wareki"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -138,7 +138,7 @@ class ToWarekiFilter(filters.InputOutputFilter):
 
         self.re_pattern = re.compile(r"((西暦|)([12]\d{3})年?)")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = record[self.input_attr_idx]
 
         targets = self.re_pattern.findall(result)

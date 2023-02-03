@@ -1,9 +1,9 @@
 import re
 
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class StringMatchDeleteRowFilter(filters.Filter):
+class StringMatchDeleteRowConvertor(convertors.Convertor):
     """
     概要
         指定した列が、指定した文字列と一致する行を削除します。
@@ -72,7 +72,7 @@ class StringMatchDeleteRowFilter(filters.Filter):
             context.output(record)
 
 
-class StringContainDeleteRowFilter(filters.Filter):
+class StringContainDeleteRowConvertor(convertors.Convertor):
     """
     概要
         指定した列に、指定した文字列を含む行を削除します。
@@ -141,7 +141,7 @@ class StringContainDeleteRowFilter(filters.Filter):
             context.output(record)
 
 
-class PatternMatchDeleteRowFilter(filters.Filter):
+class PatternMatchDeleteRowConvertor(convertors.Convertor):
     """
     概要
         指定した列が指定した正規表現と一致する行を削除します。

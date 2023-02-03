@@ -1,0 +1,45 @@
+[
+	{
+		"convertor": "concat_title",
+	 	"params": {
+	 		"lineno_from":5,
+	 		"lines":3,
+	 		"separator":" ",
+	 		"hierarchical_heading":true
+	 	}
+	},
+	{
+		"convertor": "split_col",
+		"params": {
+			"input_attr_idx":0,
+			"output_attr_idxs":[
+				"都道府県コード", "都道府県名"
+			],
+			"separator":"_"
+		}
+	},
+	{
+		"convertor": "split_col",
+		"params": {
+			"input_attr_idx":1,
+			"output_attr_idxs":[
+				"市区町村コード", "市区町村名"
+			],
+			"separator":"_"
+		}
+	},
+	{
+		"convertor": "mapping_cols",
+		"params": {
+			"column_map": {
+				"都道府県コード": "都道府県コード",
+				"市区町村コード": "市区町村コード",
+				"都道府県名": "都道府県名",
+				"市区町村名": "市区町村名",
+				"人口_総数": "総数",
+				"人口_男": "男",
+				"人口_女": "女"
+			}
+		}
+	}
+]

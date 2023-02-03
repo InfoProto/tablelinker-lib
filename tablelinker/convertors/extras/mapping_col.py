@@ -1,8 +1,8 @@
-from ..core import filters, params
+from ..core import convertors, params
 from ..core.mapping import ItemsPair
 
 
-class AutoMappingColsFilter(filters.Filter):
+class AutoMappingColsConvertor(convertors.Convertor):
     """
     概要
         指定した列名リストに合わせて既存の列をマッピングします。

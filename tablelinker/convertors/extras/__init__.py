@@ -1,4 +1,4 @@
-from ..core import filters
+from ..core import convertors
 
 from . import (
     date_extract,
@@ -8,22 +8,22 @@ from . import (
     wareki,
 )
 
-selectable_filters = (
-    date_extract.DateExtractFilter,
-    date_extract.DatetimeExtractFilter,
-    geocoder.ToCodeFilter,
-    geocoder.ToLatLongFilter,
-    geocoder.ToMunicipalityFilter,
-    geocoder.ToNodeIdFilter,
-    geocoder.ToPostcodeFilter,
-    geocoder.ToPrefectureFilter,
-    mapping_col.AutoMappingColsFilter,
-    mtab.MtabWikilinkFilter,
-    wareki.ToSeirekiFilter,
-    wareki.ToWarekiFilter,
+selectable_convertors = (
+    date_extract.DateExtractConvertor,
+    date_extract.DatetimeExtractConvertor,
+    geocoder.ToCodeConvertor,
+    geocoder.ToLatLongConvertor,
+    geocoder.ToMunicipalityConvertor,
+    geocoder.ToNodeIdConvertor,
+    geocoder.ToPostcodeConvertor,
+    geocoder.ToPrefectureConvertor,
+    mapping_col.AutoMappingColsConvertor,
+    mtab.MtabWikilinkConvertor,
+    wareki.ToSeirekiConvertor,
+    wareki.ToWarekiConvertor,
 )
 
 
 def register():
-    for filter in selectable_filters:
-        filters.registry_filter(filter)
+    for convertor in selectable_convertors:
+        convertors.registry_convertor(convertor)

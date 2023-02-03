@@ -2,12 +2,12 @@ from logging import getLogger
 
 import jaconv
 
-from ..core import filters, params
+from ..core import convertors, params
 
 logger = getLogger(__name__)
 
 
-class ToHankakuFilter(filters.InputOutputFilter):
+class ToHankakuConvertor(convertors.InputOutputConvertor):
     """
     概要
         全角文字を半角文字に変換します。
@@ -15,7 +15,7 @@ class ToHankakuFilter(filters.InputOutputFilter):
     コンバータ名
         "to_hankaku"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_idx": 分割した結果を出力する列番号または
           列名のリスト
@@ -28,7 +28,7 @@ class ToHankakuFilter(filters.InputOutputFilter):
         * "digit": 数字を対象に含める [True]
         * "ignore_chars": 対象に含めない文字 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -98,7 +98,7 @@ class ToHankakuFilter(filters.InputOutputFilter):
         self.digit = context.get_param("digit")
         self.ignore_chars = context.get_param("ignore_chars")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         return jaconv.z2h(
             record[self.input_attr_idx],
             kana=self.kana,
@@ -107,7 +107,7 @@ class ToHankakuFilter(filters.InputOutputFilter):
             ignore=self.ignore_chars)
 
 
-class ToZenkakuFilter(filters.InputOutputFilter):
+class ToZenkakuConvertor(convertors.InputOutputConvertor):
     """
     概要
         半角文字を全角文字に変換します。
@@ -115,7 +115,7 @@ class ToZenkakuFilter(filters.InputOutputFilter):
     コンバータ名
         "to_zenkaku"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_idx": 分割した結果を出力する列番号または
           列名のリスト
@@ -128,7 +128,7 @@ class ToZenkakuFilter(filters.InputOutputFilter):
         * "digit": 数字を対象に含める [True]
         * "ignore_chars": 対象に含めない文字 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -196,7 +196,7 @@ class ToZenkakuFilter(filters.InputOutputFilter):
         self.digit = context.get_param("digit")
         self.ignore_chars = context.get_param("ignore_chars")
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         return jaconv.h2z(
             record[self.input_attr_idx],
             kana=self.kana,

@@ -3,7 +3,7 @@ import re
 
 import jageocoder
 
-from ..core import filters, params
+from ..core import convertors, params
 
 logger = getLogger(__name__)
 
@@ -77,7 +77,7 @@ def search_node(address_or_id: str):
     return node
 
 
-class ToCodeFilter(filters.InputOutputFilter):
+class ToCodeConvertor(convertors.InputOutputConvertor):
     """
     概要
         住所から自治体コードを計算します。
@@ -85,7 +85,7 @@ class ToCodeFilter(filters.InputOutputFilter):
     コンバータ名
         "geocoder_code"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -96,7 +96,7 @@ class ToCodeFilter(filters.InputOutputFilter):
         * "default": コードが計算できなかった場合の値 ["0"]
         * "with_check_digit": 検査数字を含むかどうか [False]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -174,7 +174,7 @@ class ToCodeFilter(filters.InputOutputFilter):
         self.with_check_digit = context.get_param("with_check_digit")
         jageocoder.set_search_config(target_area=self.within)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)
@@ -194,7 +194,7 @@ class ToCodeFilter(filters.InputOutputFilter):
         return result
 
 
-class ToLatLongFilter(filters.InputOutputsFilter):
+class ToLatLongConvertor(convertors.InputOutputsConvertor):
     """
     概要
         住所から緯度・経度・住所レベルを計算します。
@@ -202,7 +202,7 @@ class ToLatLongFilter(filters.InputOutputsFilter):
     コンバータ名
         "geocoder_latlong"
 
-    パラメータ（InputOutputsFilter 共通）
+    パラメータ（InputOutputsConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_names": 結果を出力する列名のリスト
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -212,7 +212,7 @@ class ToLatLongFilter(filters.InputOutputsFilter):
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 ["", "", ""]
 
-    注釈（InputOutputsFilter 共通）
+    注釈（InputOutputsConvertor 共通）
         - ``output_attr_idx`` が省略された場合、最後尾に追加します。
         - ``output_attr_names`` で指定された列名が存在している場合、
           ``output_attr_idx`` が指定する位置に移動されます。
@@ -302,7 +302,7 @@ class ToLatLongFilter(filters.InputOutputsFilter):
         elif len(self.default) > 3:
             self.default = self.default[0:3]
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)
@@ -313,7 +313,7 @@ class ToLatLongFilter(filters.InputOutputsFilter):
         return result
 
 
-class ToMunicipalityFilter(filters.InputOutputsFilter):
+class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
     """
     概要
         住所から市区町村名を計算します。
@@ -321,7 +321,7 @@ class ToMunicipalityFilter(filters.InputOutputsFilter):
     コンバータ名
         "geocoder_municipality"
 
-    パラメータ（InputOutputsFilter 共通）
+    パラメータ（InputOutputsConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_names": 結果を出力する列名のリスト
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -331,7 +331,7 @@ class ToMunicipalityFilter(filters.InputOutputsFilter):
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 ["", ""]
 
-    注釈（InputOutputsFilter 共通）
+    注釈（InputOutputsConvertor 共通）
         - ``output_attr_idx`` が省略された場合、最後尾に追加します。
         - ``output_attr_names`` で指定された列名が存在している場合、
           ``output_attr_idx`` が指定する位置に移動されます。
@@ -430,7 +430,7 @@ class ToMunicipalityFilter(filters.InputOutputsFilter):
         # 出力列の数にそろえる
         self.default = self.default[0: len(self.output_attr_names)]
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)
@@ -458,7 +458,7 @@ class ToMunicipalityFilter(filters.InputOutputsFilter):
         return result
 
 
-class ToNodeIdFilter(filters.InputOutputFilter):
+class ToNodeIdConvertor(convertors.InputOutputConvertor):
     """
     概要
         住所からノードIDを計算します。
@@ -474,7 +474,7 @@ class ToNodeIdFilter(filters.InputOutputFilter):
     コンバータ名
         "geocoder_nodeid"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -484,7 +484,7 @@ class ToNodeIdFilter(filters.InputOutputFilter):
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
         * "default": コードが計算できなかった場合の値 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -554,7 +554,7 @@ class ToNodeIdFilter(filters.InputOutputFilter):
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)
@@ -565,7 +565,7 @@ class ToNodeIdFilter(filters.InputOutputFilter):
         return result
 
 
-class ToPostcodeFilter(filters.InputOutputFilter):
+class ToPostcodeConvertor(convertors.InputOutputConvertor):
     """
     概要
         住所から郵便番号を計算します。
@@ -573,7 +573,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
     コンバータ名
         "geocoder_postcode"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -584,7 +584,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
         * "default": 郵便番号が計算できなかった場合の値 [""]
         * "hiphen": 3桁目と4桁目の間にハイフンをいれるかどうか [False]
 
-    注釈（InputOutputsFilter 共通）
+    注釈（InputOutputsConvertor 共通）
         - ``output_attr_idx`` が省略された場合、最後尾に追加します。
         - ``output_attr_names`` で指定された列名が存在している場合、
           ``output_attr_idx`` が指定する位置に移動されます。
@@ -594,7 +594,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
           精度を向上させたい場合は ``within`` で候補となる
           都道府県名や市区町村名を指定してください。
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -667,7 +667,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
         self.hiphen = context.get_param("hiphen")
         jageocoder.set_search_config(target_area=self.within)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)
@@ -681,7 +681,7 @@ class ToPostcodeFilter(filters.InputOutputFilter):
         return result
 
 
-class ToPrefectureFilter(filters.InputOutputFilter):
+class ToPrefectureConvertor(convertors.InputOutputConvertor):
     """
     概要
         住所から都道府県名を計算します。
@@ -689,7 +689,7 @@ class ToPrefectureFilter(filters.InputOutputFilter):
     コンバータ名
         "geocoder_prefecture"
 
-    パラメータ（InputOutputFilter 共通）
+    パラメータ（InputOutputConvertor 共通）
         * "input_attr_idx": 対象列の列番号または列名 [必須]
         * "output_attr_name": 結果を出力する列名
         * "output_attr_idx": 分割した結果を出力する列番号または列名
@@ -699,7 +699,7 @@ class ToPrefectureFilter(filters.InputOutputFilter):
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 [""]
 
-    注釈（InputOutputFilter 共通）
+    注釈（InputOutputConvertor 共通）
         - ``output_attr_name`` が省略された場合、
           ``input_attr_idx`` 列の列名が出力列名として利用されます。
         - ``output_attr_idx`` が省略された場合、
@@ -767,7 +767,7 @@ class ToPrefectureFilter(filters.InputOutputFilter):
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
 
-    def process_filter(self, record, context):
+    def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_attr_idx])
         node = search_node(value)

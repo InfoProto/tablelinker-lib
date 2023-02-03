@@ -1,7 +1,7 @@
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class DeleteColFilter(filters.Filter):
+class DeleteColConvertor(convertors.Convertor):
     """
     概要
         指定した列を削除します。
@@ -70,7 +70,7 @@ class DeleteColFilter(filters.Filter):
         return target_list
 
 
-class DeleteColsFilter(filters.Filter):
+class DeleteColsConvertor(convertors.Convertor):
     """
     概要
         指定した複数の列を削除します。

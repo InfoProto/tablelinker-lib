@@ -1,9 +1,9 @@
 import re
 
-from ..core import filters, params
+from ..core import convertors, params
 
 
-class SplitColFilter(filters.Filter):
+class SplitColConvertor(convertors.Convertor):
     """
     概要
         指定した列を区切り文字で複数列に分割します。
@@ -114,7 +114,7 @@ class SplitColFilter(filters.Filter):
         context.output(new_record)
 
 
-class SplitRowFilter(filters.Filter):
+class SplitRowConvertor(convertors.Convertor):
     """
     概要
         指定した列を区切り文字で複数行に分割します。
