@@ -71,7 +71,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
         "convertor":"rename_col",
         "params":{
             "input_col_idx":0,
-            "new_col_name":"都道府県名"
+            "output_col_name":"都道府県名"
         }
     }
 
@@ -157,7 +157,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
             "convertor":"rename_col",
             "params":{
                 "input_col_idx":0,
-                "new_col_name":"都道府県名"
+                "output_col_name":"都道府県名"
             }
         },
         {
@@ -273,6 +273,31 @@ Tablelinker コマンドは以下のオプションを指定できます。
     接続する他、タスクファイル名を複数指定することもできます。 ::
 
         $ python -m tablelinker -i ma030000.csv task1.json task2.json
+
+- タスクをコマンドラインで指定
+
+    CSV ファイルに対して一度だけの処理を手軽に実行したい場合は、
+    Tablelinker コマンドで convert モードを指定し、
+    ``-c`` オプションでコンバータ名を、 ``-p`` オプションで
+    パラメータ（JSON記法）を指定してください。
+    
+    次の例のように、タスクファイルを作らずにタスクを実行できます。
+
+    .. code-block:: bash
+
+        $ python -m tablelinker -i ma030000.csv task3.json | \
+          python -m tablelinker convert -c delete_string_match \
+            -p '{"input_col_idx":0,"query":""}'
+        都道府県名,人口,出生数,死亡数
+        全　国,123398962,840835,1372755
+        01 北海道,5188441,29523,65078
+        02 青森県,1232227,6837,17905
+        03 岩手県,1203203,6718,17204
+        04 宮城県,2280203,14480,24632
+        05 秋田県,955659,4499,15379
+        06 山形県,1060586,6217,15348
+        ...
+
 
 見出し列のマッピング
 --------------------
