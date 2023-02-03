@@ -15,6 +15,7 @@ from . import (
     select_row,
     split_col,
     truncate,
+    update_row,
     zenkaku,
 )
 
@@ -42,6 +43,9 @@ selectable_filters = (
     split_col.SplitColFilter,
     split_col.SplitRowFilter,
     truncate.TruncateFilter,
+    update_row.StringMatchUpdateRowFilter,
+    update_row.StringContainUpdateRowFilter,
+    update_row.PatternMatchUpdateRowFilter,
     zenkaku.ToHankakuFilter,
     zenkaku.ToZenkakuFilter,
 )

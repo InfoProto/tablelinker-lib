@@ -104,6 +104,15 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.truncate.TruncateFilter
 
 .. autoclass::
+    tablelinker.convertors.basics.update_row.StringMatchUpdateRowFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.update_row.StringContainUpdateRowFilter
+
+.. autoclass::
+    tablelinker.convertors.basics.update_row.PatternMatchUpdateRowFilter
+
+.. autoclass::
     tablelinker.convertors.basics.zenkaku.ToHankakuFilter
 
 .. autoclass::

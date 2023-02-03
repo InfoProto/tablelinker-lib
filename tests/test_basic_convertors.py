@@ -22,8 +22,8 @@ def test_calc_col():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 16
             if lineno == 0:
                 # ヘッダに「出生率（計算）」が追加されていることを確認
@@ -141,8 +141,8 @@ def test_delete_col():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 6
             if lineno == 0:
                 # ヘッダに「座標系」が存在しないことを確認
@@ -245,9 +245,9 @@ def test_generate_pk():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         keys = {}
-        for lineno, row in enumerate(csv):
+        for lineno, row in enumerate(reader):
             assert len(row) == 8
             if lineno == 0:
                 # 先頭列に「pk」が追加されていることを確認
@@ -287,9 +287,9 @@ def test_generate_pk_not_unique():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         keys = {}
-        for lineno, row in enumerate(csv):
+        for lineno, row in enumerate(reader):
             assert len(row) == 8
             if lineno == 0:
                 # 先頭列に「pk」が追加されていることを確認
@@ -318,8 +318,8 @@ def test_insert_col():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 8
             if lineno == 0:
                 # 「所在地」の前に「都道府県名」が追加されていることを確認
@@ -344,8 +344,8 @@ def test_insert_cols():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 9
             if lineno == 0:
                 # 「所在地」の前に「都道府県名」「市区町村名」が
@@ -376,8 +376,8 @@ def test_mapping_cols():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 4
             if lineno == 0:
                 # ヘッダを確認
@@ -400,8 +400,8 @@ def test_move_col():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 7
             if lineno == 0:
                 # ヘッダの順番が「経度」「緯度」に入れ替わっていることを確認
@@ -425,8 +425,8 @@ def test_rename_col():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 15
             if lineno == 0:
                 # 0列目のヘッダが「都道府県名」に変更されていることを確認
@@ -449,8 +449,8 @@ def test_reorder_cols():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 4
             if lineno == 0:
                 assert row == ["所在地", "経度", "緯度", "説明"]
@@ -466,9 +466,9 @@ def test_select_string_match():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         lines = 0
-        for row in csv:
+        for row in reader:
             assert len(row) == 15
             if lines > 0:
                 assert row[0] == "13 東京都"
@@ -488,9 +488,9 @@ def test_select_string_contains():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         lines = 0
-        for row in csv:
+        for row in reader:
             assert len(row) == 15
             if lines > 0:
                 assert row[0] in ("13 東京都", "50 東京都の区部",)
@@ -510,9 +510,9 @@ def test_select_pattern_match():
         },
     )
 
-    with table.open() as csv:
+    with table.open() as reader:
         lines = 0
-        for row in csv:
+        for row in reader:
             assert len(row) == 15
             if lines > 0:
                 assert row[0] == "13 東京都"
@@ -582,8 +582,8 @@ def test_truncate():
         },
     )
 
-    with table.open() as csv:
-        for lineno, row in enumerate(csv):
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
             assert len(row) == 7
             if lineno == 0:
                 # 「説明」列は最後に移動
@@ -626,6 +626,74 @@ def test_truncate_replace():
             value = row["説明"]
             if len(value) > 20:
                 assert value.endswith("...")
+
+
+def test_update_string_match():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="update_string_match",
+        params={
+            "input_attr_idx": 0,
+            "query": "全　国",
+            "new": "全国"
+        },
+    )
+
+    with table.open() as reader:
+        lines = 0
+        for lineno, row in enumerate(reader):
+            assert len(row) == 15
+            lines += 1
+            if lineno == 3:
+                assert row[0] == "全国"
+
+        assert lines == 74
+
+
+def test_update_string_contains():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="update_string_contains",
+        params={
+            "input_attr_idx": 0,
+            "query": "　",
+            "new": ""
+        },
+    )
+
+    with table.open() as reader:
+        lines = 0
+        for row in reader:
+            assert len(row) == 15
+            if lines > 0:
+                assert "　" not in row[0]
+
+            lines += 1
+
+        assert lines == 74
+
+
+def test_update_pattern_match():
+    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = table.convert(
+        convertor="update_pattern_match",
+        params={
+            "input_attr_idx": 0,
+            "pattern": r"^\d\d\s",
+            "new": ""
+        },
+    )
+
+    with table.open() as reader:
+        lines = 0
+        for row in reader:
+            assert len(row) == 15
+            if lines > 0:
+                assert row[0] == '' or row[0][0] not in '0123456789'
+
+            lines += 1
+
+        assert lines == 74
 
 
 def test_to_hankaku():
