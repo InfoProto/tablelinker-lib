@@ -12,7 +12,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
         "select_string_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 文字列 [必須]
 
     サンプル
@@ -23,7 +23,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
             {
                 "convertor": "select_string_match",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": "東京都",
                 }
             }
@@ -42,7 +42,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx", label="対象列", required=True),
+                "input_col_idx", label="対象列", required=True),
             params.StringParam("query", label="文字列", required=True),
         )
 
@@ -55,7 +55,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
         return len(attrs) == 0
 
     def process_record(self, record, context):
-        idx = context.get_param("input_attr_idx")
+        idx = context.get_param("input_col_idx")
         query = context.get_param("query")
         value = record[idx]
         if query == value:
@@ -71,7 +71,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
         "select_string_contains"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 文字列 [必須]
 
     サンプル
@@ -82,7 +82,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
             {
                 "convertor": "select_string_contains",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": "市",
                 }
             }
@@ -101,7 +101,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx", label="対象列", required=True),
+                "input_col_idx", label="対象列", required=True),
             params.StringParam("query", label="文字列", required=True),
         )
 
@@ -114,7 +114,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
         return len(attrs) == 0
 
     def process_record(self, record, context):
-        idx = context.get_param("input_attr_idx")
+        idx = context.get_param("input_col_idx")
         query = context.get_param("query")
         value = record[idx]
         if query in value:
@@ -131,7 +131,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
         "select_pattern_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "pattern": 正規表現 [必須]
 
     サンプル
@@ -142,7 +142,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
             {
                 "convertor": "select_pattern_match",
                 "params": {
-                    "input_attr_idx":0,
+                    "input_col_idx":0,
                     "pattern":"(.+区部$|.+市$)"}
             }
 
@@ -160,7 +160,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx", label="対象列", required=True),
+                "input_col_idx", label="対象列", required=True),
             params.StringParam("pattern", label="正規表現", required=True),
         )
 
@@ -179,7 +179,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
         self.re_pattern = re.compile(context.get_param('pattern'))
 
     def process_record(self, record, context):
-        attr = context.get_param("input_attr_idx")
+        attr = context.get_param("input_col_idx")
         value = record[attr]
         m = self.re_pattern.match(value)
         if m is not None:

@@ -23,16 +23,16 @@ class ConcatColConvertor(convertors.Convertor):
         "concat_col"
 
     パラメータ
-        * "input_attr_idx1": 入力列1の列番号または列名 [必須]
-        * "input_attr_idx2": 入力列2の列番号または列名 [必須]
-        * "output_attr_name": 出力列名
-        * "output_attr_idx": 出力列の列番号または列名
+        * "input_col_idx1": 入力列1の列番号または列名 [必須]
+        * "input_col_idx2": 入力列2の列番号または列名 [必須]
+        * "output_col_name": 出力列名
+        * "output_col_idx": 出力列の列番号または列名
         * "separator": 区切り文字 [""]
 
     注釈
-        - ``output_attr_name`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
           入力列 1, 2 の列名を結合して出力列名とします。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -45,10 +45,10 @@ class ConcatColConvertor(convertors.Convertor):
             {
                 "convertor": "concat_col",
                 "params": {
-                    "input_attr_idx1": "姓",
-                    "input_attr_idx2": "名",
+                    "input_col_idx1": "姓",
+                    "input_col_idx2": "名",
                     "separator": " ",
-                    "output_attr_name": "姓名"
+                    "output_col_name": "姓名"
                 }
             }
 
@@ -66,22 +66,22 @@ class ConcatColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx1",
+                "input_col_idx1",
                 label="対象列1",
                 required=True
             ),
             params.InputAttributeParam(
-                "input_attr_idx2",
+                "input_col_idx2",
                 label="対象列2",
                 required=True
             ),
             params.OutputAttributeParam(
-                "output_attr_name",
+                "output_col_name",
                 label="新しい列名",
                 required=False
             ),
             params.AttributeParam(
-                "output_attr_idx",
+                "output_col_idx",
                 label="出力する位置",
                 required=False
             ),
@@ -107,43 +107,43 @@ class ConcatColConvertor(convertors.Convertor):
         super().initial_context(context)
         headers = context.get_data("headers")
 
-        self.attr1 = context.get_param("input_attr_idx1")
-        self.attr2 = context.get_param("input_attr_idx2")
-        self.output_attr_name = context.get_param("output_attr_name")
-        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.attr1 = context.get_param("input_col_idx1")
+        self.attr2 = context.get_param("input_col_idx2")
+        self.output_col_name = context.get_param("output_col_name")
+        self.output_col_idx = context.get_param("output_col_idx")
         self.separator = context.get_param("separator")
-        self.del_attr = None
+        self.del_col = None
 
-        if self.output_attr_name is None:
-            self.output_attr_name = concat(
+        if self.output_col_name is None:
+            self.output_col_name = concat(
                 [headers[self.attr1], headers[self.attr2]],
                 self.separator)
 
         # 出力列名が存在するかどうかを確認
         try:
-            idx = headers.index(self.output_attr_name)
-            if self.output_attr_idx is None:
-                self.output_attr_idx = idx
+            idx = headers.index(self.output_col_name)
+            if self.output_col_idx is None:
+                self.output_col_idx = idx
 
-            if idx < self.output_attr_idx:
-                self.output_attr_idx -= 1
-                self.del_attr = idx
-            elif idx > self.output_attr_idx:
-                self.del_attr = idx
+            if idx < self.output_col_idx:
+                self.output_col_idx -= 1
+                self.del_col = idx
+            elif idx > self.output_col_idx:
+                self.del_col = idx
 
         except ValueError:
             # 存在しない場合
-            if self.output_attr_idx is None or \
-                    self.output_attr_idx > len(headers):
-                self.output_attr_idx = len(headers)
+            if self.output_col_idx is None or \
+                    self.output_col_idx > len(headers):
+                self.output_col_idx = len(headers)
 
     def process_header(self, headers, context):
-        if self.del_attr:
-            del headers[self.del_attr]
+        if self.del_col:
+            del headers[self.del_col]
 
         headers.insert(
-            self.output_attr_idx,
-            self.output_attr_name)
+            self.output_col_idx,
+            self.output_col_name)
 
         context.output(headers)
 
@@ -152,11 +152,11 @@ class ConcatColConvertor(convertors.Convertor):
         concated_value = concat(
             value_list, separator=self.separator)
 
-        if self.del_attr:
-            del record[self.del_attr]
+        if self.del_col:
+            del record[self.del_col]
 
         record.insert(
-            self.output_attr_idx,
+            self.output_col_idx,
             concated_value)
 
         context.output(record)
@@ -171,15 +171,15 @@ class ConcatColsConvertor(convertors.Convertor):
         "concat_cols"
 
     パラメータ
-        * "input_attr_idxs": 入力列の列番号または列名のリスト [必須]
-        * "output_attr_name": 出力列名
-        * "output_attr_idx": 出力列の列番号または列名
+        * "input_col_idxs": 入力列の列番号または列名のリスト [必須]
+        * "output_col_name": 出力列名
+        * "output_col_idx": 出力列の列番号または列名
         * "separator": 区切り文字 [""]
 
     注釈
-        - ``output_attr_name`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
           入力列の列名を結合して出力列名とします。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -192,8 +192,8 @@ class ConcatColsConvertor(convertors.Convertor):
             {
                 "convertor": "concat_cols",
                 "params": {
-                    "input_attr_idxs": ["都道府県名", "住所1", "住所2"],
-                    "output_attr_name": "住所（全体）",
+                    "input_col_idxs": ["都道府県名", "住所1", "住所2"],
+                    "output_col_name": "住所（全体）",
                     "separator": " "
                 }
             }
@@ -212,17 +212,17 @@ class ConcatColsConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeListParam(
-                "input_attr_idxs",
+                "input_col_idxs",
                 label="対象列",
                 required=True,
             ),
             params.OutputAttributeParam(
-                "output_attr_name",
+                "output_col_name",
                 label="新しい列名",
                 required=True,
             ),
             params.AttributeParam(
-                "output_attr_idx",
+                "output_col_idx",
                 label="出力する位置",
                 required=False,
             ),
@@ -247,55 +247,55 @@ class ConcatColsConvertor(convertors.Convertor):
         super().initial_context(context)
         headers = context.get_data("headers")
 
-        self.input_attr_idxs = context.get_param("input_attr_idxs")
-        self.output_attr_name = context.get_param("output_attr_name")
-        self.output_attr_idx = context.get_param("output_attr_idx")
+        self.input_col_idxs = context.get_param("input_col_idxs")
+        self.output_col_name = context.get_param("output_col_name")
+        self.output_col_idx = context.get_param("output_col_idx")
         self.separator = context.get_param("separator")
-        self.del_attr = None
+        self.del_col = None
 
-        if self.output_attr_name is None:
-            self.output_attr_name = concat([
-                headers[x] for x in self.input_attr_idxs],
+        if self.output_col_name is None:
+            self.output_col_name = concat([
+                headers[x] for x in self.input_col_idxs],
                 self.separator)
 
         # 出力列名が存在するかどうかを確認
         try:
-            idx = headers.index(self.output_attr_name)
-            if self.output_attr_idx is None:
-                self.del_attr = idx
-                self.output_attr_idx = idx
-            elif idx < self.output_attr_idx:
-                self.output_attr_idx -= 1
-                self.del_attr = idx
-            elif idx > self.output_attr_idx:
-                self.del_attr = idx
+            idx = headers.index(self.output_col_name)
+            if self.output_col_idx is None:
+                self.del_col = idx
+                self.output_col_idx = idx
+            elif idx < self.output_col_idx:
+                self.output_col_idx -= 1
+                self.del_col = idx
+            elif idx > self.output_col_idx:
+                self.del_col = idx
 
         except ValueError:
             # 存在しない場合
-            if self.output_attr_idx is None or \
-                    self.output_attr_idx > len(headers):
-                self.output_attr_idx = len(headers)
+            if self.output_col_idx is None or \
+                    self.output_col_idx > len(headers):
+                self.output_col_idx = len(headers)
 
     def process_header(self, headers, context):
-        if self.del_attr:
-            del headers[self.del_attr]
+        if self.del_col:
+            del headers[self.del_col]
 
         headers.insert(
-            self.output_attr_idx,
-            self.output_attr_name)
+            self.output_col_idx,
+            self.output_col_name)
 
         context.output(headers)
 
     def process_record(self, record, context):
-        value_list = [record[x] for x in self.input_attr_idxs]
+        value_list = [record[x] for x in self.input_col_idxs]
         concated_value = concat(
             value_list, separator=self.separator)
 
-        if self.del_attr:
-            del record[self.del_attr]
+        if self.del_col:
+            del record[self.del_col]
 
         record.insert(
-            self.output_attr_idx,
+            self.output_col_idx,
             concated_value)
 
         context.output(record)

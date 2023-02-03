@@ -2,18 +2,18 @@
     {
         "convertor":"geocoder_code",
         "params":{
-            "input_attr_idx": "住所",
-            "output_attr_name": "5桁コード",
+            "input_col_idx": "住所",
+            "output_col_name": "5桁コード",
             "withCheckDigit": false,
-            "output_attr_new_index": 1
+            "output_col_new_index": 1
         }
     },
     {
         "convertor":"geocoder_latlong",
         "params":{
-            "input_attr_idx": "住所",
-            "output_attr_names": ["緯度", "経度", "ジオコーディングレベル"],
-            "output_attr_new_index": null,
+            "input_col_idx": "住所",
+            "output_col_names": ["緯度", "経度", "ジオコーディングレベル"],
+            "output_col_new_index": null,
             "overwrite": false
         }
     },

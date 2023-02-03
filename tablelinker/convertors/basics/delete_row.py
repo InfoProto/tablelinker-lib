@@ -12,7 +12,7 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
         "delete_string_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 文字列 [必須]
 
     サンプル
@@ -23,7 +23,7 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
             {
                 "convertor": "delete_string_match",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": ""
                 }
             }
@@ -41,7 +41,7 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -64,11 +64,11 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.input_col_idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
 
     def process_record(self, record, context):
-        if self.query != record[self.input_attr_idx]:
+        if self.query != record[self.input_col_idx]:
             context.output(record)
 
 
@@ -81,7 +81,7 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
         "delete_string_contains"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 文字列 [必須]
 
     サンプル
@@ -92,7 +92,7 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
             {
                 "convertor": "delete_string_contains",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": "市"
                 }
             }
@@ -110,7 +110,7 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -133,11 +133,11 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.input_col_idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
 
     def process_record(self, record, context):
-        if self.query not in record[self.input_attr_idx]:
+        if self.query not in record[self.input_col_idx]:
             context.output(record)
 
 
@@ -151,7 +151,7 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
         "delete_pattern_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "pattern": 正規表現 [必須]
 
     サンプル
@@ -163,7 +163,7 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
             {
                 "convertor": "delete_pattern_match",
                 "params": {
-                    "input_attr_idx":0,
+                    "input_col_idx":0,
                     "pattern":"(^$|.+区部$|.+市$)"
                 }
             }
@@ -181,7 +181,7 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -204,11 +204,11 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.input_col_idx = context.get_param("input_col_idx")
         self.re_pattern = re.compile(context.get_param('pattern'))
 
     def process_record(self, record, context):
-        value = record[self.input_attr_idx]
+        value = record[self.input_col_idx]
         m = self.re_pattern.match(value)
         if m is None:
             context.output(record)

@@ -44,9 +44,9 @@ class CalcColConvertor(convertors.Convertor):
         "calc"
 
     パラメータ
-        * "input_attr_idx1": 入力列1の列番号または列名 [必須]
-        * "input_attr_idx2": 入力列2の列番号または列名 [必須]
-        * "output_attr_name": 出力列名 [必須]
+        * "input_col_idx1": 入力列1の列番号または列名 [必須]
+        * "input_col_idx2": 入力列2の列番号または列名 [必須]
+        * "output_col_name": 出力列名 [必須]
         * "operator": 演算子（"+", "-", "*", "/"） ["*"]
         * "delete_col": 入力列を削除するか （true/false） [false]
 
@@ -63,10 +63,10 @@ class CalcColConvertor(convertors.Convertor):
             {
                 "convertor": "calc",
                 "params": {
-                    "input_attr_idx1": "人口",
-                    "input_attr_idx2": "面積",
+                    "input_col_idx1": "人口",
+                    "input_col_idx2": "面積",
                     "operator": "/",
-                    "output_attr_name": "人口密度",
+                    "output_col_name": "人口密度",
                     "delete_col": false
                 }
             }
@@ -86,17 +86,17 @@ class CalcColConvertor(convertors.Convertor):
         #
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx1",
+                "input_col_idx1",
                 label="対象列1",
                 required=True
             ),
             params.InputAttributeParam(
-                "input_attr_idx2",
+                "input_col_idx2",
                 label="対象列2",
                 required=True
             ),
             params.StringParam(
-                "output_attr_name",
+                "output_col_name",
                 label="新しい列名"
             ),
             params.EnumsParam(
@@ -124,26 +124,26 @@ class CalcColConvertor(convertors.Convertor):
         return True
 
     def process_header(self, headers, context):
-        attr1 = context.get_param("input_attr_idx1")
-        attr2 = context.get_param("input_attr_idx2")
-        output_attr_name = context.get_param("output_attr_name")
+        attr1 = context.get_param("input_col_idx1")
+        attr2 = context.get_param("input_col_idx2")
+        output_col_name = context.get_param("output_col_name")
         delete_col = context.get_param("delete_col")
 
-        if output_attr_name is None:
-            output_attr_name = "+".join([headers[attr1], headers[attr2]])
+        if output_col_name is None:
+            output_col_name = "+".join([headers[attr1], headers[attr2]])
 
         if delete_col:
             headers.pop(attr1)
             if attr1 != attr2:
                 headers.pop(attr2 - 1)
 
-        headers = headers + [output_attr_name]
+        headers = headers + [output_col_name]
 
         context.output(headers)
 
     def process_record(self, record, context):
-        attr1 = context.get_param("input_attr_idx1")
-        attr2 = context.get_param("input_attr_idx2")
+        attr1 = context.get_param("input_col_idx1")
+        attr2 = context.get_param("input_col_idx2")
         calculation = context.get_param("operator")
         delete_col = context.get_param("delete_col")
 

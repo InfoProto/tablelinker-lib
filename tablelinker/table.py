@@ -381,7 +381,7 @@ class Table(object):
             適用するコンバータ名 (例: 'rename_col')。
         params: dict
             コンバータに渡すパラメータ名・値の辞書。
-            例: {"input_attr_idx": 1, "new_col_name": "番号"}
+            例: {"input_col_idx": 1, "new_col_name": "番号"}
 
         Returns
         -------
@@ -396,7 +396,7 @@ class Table(object):
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         >>> table = table.convert(
         ...     convertor="rename_col",
-        ...     params={"input_attr_idx":0, "new_col_name":"名称"},
+        ...     params={"input_col_idx":0, "new_col_name":"名称"},
         ... )
         >>> table.write(lines=1)
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載

@@ -11,8 +11,8 @@
 	{
 		"convertor": "split_col",
 		"params": {
-			"input_attr_idx":0,
-			"output_attr_idxs":[
+			"input_col_idx":0,
+			"output_col_idxs":[
 				"都道府県コード", "都道府県名"
 			],
 			"separator":"_"
@@ -21,8 +21,8 @@
 	{
 		"convertor": "split_col",
 		"params": {
-			"input_attr_idx":1,
-			"output_attr_idxs":[
+			"input_col_idx":1,
+			"output_col_idxs":[
 				"市区町村コード", "市区町村名"
 			],
 			"separator":"_"

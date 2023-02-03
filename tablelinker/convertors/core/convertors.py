@@ -71,7 +71,7 @@ class Convertor(ABC):
 
         # 入出力列番号に列名が指定された場合、列番号に変換する
         for key in context.get_params():
-            if key.startswith('input_attr_idx'):
+            if key.startswith('input_col_idx'):
                 val = context.get_param(key)
                 if isinstance(val, str):
                     try:
@@ -94,7 +94,7 @@ class Convertor(ABC):
                                     "有効な列名ではありません。有効な列名は次の通り; {}"
                                 ).format(key, i + 1, v, ",".join(headers)))
 
-            if key.startswith('output_attr_idx'):
+            if key.startswith('output_col_idx'):
                 val = context.get_param(key)
                 if isinstance(val, str):
                     try:
@@ -163,19 +163,19 @@ class InputOutputConvertor(Convertor):
         _meta.params = params.ParamSet(
             [
                 params.InputAttributeParam(
-                    "input_attr_idx",
+                    "input_col_idx",
                     label="入力列",
                     description="処理をする対象の列",
                     required=True),
                 params.OutputAttributeParam(
-                    "output_attr_name",
+                    "output_col_name",
                     label="出力列名",
                     description="変換結果を出力する列名です。",
                     help_text="空もしくは既存の名前が指定された場合、置換となります。",
                     required=False,
                 ),
                 params.AttributeParam(
-                    "output_attr_idx",
+                    "output_col_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",
                     label_suffix="の後",
@@ -206,35 +206,35 @@ class InputOutputConvertor(Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.input_attr_idx = context.get_param("input_attr_idx")
-        self.output_attr_idx = context.get_param("output_attr_idx")
-        self.output_attr_name = context.get_param("output_attr_name")
+        self.input_col_idx = context.get_param("input_col_idx")
+        self.output_col_idx = context.get_param("output_col_idx")
+        self.output_col_name = context.get_param("output_col_name")
         self.overwrite = context.get_param("overwrite")
 
     def process_header(self, header, context):
-        if self.output_attr_name is None:
+        if self.output_col_name is None:
             # 出力列名が指定されていない場合は既存列名を利用する
-            self.output_attr_name = header[self.input_attr_idx]
-            self.del_attr = self.input_attr_idx
+            self.output_col_name = header[self.input_col_idx]
+            self.del_col = self.input_col_idx
         else:
             # 出力列名が存在するかどうか調べる
             try:
-                idx = header.index(self.output_attr_name)
-                self.del_attr = idx
+                idx = header.index(self.output_col_name)
+                self.del_col = idx
             except ValueError:
                 # 存在しない場合は新規列
-                self.del_attr = None
+                self.del_col = None
                 self.overwrite = True
 
-        if self.output_attr_idx is None:
+        if self.output_col_idx is None:
             # 出力列番号が指定されていない場合は末尾に追加
-            self.output_attr_idx = len(header)
+            self.output_col_idx = len(header)
 
         header = self.reorder(
             original=header,
-            del_idx=self.del_attr,
-            insert_idx=self.output_attr_idx,
-            insert_value=self.output_attr_name)
+            del_idx=self.del_col,
+            insert_idx=self.output_col_idx,
+            insert_value=self.output_col_name)
 
         context.output(header)
 
@@ -244,8 +244,8 @@ class InputOutputConvertor(Convertor):
             need_value = True
         else:
             # 置き換える列に空欄があるかどうか
-            if self.del_attr >= len(record) or \
-                    record[self.del_attr] == "":
+            if self.del_col >= len(record) or \
+                    record[self.del_col] == "":
                 need_value = True
 
         if need_value:
@@ -255,18 +255,18 @@ class InputOutputConvertor(Convertor):
                 return
 
         else:
-            value = record[self.del_attr]
+            value = record[self.del_col]
 
         record = self.reorder(
             original=record,
-            del_idx=self.del_attr,
-            insert_idx=self.output_attr_idx,
+            del_idx=self.del_col,
+            insert_idx=self.output_col_idx,
             insert_value=value)
 
         context.output(record)
 
     def process_convertor(self, record, context):
-        return record[self.input_attr_idx]
+        return record[self.input_col_idx]
 
     def reorder(self, original, del_idx, insert_idx, insert_value):
         new_list = original[:]
@@ -290,12 +290,12 @@ class InputOutputsConvertor(Convertor):
         _meta.params = params.ParamSet(
             [
                 params.InputAttributeParam(
-                    "input_attr_idx",
+                    "input_col_idx",
                     label="入力列",
                     description="処理をする対象の列",
                     required=True),
                 params.OutputAttributeListParam(
-                    "output_attr_names",
+                    "output_col_names",
                     label="出力列名のリスト",
                     description="変換結果を出力する列名のリストです。",
                     help_text="既存の列名が指定された場合、置換となります。",
@@ -303,7 +303,7 @@ class InputOutputsConvertor(Convertor):
                     default_value=[],
                 ),
                 params.AttributeParam(
-                    "output_attr_idx",
+                    "output_col_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",
                     label_suffix="の後",
@@ -335,50 +335,50 @@ class InputOutputsConvertor(Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.old_attr_indexes = []
-        self.del_attr_indexes = []
-        self.input_attr_idx = context.get_param("input_attr_idx")
-        self.output_attr_idx = context.get_param("output_attr_idx")
-        self.output_attr_names = context.get_param("output_attr_names")
+        self.old_col_indexes = []
+        self.del_col_indexes = []
+        self.input_col_idx = context.get_param("input_col_idx")
+        self.output_col_idx = context.get_param("output_col_idx")
+        self.output_col_names = context.get_param("output_col_names")
 
     def process_header(self, header, context):
         # 既存列をチェック
-        for output_attr_name in self.output_attr_names:
-            if output_attr_name in header:
-                idx = header.index(output_attr_name)
-                self.old_attr_indexes.append(idx)
+        for output_col_name in self.output_col_names:
+            if output_col_name in header:
+                idx = header.index(output_col_name)
+                self.old_col_indexes.append(idx)
             else:
-                self.old_attr_indexes.append(None)
+                self.old_col_indexes.append(None)
 
         # 挿入する位置
-        if self.output_attr_idx is None or \
-                self.output_attr_idx >= len(header):  # 末尾
-            self.output_attr_idx = len(header)
+        if self.output_col_idx is None or \
+                self.output_col_idx >= len(header):  # 末尾
+            self.output_col_idx = len(header)
 
         # 列を一つずつ削除した場合に正しい列番号になるよう調整
-        self.del_attr_indexes = self.old_attr_indexes[:]
-        for i, del_index in enumerate(self.del_attr_indexes):
+        self.del_col_indexes = self.old_col_indexes[:]
+        for i, del_index in enumerate(self.del_col_indexes):
             if del_index is None:
                 continue
 
-            if del_index < self.output_attr_idx:
-                self.output_attr_idx -= 1
+            if del_index < self.output_col_idx:
+                self.output_col_idx -= 1
 
-            for j, d in enumerate(self.del_attr_indexes[i + 1:]):
+            for j, d in enumerate(self.del_col_indexes[i + 1:]):
                 if d is not None and del_index < d:
-                    self.del_attr_indexes[i + j + 1] -= 1
+                    self.del_col_indexes[i + j + 1] -= 1
 
         header = self.reorder(
             original=header,
-            delete_idxs=self.del_attr_indexes,
-            insert_idx=self.output_attr_idx,
-            insert_values=self.output_attr_names
+            delete_idxs=self.del_col_indexes,
+            insert_idx=self.output_col_idx,
+            insert_values=self.output_col_names
         )
         context.output(header)
 
     def process_record(self, record, context):
         old_values = []
-        for idx in self.old_attr_indexes:
+        for idx in self.old_col_indexes:
             if idx is None:
                 old_values.append("")
             else:
@@ -402,13 +402,13 @@ class InputOutputsConvertor(Convertor):
 
         record = self.reorder(
             original=record,
-            delete_idxs=self.del_attr_indexes,
-            insert_idx=self.output_attr_idx,
+            delete_idxs=self.del_col_indexes,
+            insert_idx=self.output_col_idx,
             insert_values=new_values)
         context.output(record)
 
     def process_convertor(self, record, context):
-        return record[self.input_attr_idx]
+        return record[self.input_col_idx]
 
     def reorder(self, original, delete_idxs, insert_idx, insert_values):
         """

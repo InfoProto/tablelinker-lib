@@ -7,7 +7,7 @@ import pytest
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
+sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
 
 
 def test_excel_open():
@@ -89,7 +89,7 @@ def test_excel_convert():
     table = table.convert(
         convertor="move_col",
         params={
-            "input_attr_idx": "座標系",
+            "input_col_idx": "座標系",
         },
     )
 

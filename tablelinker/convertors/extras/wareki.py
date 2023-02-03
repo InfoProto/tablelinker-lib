@@ -14,15 +14,15 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
         "to_seireki"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -34,8 +34,8 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "to_seireki",
                 "params": {
-                    "input_attr_idx": "年月日",
-                    "output_attr_idx": "年月日",
+                    "input_col_idx": "年月日",
+                    "output_col_idx": "年月日",
                     "overwrite": true
                 }
             }
@@ -65,7 +65,7 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
         self.re_pattern = re.compile(r"(..(元|\d+)年?)")
 
     def process_convertor(self, record, context):
-        result = record[self.input_attr_idx]
+        result = record[self.input_col_idx]
 
         targets = self.re_pattern.findall(result)
         for target in targets:
@@ -88,15 +88,15 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
         "to_wareki"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -108,8 +108,8 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "to_wareki",
                 "params": {
-                    "input_attr_idx": "年月日",
-                    "output_attr_idx": "年月日",
+                    "input_col_idx": "年月日",
+                    "output_col_idx": "年月日",
                     "overwrite": true
                 }
             }
@@ -139,7 +139,7 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
         self.re_pattern = re.compile(r"((西暦|)([12]\d{3})年?)")
 
     def process_convertor(self, record, context):
-        result = record[self.input_attr_idx]
+        result = record[self.input_col_idx]
 
         targets = self.re_pattern.findall(result)
         for target in targets:

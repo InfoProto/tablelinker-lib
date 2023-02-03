@@ -16,10 +16,10 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
         "to_hankaku"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_idx": 分割した結果を出力する列番号または
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_idx": 分割した結果を出力する列番号または
           列名のリスト
-        * "output_attr_name": 結果を出力する列名
+        * "output_col_name": 結果を出力する列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -29,9 +29,9 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
         * "ignore_chars": 対象に含めない文字 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -46,8 +46,8 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "to_hankaku",
                 "params": {
-                    "input_attr_idx": "説明",
-                    "output_attr_idx": "説明",
+                    "input_col_idx": "説明",
+                    "output_col_idx": "説明",
                     "kana": false,
                     "ascii": false,
                     "digit": true,
@@ -100,7 +100,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         return jaconv.z2h(
-            record[self.input_attr_idx],
+            record[self.input_col_idx],
             kana=self.kana,
             ascii=self.ascii,
             digit=self.digit,
@@ -116,10 +116,10 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
         "to_zenkaku"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_idx": 分割した結果を出力する列番号または
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_idx": 分割した結果を出力する列番号または
           列名のリスト
-        * "output_attr_name": 結果を出力する列名
+        * "output_col_name": 結果を出力する列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -129,9 +129,9 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
         * "ignore_chars": 対象に含めない文字 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -146,8 +146,8 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "to_zenkaku",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_idx": "所在地",
+                    "input_col_idx": "所在地",
+                    "output_col_idx": "所在地",
                     "kana": true,
                     "ascii": true,
                     "digit": true,
@@ -198,7 +198,7 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         return jaconv.h2z(
-            record[self.input_attr_idx],
+            record[self.input_col_idx],
             kana=self.kana,
             ascii=self.ascii,
             digit=self.digit,

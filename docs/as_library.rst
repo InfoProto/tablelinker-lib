@@ -83,8 +83,8 @@ CSV ファイルを表示するには、 :py:meth:`~tablelinker.table.Table.writ
     >>> table = table.convert(
     ...     convertor='rename_col',
     ...     params={
-    ...         'input_attr_idx': 0,
-    ...         'output_attr_name': '都道府県名',
+    ...         'input_col_idx': 0,
+    ...         'output_col_name': '都道府県名',
     ...    }
     ... )
 

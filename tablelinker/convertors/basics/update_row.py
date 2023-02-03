@@ -13,7 +13,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
         "update_string_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 検索文字列 [必須]
         * "new": 置き換える文字列 [必須]
 
@@ -25,7 +25,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
             {
                 "convertor": "select_string_match",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": "全　国",
                     "new": "全国"
                 }
@@ -46,7 +46,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -72,7 +72,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.idx = context.get_param("input_attr_idx")
+        self.idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
         self.new_value = context.get_param("new")
 
@@ -94,7 +94,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
         "update_string_contains"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "query": 検索文字列 [必須]
         * "new": 置き換える文字列 [必須]
 
@@ -106,7 +106,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
             {
                 "convertor": "update_string_contains",
                 "params": {
-                    "input_attr_idx": 0,
+                    "input_col_idx": 0,
                     "query": "（その他）",
                     "new": "他"
                 }
@@ -127,7 +127,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -153,7 +153,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.idx = context.get_param("input_attr_idx")
+        self.idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
         self.new_value = context.get_param("new")
 
@@ -178,7 +178,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
         "update_pattern_match"
 
     パラメータ
-        * "input_attr_idx": 検索対象列の列番号または列名 [必須]
+        * "input_col_idx": 検索対象列の列番号または列名 [必須]
         * "pattern": 正規表現 [必須]
         * "new": 置き換える文字列 [必須]
 
@@ -191,7 +191,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
             {
                 "convertor": "udpate_pattern_match",
                 "params": {
-                    "input_attr_idx":0,
+                    "input_col_idx":0,
                     "pattern":"(?<=^市).+区$",
                     "new": ""
                 }
@@ -212,7 +212,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="対象列",
                 required=True
             ),
@@ -240,7 +240,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.idx = context.get_param("input_attr_idx")
+        self.idx = context.get_param("input_col_idx")
         self.re_pattern = re.compile(context.get_param('pattern'))
         self.new_value = context.get_param("new")
 

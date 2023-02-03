@@ -14,8 +14,8 @@ class RenameColConvertor(convertors.Convertor):
         "rename_col"
 
     パラメータ
-        * "input_attr_idx": 変更する列の列番号または列名 [必須]
-        * "output_attr_name": 新しい列名 [必須]
+        * "input_col_idx": 変更する列の列番号または列名 [必須]
+        * "output_col_name": 新しい列名 [必須]
 
     注釈
         - 新しい列名が元の表に存在していても同じ名前の列を追加します。
@@ -28,8 +28,8 @@ class RenameColConvertor(convertors.Convertor):
             {
                 "convertor": "rename_col",
                 "params": {
-                    "input_attr_idx": 0,
-                    "output_attr_name": "都道府県名"
+                    "input_col_idx": 0,
+                    "output_col_name": "都道府県名"
                 }
             }
 
@@ -47,13 +47,13 @@ class RenameColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="入力列",
                 description="処理をする対象の列",
                 required=True
             ),
             params.StringParam(
-                "output_attr_name",
+                "output_col_name",
                 label="新しい列名",
                 required=True
             ),
@@ -68,9 +68,9 @@ class RenameColConvertor(convertors.Convertor):
         return len(attrs) == 1
 
     def process_header(self, headers, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        new_name = context.get_param("output_attr_name")
-        headers[input_attr_idx] = new_name
+        input_col_idx = context.get_param("input_col_idx")
+        new_name = context.get_param("output_col_name")
+        headers[input_col_idx] = new_name
         context.output(headers)
 
 

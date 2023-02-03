@@ -81,18 +81,18 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
         "geocoder_code"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
         * "lines": 処理する最大の行数を指定します [無制限]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -105,8 +105,8 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "mtab_wikilink",
                 "params": {
-                    "input_attr_idx": 0,
-                    "output_attr_name": "Wikilink",
+                    "input_col_idx": 0,
+                    "output_col_name": "Wikilink",
                     "lines": "100"
                 }
             }
@@ -139,7 +139,7 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.input_col_idx = context.get_param("input_col_idx")
         self.lines = context.get_param("lines")
         self.wikidata = None
 
@@ -149,7 +149,7 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             for data in mtab_result.cea_data:
                 row = data["target"][0]
                 col = data["target"][1]
-                if col == self.input_attr_idx:
+                if col == self.input_col_idx:
                     wikidata = data["annotation"]["wikidata"]
                     if len(wikidata_map) < row + 1:
                         wikidata_map += [""] * (row - len(wikidata_map) + 1)

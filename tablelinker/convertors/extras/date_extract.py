@@ -16,9 +16,9 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
         "datetime_extract"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -26,9 +26,9 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
         * "default": 日時が抽出できなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -47,8 +47,8 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "datetime_extract",
                 "params": {
-                    "input_attr_idx": "開催期間",
-                    "output_attr_name": "開催年月日",
+                    "input_col_idx": "開催期間",
+                    "output_col_name": "開催年月日",
                     "overwrite": false
                 }
             }
@@ -84,7 +84,7 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
         self.default = context.get_param("default")
 
     def process_convertor(self, record, context):
-        extracted = get_datetime(record[self.input_attr_idx])
+        extracted = get_datetime(record[self.input_col_idx])
         if len(extracted["datetime"]) == 0:
             return self.default
 
@@ -154,9 +154,9 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
         "date_extract"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -164,9 +164,9 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
         * "default": 日時が抽出できなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -186,8 +186,8 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "date_extract",
                 "params": {
-                    "input_attr_idx": "開催期間",
-                    "output_attr_name": "開催年月日",
+                    "input_col_idx": "開催期間",
+                    "output_col_name": "開催年月日",
                     "overwrite": false
                 }
             }
@@ -223,7 +223,7 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
         self.default = context.get_param("default")
 
     def process_convertor(self, record, context):
-        extracted = get_datetime(record[self.input_attr_idx])
+        extracted = get_datetime(record[self.input_col_idx])
         if len(extracted["datetime"]) == 0:
             return self.default
 

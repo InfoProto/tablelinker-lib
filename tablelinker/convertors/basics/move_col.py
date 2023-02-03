@@ -10,8 +10,8 @@ class MoveColConvertor(convertors.Convertor):
         "move_col"
 
     パラメータ
-        * "input_attr_idx": 移動する列の列番号または列名 [必須]
-        * "output_attr_idx": 移動先の列番号または列名 [最後尾]
+        * "input_col_idx": 移動する列の列番号または列名 [必須]
+        * "output_col_idx": 移動先の列番号または列名 [最後尾]
 
     注釈
         - 移動先の位置を列名で指定した場合、その列の直前に挿入します。
@@ -25,8 +25,8 @@ class MoveColConvertor(convertors.Convertor):
             {
                 "convertor": "move_col",
                 "params": {
-                    "input_attr_idx": "経度",
-                    "output_attr_idx": "緯度"
+                    "input_col_idx": "経度",
+                    "output_col_idx": "緯度"
                 }
             }
 
@@ -40,12 +40,12 @@ class MoveColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="移動する列",
                 description="処理をする対象の列",
                 required=True),
             params.AttributeParam(
-                "output_attr_idx",
+                "output_col_idx",
                 label="移動する列の移動先の位置",
                 description="新しく列の挿入位置です。",
                 label_suffix="の後",
@@ -64,22 +64,22 @@ class MoveColConvertor(convertors.Convertor):
         return len(attrs) == 1
 
     def process_header(self, headers, context):
-        self.input_attr_idx = context.get_param("input_attr_idx")
-        self.output_attr_idx = context.get_param("output_attr_idx") or \
+        self.input_col_idx = context.get_param("input_col_idx")
+        self.output_col_idx = context.get_param("output_col_idx") or \
             len(headers)
-        if self.output_attr_idx > self.input_attr_idx:
-            self.output_attr_idx -= 1
+        if self.output_col_idx > self.input_col_idx:
+            self.output_col_idx -= 1
 
         headers = self.move_list(
-            self.input_attr_idx, self.output_attr_idx, headers)
+            self.input_col_idx, self.output_col_idx, headers)
         context.output(headers)
 
     def process_record(self, record, context):
         record = self.move_list(
-            self.input_attr_idx, self.output_attr_idx, record)
+            self.input_col_idx, self.output_col_idx, record)
         context.output(record)
 
-    def move_list(self, input_attr_idx, output_attr_idx, target_list):
-        col = target_list.pop(input_attr_idx)
-        target_list.insert(output_attr_idx, col)
+    def move_list(self, input_col_idx, output_col_idx, target_list):
+        col = target_list.pop(input_col_idx)
+        target_list.insert(output_col_idx, col)
         return target_list

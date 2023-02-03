@@ -14,8 +14,8 @@ class InsertColConvertor(convertors.Convertor):
         "insert_col"
 
     パラメータ
-        * "output_attr_idx": 新しい列を追加する列番号または列名 [最後尾]
-        * "output_attr_name": 追加する列名 [必須]
+        * "output_col_idx": 新しい列を追加する列番号または列名 [最後尾]
+        * "output_col_name": 追加する列名 [必須]
         * "value": 追加した列にセットする値 [""]
 
     注釈
@@ -33,8 +33,8 @@ class InsertColConvertor(convertors.Convertor):
             {
                 "convertor": "insert_col",
                 "params": {
-                    "output_attr_idx": "所在地",
-                    "output_attr_name": "都道府県名",
+                    "output_col_idx": "所在地",
+                    "output_col_name": "都道府県名",
                     "value": "東京都"
                 }
             }
@@ -55,14 +55,14 @@ class InsertColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.OutputAttributeParam(
-                "output_attr_name",
+                "output_col_name",
                 label="出力列名",
                 description="新しく追加する列名です。",
                 help_text="既存の名前が指定された場合も同じ名前の列が追加されます。",
                 required=True,
             ),
             params.AttributeParam(
-                "output_attr_idx",
+                "output_col_idx",
                 label="出力列の位置",
                 description="新しい列の挿入位置です。",
                 label_suffix="の後",
@@ -87,22 +87,22 @@ class InsertColConvertor(convertors.Convertor):
         return len(attrs) == 0
 
     def process_header(self, headers, context):
-        new_name = context.get_param("output_attr_name")
-        output_attr_idx = context.get_param("output_attr_idx")
-        if output_attr_idx is None:
-            output_attr_idx = len(headers)
+        new_name = context.get_param("output_col_name")
+        output_col_idx = context.get_param("output_col_idx")
+        if output_col_idx is None:
+            output_col_idx = len(headers)
 
-        headers = self.insert_list(output_attr_idx, new_name, headers)
+        headers = self.insert_list(output_col_idx, new_name, headers)
         context.output(headers)
 
     def process_record(self, record, context):
         value = context.get_param("value")
-        output_attr_idx = context.get_param("output_attr_idx")
-        record = self.insert_list(output_attr_idx, value, record)
+        output_col_idx = context.get_param("output_col_idx")
+        record = self.insert_list(output_col_idx, value, record)
         context.output(record)
 
-    def insert_list(self, output_attr_idx, value, target_list):
-        target_list.insert(output_attr_idx, value)
+    def insert_list(self, output_col_idx, value, target_list):
+        target_list.insert(output_col_idx, value)
         return target_list
 
 
@@ -115,8 +115,8 @@ class InsertColsConvertor(convertors.Convertor):
         "insert_cols"
 
     パラメータ
-        * "output_attr_idx": 新しい列を追加する列番号または列名 [最後尾]
-        * "output_attr_names": 追加する列名のリスト [必須]
+        * "output_col_idx": 新しい列を追加する列番号または列名 [最後尾]
+        * "output_col_names": 追加する列名のリスト [必須]
         * "values": 追加した列にセットする値のリスト [""]
 
     注釈
@@ -137,8 +137,8 @@ class InsertColsConvertor(convertors.Convertor):
             {
                 "convertor": "insert_cols",
                 "params": {
-                    "output_attr_idx": "所在地",
-                    "output_attr_names": ["都道府県名", "市区町村名"],
+                    "output_col_idx": "所在地",
+                    "output_col_names": ["都道府県名", "市区町村名"],
                     "values": ["東京都", "八丈町"]
                 }
             }
@@ -157,13 +157,13 @@ class InsertColsConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.AttributeParam(
-                "output_attr_idx",
+                "output_col_idx",
                 label="新規列を追加する位置",
                 description="新規列の挿入位置です。",
                 required=False,
             ),
             params.StringListParam(
-                "output_attr_names",
+                "output_col_names",
                 label="新しい列名のリスト",
                 required=True
             ),
@@ -185,8 +185,8 @@ class InsertColsConvertor(convertors.Convertor):
 
     def initial_context(self, context):
         super().initial_context(context)
-        self.output_attr_idx = context.get_param("output_attr_idx")
-        self.new_names = context.get_param("output_attr_names")
+        self.output_col_idx = context.get_param("output_col_idx")
+        self.new_names = context.get_param("output_col_names")
         self.new_values = context.get_param("values")
 
         if isinstance(self.new_values, str):
@@ -195,22 +195,22 @@ class InsertColsConvertor(convertors.Convertor):
             logger.error("追加する列数と、値の列数が一致しません。")
             raise ValueError((
                 "The length of 'values' must be equal to "
-                "the length of 'output_attr_names'."))
+                "the length of 'output_col_names'."))
 
     def process_header(self, headers, context):
-        if self.output_attr_idx is None:
-            self.output_attr_idx = len(headers)
+        if self.output_col_idx is None:
+            self.output_col_idx = len(headers)
 
         headers = self.insert_list(
-            self.output_attr_idx, self.new_names, headers)
+            self.output_col_idx, self.new_names, headers)
         context.output(headers)
 
     def process_record(self, record, context):
         record = self.insert_list(
-            self.output_attr_idx, self.new_values, record)
+            self.output_col_idx, self.new_values, record)
         context.output(record)
 
-    def insert_list(self, output_attr_idx, value_list, target_list):
-        new_list = target_list[0:output_attr_idx] + value_list \
-            + target_list[output_attr_idx:]
+    def insert_list(self, output_col_idx, value_list, target_list):
+        new_list = target_list[0:output_col_idx] + value_list \
+            + target_list[output_col_idx:]
         return new_list

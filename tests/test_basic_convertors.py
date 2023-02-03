@@ -6,7 +6,7 @@ import pytest
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
+sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
 
 
 def test_calc_col():
@@ -14,10 +14,10 @@ def test_calc_col():
     table = table.convert(
         convertor="calc",
         params={
-            "input_attr_idx1": "出生数",
-            "input_attr_idx2": "人口",
+            "input_col_idx1": "出生数",
+            "input_col_idx2": "人口",
             "operator": "/",
-            "output_attr_name": "出生率（計算）",
+            "output_col_name": "出生率（計算）",
             "overwrite": False
         },
     )
@@ -42,10 +42,10 @@ def test_concat_col():
     table = table.convert(
         convertor="concat_col",
         params={
-            "input_attr_idx1": "都道府県名",
-            "input_attr_idx2": "市区町村名",
-            "output_attr_name": "自治体名",
-            "output_attr_idx": "名称",
+            "input_col_idx1": "都道府県名",
+            "input_col_idx2": "市区町村名",
+            "output_col_name": "自治体名",
+            "output_col_idx": "名称",
             "separator": " "
         },
     )
@@ -75,11 +75,11 @@ def test_concat_cols():
     table = table.convert(
         convertor="concat_cols",
         params={
-            "input_attr_idxs": [
+            "input_col_idxs": [
                 "連絡先名称", "連絡先電話番号", "連絡先内線番号"
             ],
-            "output_attr_name": "連絡先情報",
-            "output_attr_idx": "画像",
+            "output_col_name": "連絡先情報",
+            "output_col_idx": "画像",
             "separator": ";"
         },
     )
@@ -137,7 +137,7 @@ def test_delete_col():
     table = table.convert(
         convertor="delete_col",
         params={
-            "input_attr_idx": "座標系",
+            "input_col_idx": "座標系",
         },
     )
 
@@ -165,7 +165,7 @@ def test_delete_string_match():
     table = table.convert(
         convertor="delete_string_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "",
         },
     )
@@ -189,7 +189,7 @@ def test_delete_string_contains():
     table = table.convert(
         convertor="delete_string_contains",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "市",
         },
     )
@@ -213,7 +213,7 @@ def test_delete_pattern_match():
     table = table.convert(
         convertor="delete_pattern_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "pattern": "(^$|.+区部$|.+市$)",
         },
     )
@@ -239,9 +239,9 @@ def test_generate_pk():
     table = table.convert(
         convertor="generate_pk",
         params={
-            "input_attr_idx": "観光スポット名称",
-            "output_attr_name": "pk",
-            "output_attr_idx": 0,
+            "input_col_idx": "観光スポット名称",
+            "output_col_name": "pk",
+            "output_col_idx": 0,
         },
     )
 
@@ -270,18 +270,18 @@ def test_generate_pk_not_unique():
         table = table.convert(
             convertor="generate_pk",
             params={
-                "input_attr_idx": "座標系",
-                "output_attr_name": "pk",
-                "output_attr_idx": 0,
+                "input_col_idx": "座標系",
+                "output_col_name": "pk",
+                "output_col_idx": 0,
             },
         )
 
     table = table.convert(
         convertor="generate_pk",
         params={
-            "input_attr_idx": "座標系",
-            "output_attr_name": "pk",
-            "output_attr_idx": 0,
+            "input_col_idx": "座標系",
+            "output_col_name": "pk",
+            "output_col_idx": 0,
             "error_if_not_unique": False,
             "skip_if_not_unique": True,
         },
@@ -312,8 +312,8 @@ def test_insert_col():
     table = table.convert(
         convertor="insert_col",
         params={
-            "output_attr_idx": "所在地",
-            "output_attr_name": "都道府県名",
+            "output_col_idx": "所在地",
+            "output_col_name": "都道府県名",
             "value": "東京都",
         },
     )
@@ -338,8 +338,8 @@ def test_insert_cols():
     table = table.convert(
         convertor="insert_cols",
         params={
-            "output_attr_idx": "所在地",
-            "output_attr_names": ["都道府県名", "市区町村名"],
+            "output_col_idx": "所在地",
+            "output_col_names": ["都道府県名", "市区町村名"],
             "values": ["東京都", "八丈町"],
         },
     )
@@ -395,8 +395,8 @@ def test_move_col():
     table = table.convert(
         convertor="move_col",
         params={
-            "input_attr_idx": "経度",
-            "output_attr_idx": "緯度"
+            "input_col_idx": "経度",
+            "output_col_idx": "緯度"
         },
     )
 
@@ -420,8 +420,8 @@ def test_rename_col():
     table = table.convert(
         convertor="rename_col",
         params={
-            "input_attr_idx": 0,
-            "output_attr_name": "都道府県名",
+            "input_col_idx": 0,
+            "output_col_name": "都道府県名",
         },
     )
 
@@ -461,7 +461,7 @@ def test_select_string_match():
     table = table.convert(
         convertor="select_string_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "13 東京都"
         },
     )
@@ -483,7 +483,7 @@ def test_select_string_contains():
     table = table.convert(
         convertor="select_string_contains",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "東京都"
         },
     )
@@ -505,7 +505,7 @@ def test_select_pattern_match():
     table = table.convert(
         convertor="select_pattern_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "pattern": ".*東京都?$"
         },
     )
@@ -527,8 +527,8 @@ def test_split_col():
     table = table.convert(
         convertor="split_col",
         params={
-            "input_attr_idx": 0,
-            "output_attr_idxs": ["コード", "地域名"],
+            "input_col_idx": 0,
+            "output_col_idxs": ["コード", "地域名"],
             "separator": r"\s+",
         },
     )
@@ -554,7 +554,7 @@ def test_split_row():
     table = table.convert(
         convertor="split_row",
         params={
-            "input_attr_idx": "アクセス方法",
+            "input_col_idx": "アクセス方法",
             "separator": "。"
         }
     )
@@ -575,7 +575,7 @@ def test_truncate():
     table = table.convert(
         convertor="truncate",
         params={
-            "input_attr_idx": "説明",
+            "input_col_idx": "説明",
             "length": 20,
             "ellipsis": "...",
             "overwrite": True
@@ -604,8 +604,8 @@ def test_truncate_replace():
     table = table.convert(
         convertor="truncate",
         params={
-            "input_attr_idx": "説明",
-            "output_attr_idx": "説明",
+            "input_col_idx": "説明",
+            "output_col_idx": "説明",
             "length": 20,
             "ellipsis": "...",
             "overwrite": True
@@ -633,7 +633,7 @@ def test_update_string_match():
     table = table.convert(
         convertor="update_string_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "全　国",
             "new": "全国"
         },
@@ -655,7 +655,7 @@ def test_update_string_contains():
     table = table.convert(
         convertor="update_string_contains",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "query": "　",
             "new": ""
         },
@@ -678,7 +678,7 @@ def test_update_pattern_match():
     table = table.convert(
         convertor="update_pattern_match",
         params={
-            "input_attr_idx": 0,
+            "input_col_idx": 0,
             "pattern": r"^\d\d\s",
             "new": ""
         },
@@ -705,7 +705,7 @@ def test_to_hankaku():
     table = table.convert(
         convertor="to_hankaku",
         params={
-            "input_attr_idx": "連絡先電話番号",
+            "input_col_idx": "連絡先電話番号",
             "overwrite": True,
         },
     )
@@ -727,7 +727,7 @@ def test_to_zenkaku():
     table = table.convert(
         convertor="to_zenkaku",
         params={
-            "input_attr_idx": "所在地",
+            "input_col_idx": "所在地",
             "overwrite": True,
         },
     )

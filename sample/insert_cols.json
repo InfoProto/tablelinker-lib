@@ -1,8 +1,0 @@
-{
-    "convertor": "insert_cols",
-    "params": {
-        "output_attr_idx": "所在地",
-        "output_attr_names": ["都道府県名", "市区町村名"],
-        "values": ["東京都", "八丈町"]
-    }
-}

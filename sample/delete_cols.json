@@ -1,6 +1,0 @@
-{
-	"convertor": "delete_cols",
-	"params": {
-		"input_attr_idxs": ["座標系", "八丈町ホームページ記載"]
-	}
-}

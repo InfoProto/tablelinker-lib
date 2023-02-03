@@ -4,7 +4,7 @@ import re
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/")
+sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
 
 
 def test_date_extract():
@@ -23,8 +23,8 @@ def test_date_extract():
     table = table.convert(
         convertor="date_extract",
         params={
-            "input_attr_idx": "期間",
-            "output_attr_name": "開始日",
+            "input_col_idx": "期間",
+            "output_col_name": "開始日",
             "overwrite": True,
         },
     )
@@ -53,8 +53,8 @@ def test_datetime_extract():
     table = table.convert(
         convertor="datetime_extract",
         params={
-            "input_attr_idx": "発生時刻",
-            "output_attr_name": "正規化日時",
+            "input_col_idx": "発生時刻",
+            "output_col_name": "正規化日時",
             "format": "%Y-%m-%dT%H:%M:00+0900",
         },
     )
@@ -98,8 +98,8 @@ def test_to_seireki():
     table = table.convert(
         convertor="to_seireki",
         params={
-            "input_attr_idx": "噴火年月日",
-            "output_attr_idx": 0,
+            "input_col_idx": "噴火年月日",
+            "output_col_idx": 0,
             "overwrite": True,
         },
     )
@@ -128,9 +128,9 @@ def test_to_wareki():
     table = table.convert(
         convertor="to_wareki",
         params={
-            "input_attr_idx": "年次",
-            "output_attr_name": "和暦",
-            "output_attr_idx": 1,
+            "input_col_idx": "年次",
+            "output_col_name": "和暦",
+            "output_col_idx": 1,
         },
     )
 
@@ -152,9 +152,9 @@ def test_geocoder_code():
     table = table.convert(
         convertor="geocoder_code",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "市区町村コード",
-            "output_attr_idx": 0,
+            "input_col_idx": "所在地",
+            "output_col_name": "市区町村コード",
+            "output_col_idx": 0,
             "within": ["東京都"],
             "default": "0"
         }
@@ -179,9 +179,9 @@ def test_geocoder_latlong():
     table = table.convert(
         convertor="geocoder_latlong",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_names": ["緯度", "経度", "レベル"],
-            "output_attr_idx": "説明",
+            "input_col_idx": "所在地",
+            "output_col_names": ["緯度", "経度", "レベル"],
+            "output_col_idx": "説明",
             "within": ["東京都"],
             "default": "",
         }
@@ -207,9 +207,9 @@ def test_geocoder_municipality():
     table = table.convert(
         convertor="geocoder_municipality",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_names": ["市区町村名"],
-            "output_attr_idx": 0,
+            "input_col_idx": "所在地",
+            "output_col_names": ["市区町村名"],
+            "output_col_idx": 0,
             "within": ["東京都"],
             "default": "不明"
         }
@@ -253,8 +253,8 @@ def test_geocoder_municipality_seirei():
     table = table.convert(
         convertor="geocoder_municipality",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_names": ["市町村名", "区名"],
+            "input_col_idx": "所在地",
+            "output_col_names": ["市町村名", "区名"],
             "default": ""
         }
     )
@@ -280,8 +280,8 @@ def test_geocoder_nodeid():
     table = table.convert(
         convertor="geocoder_nodeid",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "ノードID"
+            "input_col_idx": "所在地",
+            "output_col_name": "ノードID"
         }
     )
 
@@ -305,9 +305,9 @@ def test_geocoder_postcode():
     table = table.convert(
         convertor="geocoder_postcode",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "郵便番号",
-            "output_attr_idx": "所在地",
+            "input_col_idx": "所在地",
+            "output_col_name": "郵便番号",
+            "output_col_idx": "所在地",
             "hiphen": True,
             "default": ""
         }
@@ -329,9 +329,9 @@ def test_geocoder_prefecture():
     table = table.convert(
         convertor="geocoder_prefecture",
         params={
-            "input_attr_idx": "所在地",
-            "output_attr_name": "都道府県名",
-            "output_attr_idx": 0,
+            "input_col_idx": "所在地",
+            "output_col_name": "都道府県名",
+            "output_col_idx": 0,
             "default": "東京都"
         }
     )
@@ -360,8 +360,8 @@ def test_mtab_wikilink():
     table = table.convert(
         convertor="mtab_wikilink",
         params={
-            "input_attr_idx": "col0",
-            "output_attr_name": "Wikilink",
+            "input_col_idx": "col0",
+            "output_col_name": "Wikilink",
             "overwrite": True,
         },
     )

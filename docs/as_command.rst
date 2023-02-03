@@ -70,7 +70,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
     {
         "convertor":"rename_col",
         "params":{
-            "input_attr_idx":0,
+            "input_col_idx":0,
             "new_col_name":"都道府県名"
         }
     }
@@ -156,7 +156,7 @@ Tablelinker コマンドの基本的な用途は、 CSV ファイルに
         {
             "convertor":"rename_col",
             "params":{
-                "input_attr_idx":0,
+                "input_col_idx":0,
                 "new_col_name":"都道府県名"
             }
         },

@@ -10,10 +10,10 @@ class TruncateConvertor(convertors.InputOutputConvertor):
         "truncate"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_idx": 分割した結果を出力する列番号または
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_idx": 分割した結果を出力する列番号または
           列名のリスト
-        * "output_attr_name": 結果を出力する列名
+        * "output_col_name": 結果を出力する列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -21,9 +21,9 @@ class TruncateConvertor(convertors.InputOutputConvertor):
         * "ellipsis": 切り詰めた場合に追加される記号 ["…"]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -40,7 +40,7 @@ class TruncateConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "truncate",
                 "params": {
-                    "input_attr_idx": "説明",
+                    "input_col_idx": "説明",
                     "length": 120,
                     "ellipsis": "..."
                 }
@@ -76,7 +76,7 @@ class TruncateConvertor(convertors.InputOutputConvertor):
         self.ellipsis = context.get_param("ellipsis")
 
     def process_convertor(self, record, context):
-        value = record[self.input_attr_idx]
+        value = record[self.input_col_idx]
         if len(value) > self.length:
             value = value[:self.length] + self.ellipsis
 

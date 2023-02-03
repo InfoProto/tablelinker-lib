@@ -12,17 +12,17 @@ class SplitColConvertor(convertors.Convertor):
         "split_col"
 
     パラメータ
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_idxs": 分割した結果を出力する列番号または
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_idxs": 分割した結果を出力する列番号または
           列名のリスト [必須]
         * "separator": 区切り文字（正規表現） [","]
 
     注釈
-        - ``output_attr_idxs`` で指定された列名が存在しない場合、
+        - ``output_col_idxs`` で指定された列名が存在しない場合、
           最後尾に追加されます。
-        - 分割した列の数が ``output_attr_idxs`` よりも少ない場合は
+        - 分割した列の数が ``output_col_idxs`` よりも少ない場合は
           足りない列の値が "" になります。
-        - 分割した列の数が ``output_attr_idxs`` よりも多い場合は
+        - 分割した列の数が ``output_col_idxs`` よりも多い場合は
           最後の列に残りのすべての文字列が出力されます。
 
     サンプル
@@ -33,8 +33,8 @@ class SplitColConvertor(convertors.Convertor):
             {
                 "convertor": "split_col",
                 "params": {
-                    "input_attr_idx": "氏名",
-                    "output_attr_idxs": ["姓", "名"],
+                    "input_col_idx": "氏名",
+                    "output_col_idxs": ["姓", "名"],
                     "separator": "\\s+",
                 }
             }
@@ -53,12 +53,12 @@ class SplitColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="入力列",
                 description="処理をする対象の列を選択してください。",
                 required=True),
             params.OutputAttributeListParam(
-                "output_attr_idxs",
+                "output_col_idxs",
                 label="分割後に出力する列番号または列名のリスト",
                 description="変換結果を出力する列名です。",
                 required=True,
@@ -87,29 +87,29 @@ class SplitColConvertor(convertors.Convertor):
         super().initial_context(context)
         self.headers = context.get_data("headers")
         self.re_separator = re.compile(context.get_param("separator"))
-        self.input_attr_idx = context.get_param("input_attr_idx")
-        self.output_attr_idxs = context.get_param("output_attr_idxs")
+        self.input_col_idx = context.get_param("input_col_idx")
+        self.output_col_idxs = context.get_param("output_col_idxs")
 
     def process_header(self, headers, context):
         # 出力列として指定された列番号が存在しない場合の処理
         counter = 1
-        for i, idx in enumerate(self.output_attr_idxs):
+        for i, idx in enumerate(self.output_col_idxs):
             if idx >= len(self.headers):
-                input_header = headers[self.input_attr_idx]
-                self.output_attr_idxs[i] = len(self.headers)
+                input_header = headers[self.input_col_idx]
+                self.output_col_idxs[i] = len(self.headers)
                 self.headers.append(f"{input_header}_{counter:d}")
                 counter += 1
 
         context.output(self.headers)
 
     def process_record(self, record, context):
-        original = record[self.input_attr_idx]
+        original = record[self.input_col_idx]
         splits = self.re_separator.split(
-            original, maxsplit=len(self.output_attr_idxs) - 1)
+            original, maxsplit=len(self.output_col_idxs) - 1)
 
         new_record = record + [""] * (len(self.headers) - len(record))
         for i, new_val in enumerate(splits):
-            new_record[self.output_attr_idxs[i]] = new_val
+            new_record[self.output_col_idxs[i]] = new_val
 
         context.output(new_record)
 
@@ -123,7 +123,7 @@ class SplitRowConvertor(convertors.Convertor):
         "explode_col"
 
     パラメータ
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
+        * "input_col_idx": 対象列の列番号または列名 [必須]
         * "separator": 区切り文字（正規表現） [","]
 
     注釈
@@ -138,7 +138,7 @@ class SplitRowConvertor(convertors.Convertor):
             {
                 "convertor": "split_row",
                 "params": {
-                    "input_attr_idx": "アクセス方法",
+                    "input_col_idx": "アクセス方法",
                     "separator": "。",
                 }
             }
@@ -155,7 +155,7 @@ class SplitRowConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="入力列",
                 description="処理をする対象の列",
                 required=True
@@ -181,12 +181,12 @@ class SplitRowConvertor(convertors.Convertor):
     def initial_context(self, context):
         super().initial_context(context)
         self.re_separator = re.compile(context.get_param("separator"))
-        self.input_attr_idx = context.get_param("input_attr_idx")
+        self.input_col_idx = context.get_param("input_col_idx")
 
     def process_record(self, record, context):
-        splits = self.re_separator.split(record[self.input_attr_idx])
+        splits = self.re_separator.split(record[self.input_col_idx])
 
         for value in splits:
             new_record = record[:]  # 元のレコードを複製
-            new_record[self.input_attr_idx] = value
+            new_record[self.input_col_idx] = value
             context.output(new_record)

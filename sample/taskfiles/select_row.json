@@ -1,6 +1,6 @@
 {
     "convertor": "select_pattern_match",
     "params": {
-        "input_attr_idx":0,
+        "input_col_idx":0,
         "pattern":"(.+区部$|.+市$)"}
 }

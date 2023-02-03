@@ -10,7 +10,7 @@ class DeleteColConvertor(convertors.Convertor):
         "delete_col"
 
     パラメータ
-        * "input_attr_idx": 削除する入力列の列番号または列名 [必須]
+        * "input_col_idx": 削除する入力列の列番号または列名 [必須]
 
     サンプル
         表の「備考」列を削除します。
@@ -20,7 +20,7 @@ class DeleteColConvertor(convertors.Convertor):
             {
                 "convertor": "delete_col",
                 "params": {
-                    "input_attr_idx": "備考"
+                    "input_col_idx": "備考"
                 }
             }
 
@@ -38,7 +38,7 @@ class DeleteColConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeParam(
-                "input_attr_idx",
+                "input_col_idx",
                 label="削除する列",
                 description="削除する列",
                 required=True
@@ -56,17 +56,17 @@ class DeleteColConvertor(convertors.Convertor):
         return True
 
     def process_header(self, headers, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        headers = self.delete_col(input_attr_idx, headers)
+        input_col_idx = context.get_param("input_col_idx")
+        headers = self.delete_col(input_col_idx, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        input_attr_idx = context.get_param("input_attr_idx")
-        record = self.delete_col(input_attr_idx, record)
+        input_col_idx = context.get_param("input_col_idx")
+        record = self.delete_col(input_col_idx, record)
         context.output(record)
 
-    def delete_col(self, input_attr_idx, target_list):
-        target_list.pop(input_attr_idx)
+    def delete_col(self, input_col_idx, target_list):
+        target_list.pop(input_col_idx)
         return target_list
 
 
@@ -79,7 +79,7 @@ class DeleteColsConvertor(convertors.Convertor):
         "delete_cols"
 
     パラメータ
-        * "input_attr_idxs": 削除する入力列の列番号または列名のリスト [必須]
+        * "input_col_idxs": 削除する入力列の列番号または列名のリスト [必須]
 
     サンプル
         表の「その他」と「備考」列を削除します。
@@ -89,7 +89,7 @@ class DeleteColsConvertor(convertors.Convertor):
             {
                 "convertor": "delete_cols",
                 "params": {
-                    "input_attr_idxs": ["その他", "備考"]
+                    "input_col_idxs": ["その他", "備考"]
                 }
             }
 
@@ -107,7 +107,7 @@ class DeleteColsConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.InputAttributeListParam(
-                "input_attr_idxs",
+                "input_col_idxs",
                 label="削除する列",
                 description="削除する列",
                 required=True),
@@ -124,13 +124,13 @@ class DeleteColsConvertor(convertors.Convertor):
         return True
 
     def process_header(self, headers, context):
-        self.input_attr_idxs = sorted(
-            context.get_param("input_attr_idxs"), reverse=True)
-        headers = self.delete_cols(self.input_attr_idxs, headers)
+        self.input_col_idxs = sorted(
+            context.get_param("input_col_idxs"), reverse=True)
+        headers = self.delete_cols(self.input_col_idxs, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        record = self.delete_cols(self.input_attr_idxs, record)
+        record = self.delete_cols(self.input_col_idxs, record)
         context.output(record)
 
     def delete_cols(self, positions, target_list):

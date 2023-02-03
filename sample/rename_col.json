@@ -1,7 +1,0 @@
-{
-	"convertor": "rename_col",
-	"params": {
-		"input_attr_idx": 0,
-		"output_attr_name": "都道府県名"
-	}
-}

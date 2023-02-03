@@ -86,9 +86,9 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
         "geocoder_code"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -97,9 +97,9 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
         * "with_check_digit": 検査数字を含むかどうか [False]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -120,9 +120,9 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "geocoder_code",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_name": "市区町村コード",
-                    "output_attr_idx": 0,
+                    "input_col_idx": "所在地",
+                    "output_col_name": "市区町村コード",
+                    "output_col_idx": 0,
                     "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
                     "default": "0"
                 }
@@ -176,7 +176,7 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node is not None:
@@ -203,9 +203,9 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
         "geocoder_latlong"
 
     パラメータ（InputOutputsConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_names": 結果を出力する列名のリスト
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_names": 結果を出力する列名のリスト
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -213,12 +213,12 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
         * "default": 都道府県名が計算できなかった場合の値 ["", "", ""]
 
     注釈（InputOutputsConvertor 共通）
-        - ``output_attr_idx`` が省略された場合、最後尾に追加します。
-        - ``output_attr_names`` で指定された列名が存在している場合、
-          ``output_attr_idx`` が指定する位置に移動されます。
+        - ``output_col_idx`` が省略された場合、最後尾に追加します。
+        - ``output_col_names`` で指定された列名が存在している場合、
+          ``output_col_idx`` が指定する位置に移動されます。
 
     注釈（コンバータ固有）
-        - ``output_attr_names`` には、「緯度」「経度」「住所レベル」を
+        - ``output_col_names`` には、「緯度」「経度」「住所レベル」を
           格納するための3つの列名を指定する必要があります。省略された場合、
           「緯度」「経度」「住所レベル」が列名として利用されます。
         - 住所が一意ではない場合、最初の候補を選択します。
@@ -235,9 +235,9 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
             {
                 "convertor": "geocoder_latlong",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_names": ["緯度", "経度", "住所レベル"],
-                    "output_attr_idx": 0,
+                    "input_col_idx": "所在地",
+                    "output_col_names": ["緯度", "経度", "住所レベル"],
+                    "output_col_idx": 0,
                     "within": ["東京都"],
                     "default": ""
                 }
@@ -284,13 +284,13 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
         jageocoder.set_search_config(target_area=self.within)
 
         # 出力列名が3つ指定されていることを確認
-        self.output_attr_names = context.get_param("output_attr_names")
-        if self.output_attr_names is None:
-            self.output_attr_names = ["緯度", "経度", "住所レベル"]
-        elif isinstance(self.output_attr_names, str) or \
-                len(self.output_attr_names) != 3:
+        self.output_col_names = context.get_param("output_col_names")
+        if self.output_col_names is None:
+            self.output_col_names = ["緯度", "経度", "住所レベル"]
+        elif isinstance(self.output_col_names, str) or \
+                len(self.output_col_names) != 3:
             raise ValueError((
-                "The output_attr_names parameter of geocoder_latlong "
+                "The output_col_names parameter of geocoder_latlong "
                 "requires 3 column names for latitude, longitude and level."))
 
         # デフォルト値が文字列の場合は 3 列ともその値にする
@@ -304,7 +304,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node is not None:
@@ -322,9 +322,9 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
         "geocoder_municipality"
 
     パラメータ（InputOutputsConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_names": 結果を出力する列名のリスト
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_names": 結果を出力する列名のリスト
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -332,16 +332,16 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
         * "default": 都道府県名が計算できなかった場合の値 ["", ""]
 
     注釈（InputOutputsConvertor 共通）
-        - ``output_attr_idx`` が省略された場合、最後尾に追加します。
-        - ``output_attr_names`` で指定された列名が存在している場合、
-          ``output_attr_idx`` が指定する位置に移動されます。
+        - ``output_col_idx`` が省略された場合、最後尾に追加します。
+        - ``output_col_names`` で指定された列名が存在している場合、
+          ``output_col_idx`` が指定する位置に移動されます。
 
     注釈（コンバータ固有）
-        - ``output_attr_names`` に2列分の名前を指定した場合、
+        - ``output_col_names`` に2列分の名前を指定した場合、
           政令指定都市ならば1列目に市名、2列目に区名を格納します。
           それ以外の市区町村の場合（特別区を含む）、1列目に
           市区町村名、2列目に空欄を格納します。
-        - ``output_attr_names`` に1列分の名前しか指定しなかった場合、
+        - ``output_col_names`` に1列分の名前しか指定しなかった場合、
           政令指定都市ならばその列に市名と区名を空白で区切って格納します。
           それ以外の市区町村の場合（特別区を含む）、市区町村名を格納します。
         - 住所が一意ではない場合、最初の候補を選択します。
@@ -358,9 +358,9 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
             {
                 "convertor": "geocoder_municipality",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_name": ["市区町村名", "政令市の区名"]
-                    "output_attr_idx": 0,
+                    "input_col_idx": "所在地",
+                    "output_col_name": ["市区町村名", "政令市の区名"]
+                    "output_col_idx": 0,
                     "within": ["東京都", "埼玉県", "神奈川県"],
                     "default": "0"
                 }
@@ -405,16 +405,16 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
         jageocoder.set_search_config(target_area=self.within)
 
         # 出力列名が2つ指定されていることを確認
-        self.output_attr_names = context.get_param("output_attr_names")
-        if self.output_attr_names is None:
-            self.output_attr_names = ["市区町村名", "政令市の区名"]
-        elif isinstance(self.output_attr_names, str):
-            self.output_attr_names = [self.output_attr_names]
-        elif len(self.output_attr_names) == 1:
+        self.output_col_names = context.get_param("output_col_names")
+        if self.output_col_names is None:
+            self.output_col_names = ["市区町村名", "政令市の区名"]
+        elif isinstance(self.output_col_names, str):
+            self.output_col_names = [self.output_col_names]
+        elif len(self.output_col_names) == 1:
             pass
-        elif len(self.output_attr_names) != 2:
+        elif len(self.output_col_names) != 2:
             raise ValueError((
-                "'geocoder_municiparlity' コンバータの 'output_attr_names' "
+                "'geocoder_municiparlity' コンバータの 'output_col_names' "
                 "パラメータには、「市区町村名」「政令市の区名」に対応する"
                 "2つの列名を指定する必要があります。"))
 
@@ -428,11 +428,11 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
             self.default = self.default[0:2]
 
         # 出力列の数にそろえる
-        self.default = self.default[0: len(self.output_attr_names)]
+        self.default = self.default[0: len(self.output_col_names)]
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node is None:
@@ -450,9 +450,9 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
                     break
 
         # 結果を1列で返す場合と2列で返す場合の処理
-        if len(self.output_attr_names) == 1 and len(result) > 1:
+        if len(self.output_col_names) == 1 and len(result) > 1:
             result = [" ".join(result)]
-        elif len(self.output_attr_names) > 1 and len(result) == 1:
+        elif len(self.output_col_names) > 1 and len(result) == 1:
             result.append(self.default[1])
 
         return result
@@ -475,9 +475,9 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
         "geocoder_nodeid"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -485,9 +485,9 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
         * "default": コードが計算できなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -506,9 +506,9 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "geocoder_code",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_name": "市区町村コード",
-                    "output_attr_idx": 0,
+                    "input_col_idx": "所在地",
+                    "output_col_name": "市区町村コード",
+                    "output_col_idx": 0,
                     "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
                     "default": "0"
                 }
@@ -556,7 +556,7 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node:
@@ -574,9 +574,9 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
         "geocoder_postcode"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -585,9 +585,9 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
         * "hiphen": 3桁目と4桁目の間にハイフンをいれるかどうか [False]
 
     注釈（InputOutputsConvertor 共通）
-        - ``output_attr_idx`` が省略された場合、最後尾に追加します。
-        - ``output_attr_names`` で指定された列名が存在している場合、
-          ``output_attr_idx`` が指定する位置に移動されます。
+        - ``output_col_idx`` が省略された場合、最後尾に追加します。
+        - ``output_col_names`` で指定された列名が存在している場合、
+          ``output_col_idx`` が指定する位置に移動されます。
 
     注釈（コンバータ固有）
         - 住所が一意ではない場合、最初の候補を選択します。
@@ -595,9 +595,9 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
           都道府県名や市区町村名を指定してください。
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -611,9 +611,9 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "geocoder_postal",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_name": "郵便番号",
-                    "output_attr_idx": "所在地",
+                    "input_col_idx": "所在地",
+                    "output_col_name": "郵便番号",
+                    "output_col_idx": "所在地",
                     "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
                     "default": "",
                     "hiphen": true
@@ -669,7 +669,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node is not None:
@@ -690,9 +690,9 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
         "geocoder_prefecture"
 
     パラメータ（InputOutputConvertor 共通）
-        * "input_attr_idx": 対象列の列番号または列名 [必須]
-        * "output_attr_name": 結果を出力する列名
-        * "output_attr_idx": 分割した結果を出力する列番号または列名
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "output_col_name": 結果を出力する列名
+        * "output_col_idx": 分割した結果を出力する列番号または列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]
 
     パラメータ（コンバータ固有）
@@ -700,9 +700,9 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
         * "default": 都道府県名が計算できなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
-        - ``output_attr_name`` が省略された場合、
-          ``input_attr_idx`` 列の列名が出力列名として利用されます。
-        - ``output_attr_idx`` が省略された場合、
+        - ``output_col_name`` が省略された場合、
+          ``input_col_idx`` 列の列名が出力列名として利用されます。
+        - ``output_col_idx`` が省略された場合、
           出力列名が存在する列名ならばその列の位置に出力し、
           存在しないならば最後尾に追加します。
 
@@ -721,9 +721,9 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "geocoder_prefecture",
                 "params": {
-                    "input_attr_idx": "所在地",
-                    "output_attr_name": "都道府県名",
-                    "output_attr_idx": 0,
+                    "input_col_idx": "所在地",
+                    "output_col_name": "都道府県名",
+                    "output_col_idx": 0,
                     "within": ["東京都"],
                     "default": "0"
                 }
@@ -769,7 +769,7 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
 
     def process_convertor(self, record, context):
         result = self.default
-        value = str(record[self.input_attr_idx])
+        value = str(record[self.input_col_idx])
         node = search_node(value)
 
         if node is not None:
