@@ -13,7 +13,9 @@ class ReorderColsConvertor(convertors.Convertor):
         * "column_list": 並び替えた列番号または列名のリスト [必須]
 
     注釈
-        - ``column_list`` に含まれない列は削除されます。
+        - ``column_list`` に指定した列が存在しない場合は
+          `ValueError` を送出します。
+        - ``column_list`` に指定されなかった列は削除されます。
 
     サンプル
         列を選択して並び替えます。

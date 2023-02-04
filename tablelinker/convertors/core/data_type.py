@@ -100,7 +100,8 @@ class DataTypeResolver(object):
 
         if data_type_key is None:
             # 実数と整数の合計が、しきい値を超えるなら、実数として扱う。
-            if self.counter["float"] + self.counter["integer"] > self.threshold:
+            if self.counter["float"] + self.counter["integer"] \
+                    > self.threshold:
                 data_type_key = "float"
             if data_type_key is None:
                 data_type_key = "unknown"

@@ -42,6 +42,7 @@ def check_jageocoder(func):
 
     return wrapper
 
+
 def search_node(address_or_id: str):
     """
     住所文字列またはノードIDから、対応する住所ノードを検索します。

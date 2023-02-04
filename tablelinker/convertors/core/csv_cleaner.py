@@ -27,8 +27,13 @@ class CSVCleaner(object):
         self.text_io = None
         self.csv_reader = None
         self.delimiter = ','
+        self.encoding = "UTF-8"
 
         if isinstance(data, bytes):
+            self.encoding = nkf.guess(data)
+            if self.encoding == "Shift_JIS":
+                self.encoding = "cp932"
+
             self.data = nkf.nkf('-w', data).decode('utf-8')
         else:
             self.data = data

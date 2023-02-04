@@ -5,10 +5,11 @@ from logging import getLogger
 import os
 import sys
 import tempfile
+from typing import List
 
 from docopt import docopt
 
-from tablelinker import Table
+from tablelinker import Table, Task
 
 logger = getLogger(__name__)
 
@@ -19,11 +20,12 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-a]\
+  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [-a] \
  ([-t <sheet>] <template>|--headers=<headers>)
-  {p} convert [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning]\
-  -c <convertor> -p <params>
-  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--no-cleaning] [<task>...]
+  {p} convert [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [--no-cleaning]\
+ -c <convertor> -p <params>
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [--no-cleaning]\
+ [<task>...]
 
 Options:
   -h --help              このヘルプを表示
@@ -31,6 +33,7 @@ Options:
   -i, --input=<file>     入力ファイルを指定（省略時は標準入力）
   -s, --sheet=<sheet>    入力ファイルのうち対象とするシート名（省略時は先頭）
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
+  -m, --merge            出力ファイルにマージ（省略時は上書き）
   -a, --auto             マッピング情報ではなくマッピング結果を出力する
   -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
@@ -59,81 +62,8 @@ Examples:
   マッピング情報はタスクとして利用できる JSON 形式で出力されます。
 """.format(p='tablelinker')
 
-def _validate_task(task: dict):
-    """
-    タスクの書式をチェックします。
 
-    Notes
-    -----
-    書式に問題があれば ValueError 例外を送出します。
-    """
-    if not isinstance(task, dict):
-        raise ValueError("タスクが object ではありません。")
-
-    unrecognized_keys = []
-    for key in task.keys():
-        if key not in ("convertor", "params", "note",):
-            unrecognized_keys.append(key)
-
-    if len(unrecognized_keys) > 0:
-        raise ValueError("未定義のキー '{}' が使われています。".format(
-            ",".join(unrecognized_keys)))
-
-    undefined_keys = []
-    for key in ("convertor", "params",):
-        if key not in task:
-            undefined_keys.append(key)
-
-    if len(undefined_keys) > 0:
-        raise ValueError("キー '{}' が必要です。".format(
-            ",".join(undefined_keys)))
-
-
-def parse_taskfiles(args: dict):
-    """
-    タスクファイルを解析・検証してタスクリストを作成します。
-    """
-    taskfiles = args['<task>']
-    all_tasks = []
-
-    if len(taskfiles) > 0:
-        for taskfile in taskfiles:
-            with open(taskfile, 'r') as jsonf:
-                logger.debug("Reading tasks from '{}'.".format(
-                    taskfile))
-                try:
-                    tasks = json.load(jsonf)
-                except json.decoder.JSONDecodeError as e:
-                    logger.error((
-                        "タスクファイル '{}' の JSON 表記が正しくありません。"
-                        "json.decoder.JSONDecodeError: {}").format(taskfile, e))
-                    sys.exit(-1)
-
-            if isinstance(tasks, dict):
-                # コンバータが一つだけ指定されている場合
-                tasks = [tasks]
-
-            try:
-                if isinstance(tasks, list):
-                    # 複数のコンバータがリストで指定されている場合
-                    for task in tasks:
-                        # タスクファイルのフォーマットチェック
-                        _validate_task(task)
-
-                else:
-                    raise ValueError("タスクリストが Array ではありません。")
-
-            except ValueError as e:
-                logger.error((
-                    "タスクファイル '{}' のフォーマットが"
-                    "正しくありません。詳細：{}").format(taskfile, str(e)))
-                sys.exit(-1)
-
-            all_tasks += tasks
-
-    return all_tasks
-
-def process_tasks(args: dict, all_tasks: list):
+def process_tasks(args: dict, all_tasks: List["Task"]):
     """
     すべての task を実行します。
     """
@@ -158,28 +88,28 @@ def process_tasks(args: dict, all_tasks: list):
         for task in all_tasks:
             try:
                 # タスク実行
-                if "note" in task:
-                    logger.info(task["note"])
+                if task.note:
+                    logger.info(task)
 
-                logger.debug("Running {}".format(task["convertor"]))
-                table = table.convert(
-                    task["convertor"], task["params"])
+                logger.debug("Running {}".format(task))
+                table = table.apply(task)
 
             except RuntimeError as e:
                 logger.error((
                     "タスク '{}' の実行中にエラーが発生しました。"
-                    "詳細：{}").format(task["convertor"], str(e)))
+                    "詳細：{}").format(task, str(e)))
                 sys.exit(-1)
 
         # 結果を出力
         if args['--output'] is None:
-            table.write()
+            table.write(skip_header=args['--merge'])
+        elif args['--merge']:
+            table.merge(args['--output'])
         else:
             table.save(args['--output'])
 
 
 def mapping(args: dict):
-    from tablelinker.convertors import core
     from tablelinker.convertors.core.mapping import ItemsPair
     from collections import OrderedDict
 
@@ -251,19 +181,13 @@ def mapping(args: dict):
             # "--auto" オプションが指定されている場合は変換結果を出力
             table = table.convert(
                 convertor='mapping_cols',
-                params={'column_map':dict(mapping)})
-            if args['--output']:
-                with open(args['--output'], 'w', newline='') as fout,\
-                        table.open() as reader:
-                    writer = csv.writer(fout)
-                    for row in reader:
-                        writer.writerow(row)
-
+                params={'column_map': dict(mapping)})
+            if args['--output'] is None:
+                table.write(skip_header=args['--merge'])
+            elif args['--merge']:
+                table.merge(args['--output'])
             else:
-                with table.open() as reader:
-                    writer = csv.writer(sys.stdout)
-                    for row in reader:
-                        writer.writerow(row)
+                table.save(args['--output'])
 
 
 if __name__ == '__main__':
@@ -297,4 +221,6 @@ if __name__ == '__main__':
         }]
         process_tasks(args, tasks)
     else:
-        process_tasks(args, parse_taskfiles(args))
+        process_tasks(
+            args,
+            Task.from_files(args['<task>']))

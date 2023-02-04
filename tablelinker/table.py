@@ -1,3 +1,4 @@
+import codecs
 import csv
 import io
 from logging import getLogger
@@ -11,10 +12,23 @@ from pandas.core.frame import DataFrame
 
 from .convertors import core
 from .convertors import basics as basic_convertors
+from .task import Task
 
 
 logger = getLogger(__name__)
 basic_convertors.register()
+
+
+def escape_encoding(exc):
+    """
+    文字エンコーディングの処理中に UnicodeDecodeError が
+    発生した場合のエラーハンドラ。
+    https://docs.python.org/ja/3.5/library/codecs.html#codecs.register_error
+
+    変換できなかった文字を '??' に置き換えます。
+    """
+    logger.warning(str(exc))
+    return ('??', exc.end)
 
 
 class Table(object):
@@ -24,20 +38,23 @@ class Table(object):
     Attributes
     ----------
     file: File-like, Path-like
-        このテーブルが管理する入力 CSV ファイルのパス、
+        このテーブルが管理する入力表データファイルのパス、
         または file-like オブジェクト。
     sheet: str, None
         入力ファイルが Excel の場合など、複数の表データを含む場合に
         対象を指定するためのシート名。省略された場合は最初の表。
     is_tempfile: bool
-        入力 CSV ファイルが一時ファイルかどうかを表すフラグ。
+        入力表データファイルが一時ファイルかどうかを表すフラグ。
         True の場合、オブジェクトが消滅するときに file が
-        指すパスにあるファイルも削除する。
+        指すパスにあるファイルも削除します。
     skip_cleaning: bool
-        CSV データを読み込む際にクリーニングをスキップするか
+        表データを読み込む際にクリーニングをスキップするか
         どうかを指定するフラグ。
         True を指定した場合、 UTF-8 でカンマ区切りの CSV ファイルで
-        先頭部分に余計な行が含まれていない必要がある。
+        先頭部分に余計な行が含まれていない必要があります。
+    filetype: str
+        入力表データファイルの種別。 CSV の場合は ``csv``、
+        Excel の場合は ``excel`` になります。
 
     Examples
     --------
@@ -57,15 +74,17 @@ class Table(object):
     Notes
     -----
     - ``is_tempfile`` に True を指定した場合、
-      オブジェクト削除時に ``file`` が指すファイルも削除される。
+      オブジェクト削除時に ``file`` が指すファイルも削除されます。
     - CSV データが UTF-8、カンマ区切りの CSV であることが
       確実な場合、 ``skip_cleaning`` に True を指定することで
-      クリーニング処理をスキップして高速に処理できる。
+      クリーニング処理をスキップして高速に処理できます。
       ``skip_cleaning`` を省略または False を指定した場合、
       一度 CSV データ全体を読み込んでクリーニングを行うため、
-      余分なメモリと処理時間が必要になる。
+      余分なメモリと処理時間が必要になります。
 
     """
+
+    codecs.register_error('escape_encoding', escape_encoding)
 
     def __init__(
             self,
@@ -74,34 +93,22 @@ class Table(object):
             is_tempfile: bool = False,
             skip_cleaning: bool = False):
         """
-        オブジェクトを初期化する。
-        ファイルは開かない。
-
-        Parameters
-        ----------
-        file: os.PathLike
-            表形式 CSV データを含むファイルのパス、または
-            CSV データを読みだせる file-like オブジェクト。
-        sheet: str, optional (default:None)
-            入力データに複数のシートが含まれる場合、対象とするシート名。
-            省略した場合、最初のシートを利用する。
-        is_tempfile: bool (default:False)
-            参照しているファイルが一時ファイルかどうかを
-            指定するフラグ。
-        skip_cleaning: bool (default:False)
-            CSV データを読み込む際にクリーニングをスキップするか
-            どうかを指定するフラグ。
+        オブジェクトを初期化します。
+        ファイルは開きません。
         """
         self.file = file
         self.sheet = sheet
         self.is_tempfile = is_tempfile
         self.skip_cleaning = skip_cleaning
+        self.filetype = "csv"
         self._reader = None
 
     def __del__(self):
         """
-        一時ファイルの CSV ファイルが残っている場合、
-        このオブジェクトの削除と同時にファイルも消去する。
+        オブジェクトを削除する前に呼び出されます。
+
+        self.is_tempfile が True で、かつ self.file が指す
+        ファイルが残っている場合、先にファイルを消去します。
         """
         if self.is_tempfile is True and \
                 os.path.exists(self.file):
@@ -130,13 +137,13 @@ class Table(object):
             as_dict: bool = False,
             **kwargs):
         """
-        表データを開き、 csv.reader オブジェクトを返す。
+        表データを開き、 csv.reader オブジェクトを返します。
 
         Parameters
         ----------
         as_dict: bool [False]
             True が指定された場合、 csv.DictReader
-            オブジェクトを返す。
+            オブジェクトを返します。
         kwargs: dict
             csv.reader, csv.DictReader に渡すその他のパラメータ。
 
@@ -179,7 +186,7 @@ class Table(object):
         -----
         - CSV、タブ区切りテキスト、 Excel に対応。
         - CSV データのクリーニングはこのメソッドが呼ばれたときに
-          実行される。
+          実行されます。
         """
         if not self.skip_cleaning:
             # エクセルファイルとして読み込む
@@ -194,6 +201,8 @@ class Table(object):
                     file_or_path=io.StringIO(data),
                     skip_cleaning=True).open(
                         as_dict=as_dict, **kwargs)
+
+                self.filetype = "excel"
                 return self
 
             except ValueError as e:
@@ -212,16 +221,18 @@ class Table(object):
             self.file,
             skip_cleaning=self.skip_cleaning).open(
                 as_dict=as_dict, **kwargs)
+
+        self.filetype = "csv"
         return self
 
     @classmethod
     def useExtraConvertors(cls) -> None:
         """
-        拡張コンバータを利用することを宣言する。
+        拡張コンバータを利用することを宣言します。
 
         Notes
         -----
-        - ``tablelinker.useExtraConvertors()`` と等価。
+        - ``tablelinker.useExtraConvertors()`` と等価です。
 
         """
         import tablelinker
@@ -230,7 +241,7 @@ class Table(object):
     @classmethod
     def fromPandas(cls, df: DataFrame) -> "Table":
         """
-        Pandas DataFrame から Table オブジェクトを作成する。
+        Pandas DataFrame から Table オブジェクトを作成します。
 
         Parameters
         ----------
@@ -271,7 +282,7 @@ class Table(object):
 
     def toPandas(self) -> DataFrame:
         """
-        Table オブジェクトから Pandas DataFrame を作成する。
+        Table オブジェクトから Pandas DataFrame を作成します。
 
         Returns
         -------
@@ -284,7 +295,8 @@ class Table(object):
         >>> table = Table("sample/hachijo_sightseeing.csv")
         >>> df = table.toPandas()
         >>> df.columns
-        Index(['観光スポット名称', '所在地', '緯度', '経度', '座標系', '説明', '八丈町ホームページ記載'], dtype='object')
+        Index(['観光スポット名称', '所在地', '緯度', '経度', '座標系',\
+          '説明', '八丈町ホームページ記載'], dtype='object')
 
         """
         with tempfile.TemporaryDirectory() as td:
@@ -304,8 +316,8 @@ class Table(object):
 
     def save(self, path: os.PathLike, encoding="utf-8", **fmtparams):
         """
-        入力 CSV データを csv.writer を利用して
-        指定したパスのファイルに保存する。
+        Table オブジェクトが管理する表データを csv.writer を利用して
+        指定したパスのファイルに保存します。
 
         Parameters
         ----------
@@ -325,24 +337,94 @@ class Table(object):
 
         """
         with self.open() as reader, \
-                open(path, mode="w", newline="", encoding=encoding) as f:
+                open(path, mode="w", newline="",
+                     encoding=encoding, errors="escape_encoding") as f:
             writer = csv.writer(f, **fmtparams)
             for row in reader:
                 writer.writerow(row)
 
-    def write(self, lines: int = -1, file=None, **fmtparams):
+    def merge(self, path: os.PathLike):
+        """
+        Table オブジェクトが管理する表データを、
+        指定したパスのファイルの後ろに結合 (merge) します。
+
+        Parameters
+        ----------
+        path: os.PathLike
+            保存する CSV ファイルのパス。
+
+        Examples
+        --------
+        >>> import csv
+        >>> from tablelinker import Table
+        >>> table = Table("sample/shimabara_tourisum.csv")
+        >>> table.merge("sample/katsushika_tourism.csv")
+
+        """
+        # 結合先ファイルの情報をチェック
+        if not os.path.exists(path):
+            logger.debug((
+                "結合先のファイル '{}' が存在しないため"
+                "そのまま出力します。").format(path))
+            return self.save(path)
+
+        target = Table(path, skip_cleaning=False)
+        target_delimiter = ","
+        target_encoding = "UTF-8"
+        with target.open() as target_reader:
+            if target.filetype != "csv":
+                logger.error(
+                    "結合先のファイル '{}' は CSV ではありません。".format(
+                        path))
+                raise RuntimeError("The merged file must be a CSV.")
+
+            cc = target._reader._reader  # CSVCleaner
+            target_delimiter = cc.delimiter
+            target_encoding = cc.encoding
+            target_header = target_reader.__next__()
+
+        del target  # 結合先ファイルを閉じる
+
+        # 結合先のファイルに列の順番をそろえる
+        try:
+            reordered = self.convert(
+                convertor="reorder_cols",
+                params={"column_list": target_header})
+        except ValueError as e:
+            logger.error(
+                "結合先のファイルと列を揃える際にエラー。({})".format(
+                    e))
+            raise ValueError(e)
+
+        # 結合先のファイルに追加出力
+        with reordered.open() as reader, \
+                open(path, mode="a", newline="",
+                     encoding=target_encoding, errors="escape_encoding") as f:
+            writer = csv.writer(f, delimiter=target_delimiter)
+            reader.__next__()  # ヘッダ行をスキップ
+            for row in reader:
+                writer.writerow(row)
+
+    def write(
+            self,
+            lines: int = -1,
+            file=None,
+            skip_header: bool = False,
+            **fmtparams):
         """
         入力 CSV データを csv.writer を利用して
-        指定したファイルオブジェクトに出力する。
+        指定したファイルオブジェクトに出力します。
 
         Parameters
         ----------
         lines: int [default:-1]
             出力する最大行数。
-            省略された場合、または負の場合は全ての行を出力する。
+            省略された場合、または負の場合は全ての行を出力します。
         file: File-like オブジェクト [default: None]
             出力先のファイルオブジェクト。
             省略された場合または None が指定された場合は標準出力。
+        skip_header: bool [default: False]
+            見出し行をスキップする場合は True を指定します。
         fmtparams: dict
             csv.writer に渡すフォーマットパラメータ。
 
@@ -361,19 +443,56 @@ class Table(object):
 
         with self.open() as reader:
             writer = csv.writer(file, **fmtparams)
+            if skip_header:
+                reader.__next__()
+
             for n, row in enumerate(reader):
                 if n == lines:
                     break
 
                 writer.writerow(row)
 
+    def apply(self, task: Task) -> 'Table':
+        """
+        テーブルが管理する表データにタスクを適用して変換し、
+        変換結果を管理する新しい Table オブジェクトを返します。
+
+        Parameters
+        ----------
+        task: Task
+            適用するタスク。
+
+        Returns
+        -------
+        Table
+            変換結果を管理する Table オブジェクト。
+
+        Examples
+        --------
+        >>> from tablelinker import Table, Task
+        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table.write(lines=1)
+        観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
+        >>> task = Task.create({
+        ...     "convertor":"rename_col",
+        ...     "params":{"input_col_idx":"観光スポット名称", "output_col_name":"名称"},
+        ... })
+        >>> table = table.apply(task)
+        >>> table.write(lines=1)
+        名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
+
+        """
+        return self.convert(
+            convertor=task.convertor,
+            params=task.params)
+
     def convert(
             self,
             convertor: str,
             params: dict) -> 'Table':
         """
-        入力 CSV データにフィルタを適用して変換する。
-        変換結果を管理する Table オブジェクトを返す。
+        テーブルが管理する表データにコンバータを適用して変換し、
+        変換結果を管理する新しい Table オブジェクトを返します。
 
         Parameters
         ----------
@@ -396,7 +515,7 @@ class Table(object):
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         >>> table = table.convert(
         ...     convertor="rename_col",
-        ...     params={"input_col_idx":0, "new_col_name":"名称"},
+        ...     params={"input_col_idx":0, "output_col_name":"名称"},
         ... )
         >>> table.write(lines=1)
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
@@ -404,12 +523,11 @@ class Table(object):
         Notes
         -----
         - 変換結果はテンポラリディレクトリ (``/tmp/`` など) の下に
-          ``table_`` から始まるファイル名を持つファイルに出力される。
+          ``table_`` から始まるファイル名を持つファイルに出力されます。
         - このメソッドが返す Table オブジェクトが削除される際に、
-          変換結果ファイルも自動的に削除される。
+          変換結果ファイルも自動的に削除されます。
         - ただしエラーや中断により途中で停止した場合には、
-          変換結果ファイルが残る場合がある。
-        - 利用できるコンバータのリストは自動的に読み込む。
+          変換結果ファイルが残る場合があります。
         """
         self.open()
         csv_out = tempfile.NamedTemporaryFile(

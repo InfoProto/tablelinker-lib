@@ -36,6 +36,9 @@ class Convertor(ABC):
     変換処理
     """
 
+    def __repr__(self):
+        return self.__class__.meta().key
+
     @classmethod
     def meta(cls):
         return ConvertorMeta(cls.Meta)
