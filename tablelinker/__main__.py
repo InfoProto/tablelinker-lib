@@ -20,12 +20,12 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [-a] \
+  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-a [--sjis] [-m] ]\
  ([-t <sheet>] <template>|--headers=<headers>)
-  {p} convert [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [--no-cleaning]\
- -c <convertor> -p <params>
-  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [-m] [--no-cleaning]\
- [<task>...]
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--sjis] [-m]\
+ [--no-cleaning] -c <convertor> -p <params>
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--sjis] [-m]\
+ [--no-cleaning] [<task>...]
 
 Options:
   -h --help              このヘルプを表示
@@ -33,8 +33,9 @@ Options:
   -i, --input=<file>     入力ファイルを指定（省略時は標準入力）
   -s, --sheet=<sheet>    入力ファイルのうち対象とするシート名（省略時は先頭）
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
-  -m, --merge            出力ファイルにマージ（省略時は上書き）
   -a, --auto             マッピング情報ではなくマッピング結果を出力する
+  --sjis                 SJIS (cp932) でエンコードする（省略時は UTF-8）
+  -m, --merge            出力ファイルにマージ（省略時は上書き）
   -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
   --headers=<headers>    列名リスト（カンマ区切り）
@@ -106,7 +107,9 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
         elif args['--merge']:
             table.merge(args['--output'])
         else:
-            table.save(args['--output'])
+            table.save(
+                args['--output'],
+                encoding="cp932" if args["--sjis"] else "utf-8")
 
 
 def mapping(args: dict):
@@ -187,7 +190,9 @@ def mapping(args: dict):
             elif args['--merge']:
                 table.merge(args['--output'])
             else:
-                table.save(args['--output'])
+                table.save(
+                    args['--output'],
+                    encoding="cp932" if args["--sjis"] else "utf-8")
 
 
 if __name__ == '__main__':
@@ -214,12 +219,12 @@ if __name__ == '__main__':
 
     if args['mapping']:
         mapping(args)
-    elif args['convert'] and args["--convertor"]:
-        tasks = [{
+    elif args["--convertor"] and args["--params"]:
+        task = Task.create({
             "convertor": args["--convertor"],
             "params": json.loads(args["--params"]),
-        }]
-        process_tasks(args, tasks)
+        })
+        process_tasks(args, [task])
     else:
         process_tasks(
             args,
