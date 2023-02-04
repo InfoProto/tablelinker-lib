@@ -121,16 +121,14 @@ class CsvInputCollection(InputCollection):
                     # テキストストリーム
                     self._reader = reader(self.fp, **kwargs)
         else:
-            # ファイルの内容を読み込んでクリーニングする
+            # ファイルをクリーニングしながら読み込む
             if self.path is not None:
-                with open(self.path, "rb") as fb:
-                    content = fb.read()
+                self.fp = open(self.path, "rb")
             else:
                 self.fp.seek(0)
-                content = self.fp.read()
 
             # クリーニング
-            self._reader = CSVCleaner(data=content)
+            self._reader = CSVCleaner(self.fp)
             self._reader.open(as_dict=as_dict, **kwargs)
 
         return self
@@ -149,11 +147,11 @@ class CsvInputCollection(InputCollection):
         return cls(args[0])
 
     def __exit(self, type_, value, traceback):
-        if self.path is not None and self.fp is not None:
-            self.fp.close()
-
         if self._reader is not None:
             self._reader.__exit__()
+
+        if self.path is not None and self.fp is not None:
+            self.fp.close()
 
 
 INPUTS = [ArrayInputCollection, CsvInputCollection]

@@ -23,27 +23,37 @@ class CSVCleaner(object):
                 ...
     """
 
-    def __init__(self, data: Union[bytes, str]):
+    def __init__(self, fp):
         self.text_io = None
         self.csv_reader = None
         self.delimiter = ','
         self.encoding = "UTF-8"
 
-        if isinstance(data, bytes):
-            self.encoding = nkf.guess(data)
+        # Check if the fp is a bytes-file or a text-file.
+        line = fp.readline()
+        if isinstance(line, bytes):
+            self.data = line
+            for _ in range(100):
+                self.data += fp.readline()
+
+            self.encoding = nkf.guess(self.data)
             if self.encoding == "Shift_JIS":
                 self.encoding = "cp932"
 
-            self.data = nkf.nkf('-w', data).decode('utf-8')
+            self.text_io = io.TextIOWrapper(
+                buffer=fp, encoding=self.encoding, newline='')
+
         else:
-            self.data = data
+            self.text_io = fp
+
+        fp.seek(0)
 
     def open(self, as_dict: bool = False):
         self.delimiter = self.get_delimiter()
         self.skip_lines = self.get_skip_lines()
 
-        self.text_io = io.StringIO(self.data, newline='')
-        for i in range(self.skip_lines):
+        self.text_io.seek(0)
+        for _ in range(self.skip_lines):
             next(self.text_io)
 
         if as_dict is True:
@@ -62,8 +72,9 @@ class CSVCleaner(object):
         return self.csv_reader.__next__()
 
     def __exit__(self, type, value, traceback):
-        if self.text_io:
-            self.text_io.close()
+        pass
+        # if self.text_io:
+        #     self.text_io.close()
 
     def get_delimiter(self):
         """
@@ -74,20 +85,20 @@ class CSVCleaner(object):
         str
             ',' or '\t'.
         """
-        with io.StringIO(self.data) as f:
-            for line in f:
-                if len(line) < 10:
-                    continue
+        self.text_io.seek(0)
+        for i, line in enumerate(self.text_io):
+            if len(line) < 10:
+                continue
 
-                ncommas = line.count(',')
-                ntabs = line.count('\t')
-                if ncommas + ntabs < 2:
-                    continue
+            ncommas = line.count(',')
+            ntabs = line.count('\t')
+            if i < 5 or ncommas + ntabs < 2:
+                continue
 
-                if ncommas > ntabs:
-                    return ','
-                elif ntabs > ncommas:
-                    return '\t'
+            if ncommas > ntabs:
+                return ','
+            elif ntabs > ncommas:
+                return '\t'
 
         return ','
 
@@ -102,14 +113,12 @@ class CSVCleaner(object):
         """
         # Count the number of columns in the first 20 rows
         nrows = []
-        with io.StringIO(self.data) as f:
-            reader = csv.reader(f, delimiter=self.delimiter)
-            n = 0
-            for row in reader:
-                nrows.append(len(row))
-                n += 1
-                if n > 20:
-                    break
+        self.text_io.seek(0)
+        reader = csv.reader(self.text_io, delimiter=self.delimiter)
+        for i, row in enumerate(reader):
+            nrows.append(len(row))
+            if i > 20:
+                break
 
         # Make frequency table
         freqs = defaultdict(int)

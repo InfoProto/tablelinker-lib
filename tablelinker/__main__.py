@@ -152,8 +152,8 @@ def mapping(args: dict):
                 template_headers = reader.__next__()
 
         # 項目マッピング
+        logger.debug("マッピング中")
         pair = ItemsPair(template_headers, headers)
-
         mapping = OrderedDict()
         for result in pair.mapping():
             output, header, score = result
@@ -166,6 +166,8 @@ def mapping(args: dict):
                 mapping[output] = None
             else:
                 mapping[output] = header
+
+        logger.debug("マッピング完了：{}".format(dict(mapping)))
 
         if args["--auto"] is False:
             # 結果出力
