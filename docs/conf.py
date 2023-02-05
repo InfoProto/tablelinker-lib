@@ -28,3 +28,4 @@ language = 'ja'
 
 html_theme = 'sphinx_rtd_theme'  # 'alabaster'
 html_static_path = ['_static']
+numfig = True

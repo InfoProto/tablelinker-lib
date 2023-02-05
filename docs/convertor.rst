@@ -26,6 +26,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 列操作
 ^^^^^^
 
+列の増減や名前の変更を伴うコンバータです。
+SQL では **ALTER TABLE** を必要とする処理に該当します。
+
 .. autoclass::
     tablelinker.convertors.basics.calc_col.CalcColConvertor
 
@@ -40,6 +43,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 
 .. autoclass::
     tablelinker.convertors.basics.delete_col.DeleteColsConvertor
+
+.. autoclass::
+    tablelinker.convertors.basics.generate_pk.GeneratePkConvertor
 
 .. autoclass::
     tablelinker.convertors.basics.insert_col.InsertColConvertor
@@ -63,11 +69,14 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.reorder_col.ReorderColsConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.generate_pk.GeneratePkConvertor
+    tablelinker.convertors.basics.split_col.SplitColConvertor
 
 
 行操作
 ^^^^^^
+
+行の増減を伴うコンバータです。
+SQL では **SELECT**, **INSERT**, **DELETE** を必要とする処理に該当します。
 
 .. autoclass::
     tablelinker.convertors.basics.concat_title.ConcatTitleConvertor
@@ -82,6 +91,9 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
     tablelinker.convertors.basics.delete_row.PatternMatchDeleteRowConvertor
 
 .. autoclass::
+    tablelinker.convertors.basics.split_col.SplitRowConvertor
+
+.. autoclass::
     tablelinker.convertors.basics.select_row.StringMatchSelectRowConvertor
 
 .. autoclass::
@@ -94,11 +106,8 @@ Tablelinker では、列名の変更や列の削除、挿入などの操作、
 値の操作
 ^^^^^^^^
 
-.. autoclass::
-    tablelinker.convertors.basics.split_col.SplitColConvertor
-
-.. autoclass::
-    tablelinker.convertors.basics.split_col.SplitRowConvertor
+行の増減を伴うコンバータです。
+SQL では **UPDATE** を必要とする処理に該当します。
 
 .. autoclass::
     tablelinker.convertors.basics.truncate.TruncateConvertor

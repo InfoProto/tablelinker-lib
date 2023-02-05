@@ -31,7 +31,7 @@ Tablelinker は、表データの前処理によく利用される変換処理�
 
     quick_start
     install
-    as_library
     as_command
+    as_library
     convertor
     api

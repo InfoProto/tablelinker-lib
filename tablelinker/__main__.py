@@ -20,11 +20,11 @@ HELP = """
 
 Usage:
   {p} -h
-  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>] [-a [--sjis] [-m] ]\
- ([-t <sheet>] <template>|--headers=<headers>)
-  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--sjis] [-m]\
+  {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>]\
+ [-a ([--sjis]|[--bom]) [-m] ] ([-t <sheet>] <template>|--headers=<headers>)
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] ([--sjis]|[--bom]) [-m]\
  [--no-cleaning] -c <convertor> -p <params>
-  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] [--sjis] [-m]\
+  {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] ([--sjis]|[--bom]) [-m]\
  [--no-cleaning] [<task>...]
 
 Options:
@@ -35,6 +35,7 @@ Options:
   -o, --output=<file>    出力ファイルを指定（省略時は標準出力）
   -a, --auto             マッピング情報ではなくマッピング結果を出力する
   --sjis                 SJIS (cp932) でエンコードする（省略時は UTF-8）
+  --bom                  BOM付き UTF-8 でエンコードする（省略時は BOM無し）
   -m, --merge            出力ファイルにマージ（省略時は上書き）
   -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
   --no-cleaning          指定すると入力ファイルをクリーニングしない
@@ -107,9 +108,13 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
         elif args['--merge']:
             table.merge(args['--output'])
         else:
-            table.save(
-                args['--output'],
-                encoding="cp932" if args["--sjis"] else "utf-8")
+            encoding = "utf-8"
+            if args["--sjis"]:
+                encoding = "cp932"
+            elif args["--bom"]:
+                encoding = "utf-8-sig"
+
+            table.save(args['--output'], encoding=encoding)
 
 
 def mapping(args: dict):
@@ -192,9 +197,13 @@ def mapping(args: dict):
             elif args['--merge']:
                 table.merge(args['--output'])
             else:
-                table.save(
-                    args['--output'],
-                    encoding="cp932" if args["--sjis"] else "utf-8")
+                encoding = "utf-8"
+                if args["--sjis"]:
+                    encoding = "cp932"
+                elif args["--bom"]:
+                    encoding = "utf-8-sig"
+
+                table.save(args['--output'], encoding=encoding)
 
 
 if __name__ == '__main__':
@@ -222,6 +231,9 @@ if __name__ == '__main__':
     if args['mapping']:
         mapping(args)
     elif args["--convertor"] and args["--params"]:
+        if args["--params"][0] != '{' and args["--params"][-1] != '}':
+            args["--params"] = "{" + args["--params"] + "}"
+
         task = Task.create({
             "convertor": args["--convertor"],
             "params": json.loads(args["--params"]),

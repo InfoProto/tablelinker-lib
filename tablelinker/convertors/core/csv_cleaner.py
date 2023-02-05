@@ -1,7 +1,6 @@
 from collections import defaultdict
 import csv
 import io
-from typing import Union
 
 import nkf
 
@@ -32,13 +31,18 @@ class CSVCleaner(object):
         # Check if the fp is a bytes-file or a text-file.
         line = fp.readline()
         if isinstance(line, bytes):
-            self.data = line
-            for _ in range(100):
-                self.data += fp.readline()
+            if line[0:3] == b'\xef\xbb\xbf':
+                # UTF-8 BOM
+                line = line[3:]
+                self.encoding = "utf-8-sig"
+            else:
+                self.data = line
+                for _ in range(100):
+                    self.data += fp.readline()
 
-            self.encoding = nkf.guess(self.data)
-            if self.encoding == "Shift_JIS":
-                self.encoding = "cp932"
+                self.encoding = nkf.guess(self.data)
+                if self.encoding == "Shift_JIS":
+                    self.encoding = "cp932"
 
             self.text_io = io.TextIOWrapper(
                 buffer=fp, encoding=self.encoding, newline='')

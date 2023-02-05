@@ -73,14 +73,16 @@ class Table(object):
 
     Notes
     -----
+    - Excel ファイルのシートを開きたい場合、
+      ``sheet`` オプションでシート名を指定します。 ::
+
+          table = Table(ファイル名, sheet=シート名)
+
     - ``is_tempfile`` に True を指定した場合、
       オブジェクト削除時に ``file`` が指すファイルも削除されます。
     - CSV データが UTF-8、カンマ区切りの CSV であることが
-      確実な場合、 ``skip_cleaning`` に True を指定することで
+      分かっている場合、 ``skip_cleaning`` に True を指定することで
       クリーニング処理をスキップして高速に処理できます。
-      ``skip_cleaning`` を省略または False を指定した場合、
-      一度 CSV データ全体を読み込んでクリーニングを行うため、
-      余分なメモリと処理時間が必要になります。
 
     """
 
@@ -360,12 +362,18 @@ class Table(object):
         >>> table = Table("sample/shimabara_tourisum.csv")
         >>> table.merge("sample/katsushika_tourism.csv")
 
+        Notes
+        -----
+        - 結合先ファイルの列の順番に合わせて並べ替えます。
+        - 文字エンコーディングも結合先ファイルに合わせます。
+        - 見出し行は出力しません。
+
         """
         # 結合先ファイルの情報をチェック
         if not os.path.exists(path):
             logger.debug((
-                "結合先のファイル '{}' が存在しないため"
-                "そのまま出力します。").format(path))
+                "結合先のファイル '{}' が存在しないため、"
+                "そのまま保存します。").format(path))
             return self.save(path)
 
         target = Table(path, skip_cleaning=False)
