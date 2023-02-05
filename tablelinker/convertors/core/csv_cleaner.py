@@ -2,7 +2,7 @@ from collections import defaultdict
 import csv
 import io
 
-import nkf
+import chardet
 
 
 class CSVCleaner(object):
@@ -40,7 +40,8 @@ class CSVCleaner(object):
                 for _ in range(100):
                     self.data += fp.readline()
 
-                self.encoding = nkf.guess(self.data)
+                guess = chardet.detect(self.data)
+                self.encoding = guess["encoding"]
                 if self.encoding == "Shift_JIS":
                     self.encoding = "cp932"
 

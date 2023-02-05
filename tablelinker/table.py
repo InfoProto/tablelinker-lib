@@ -114,6 +114,7 @@ class Table(object):
         """
         if self.is_tempfile is True and \
                 os.path.exists(self.file):
+            del self._reader
             os.remove(self.file)
             logger.debug("一時ファイル '{}' を削除しました".format(
                 self.file))

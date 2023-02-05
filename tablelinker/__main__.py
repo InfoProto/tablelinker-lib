@@ -220,6 +220,8 @@ if __name__ == '__main__':
         level=log_level,
         format='%(asctime)s:%(levelname)s:%(module)s:%(lineno)d:%(message)s')
 
+    logger.debug(args)
+
     if args['--input'] is not None:
         if args['--input'].lower() in ('-', 'stdin'):
             args['--input'] = None
