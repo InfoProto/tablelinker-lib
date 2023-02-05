@@ -74,7 +74,7 @@ class CsvOutputCollection(OutputCollection):
         self._writer = csv.writer(self._file)
 
     def open_file(self):
-        return open(self._filepath, "w")
+        return open(self._filepath, "w", newline="")
 
     def append(self, value):
         return self._writer.writerow(value)
