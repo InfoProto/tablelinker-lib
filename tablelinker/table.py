@@ -1,17 +1,20 @@
 import codecs
+from collections import OrderedDict
 import csv
 import io
 from logging import getLogger
+import math
 import os
 import sys
 import tempfile
-from typing import Optional
+from typing import List, Optional
 
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from .convertors import core
 from .convertors import basics as basic_convertors
+from .convertors import core
+from .convertors.core.mapping import ItemsPair
 from .task import Task
 
 
@@ -490,6 +493,11 @@ class Table(object):
         >>> table.write(lines=1)
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
 
+        Notes
+        -----
+        convert がコンバータ名とパラメータを指定するのに対し、
+        apply はタスクオブジェクトを指定する点が違うだけで
+        処理内容は同一です。
         """
         return self.convert(
             convertor=task.convertor,
@@ -579,3 +587,114 @@ class Table(object):
                     self.file, convertor, csv_out))
 
                 raise e
+
+    def mapping(
+            self,
+            template: "Table",
+            threshold: Optional[int]=None) -> dict:
+        """
+        他のテーブル（テンプレート）に変換するための
+        対応表を生成します。
+        
+        Parameters
+        -----------
+        template: Table
+            変換対象のテーブルオブジェクト。
+        threshold: int, optional
+            一致する列と判定する際のしきい値。0-100 で指定し、
+            0 の場合が最も緩く、100の場合は完全一致した場合しか
+            対応しているとみなしません。
+
+        Returns
+        -------
+        dict
+            キーに変換先テーブルの列名、値にその列に対応すると
+            判定された自テーブルの列名を持つ dict を返します。
+
+        Notes
+        -----
+        結果の dict はコンバータ mapping_cols の column_map 
+        パラメータにそのまま利用できます。
+
+        .. code-block: python
+
+            map = table.mapping(template)
+            mapped_table = table.convert(
+                convertor="mapping_cols",
+                params={"column_map": map},
+            )
+
+        """
+        threshold = 20 if threshold is None else threshold # デフォルトは 20
+
+        # テンプレート CSV の見出し行を取得
+        with template.open() as reader:
+            template_headers = reader.__next__()
+
+        return self.mapping_with_headers(
+            headers=template_headers,
+            threshold=threshold)
+
+    def mapping_with_headers(
+            self,
+            headers: List[str],
+            threshold: Optional[int]=None) -> dict:
+        """
+        テンプレートの見出し列に一致するように変換するための
+        対応表を生成します。
+        
+        Parameters
+        -----------
+        headers: List[str]
+            テンプレートの見出し列。
+        threshold: int, optional
+            一致する列と判定する際のしきい値。0-100 で指定し、
+            0 の場合が最も緩く、100の場合は完全一致した場合しか
+            対応しているとみなしません。
+
+        Returns
+        -------
+        dict
+            キーに変換先テーブルの列名、値にその列に対応すると
+            判定された自テーブルの列名を持つ dict を返します。
+
+        Notes
+        -----
+        結果の dict はコンバータ mapping_cols の column_map 
+        パラメータにそのまま利用できます。
+
+        .. code-block: python
+
+            map = table.mapping(template)
+            mapped_table = table.convert(
+                convertor="mapping_cols",
+                params={"column_map": map},
+            )
+
+        """
+        threshold = 20 if threshold is None else threshold # デフォルトは 20
+        logger.debug("しきい値： {}".format(threshold))
+
+        # 自テーブルの見出し行を取得
+        with self.open() as reader:
+            my_headers = reader.__next__()
+
+        # 項目マッピング
+        pair = ItemsPair(headers, my_headers)
+        mapping = OrderedDict()
+        for result in pair.mapping():
+            output, header, score = result
+            logger.debug("対象列：{}, 対応列：{}, 一致スコア:{:3d}".format(
+                output, header, int(score * 100.0)))
+            if output is None:
+                # マッピングされなかったカラムは除去
+                continue
+
+            if header is None:
+                mapping[output] = None
+            elif math.ceil(score * 100.0) < threshold:
+                mapping[output] = None
+            else:
+                mapping[output] = header
+
+        return dict(mapping)

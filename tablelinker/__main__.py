@@ -22,7 +22,8 @@ HELP = """
 Usage:
   {p} -h
   {p} mapping [-d] [-i <file>] [-s <sheet>] [-o <file>]\
- [-a ([--sjis]|[--bom]) [-m] ] ([-t <sheet>] <template>|--headers=<headers>)
+ [-a ([--sjis]|[--bom]) [-m] ] ([-t <sheet>] <template>|--headers=<headers>)\
+ [--th=<th>]
   {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] ([--sjis]|[--bom]) [-m]\
  [--no-cleaning] -c <convertor> -p <params>
   {p} [-d] [-i <file>] [-s <sheet>] [-o <file>] ([--sjis]|[--bom]) [-m]\
@@ -39,8 +40,9 @@ Options:
   --bom                  BOM付き UTF-8 でエンコードする（省略時は BOM無し）
   -m, --merge            出力ファイルにマージ（省略時は上書き）
   -t, --template-sheet=<sheet>  テンプレートのシート名（省略時は先頭）
-  --no-cleaning          指定すると入力ファイルをクリーニングしない
   --headers=<headers>    列名リスト（カンマ区切り）
+  --th=<th>              マッピング判定のしきい値（0から100） [default: 20]
+  --no-cleaning          指定すると入力ファイルをクリーニングしない
   -c, --convertor=<convertor>   コンバータ名
   -p, --params=<params>  パラメータ（JSON）
 
@@ -119,9 +121,6 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
 
 
 def mapping(args: dict):
-    from tablelinker.convertors.core.mapping import ItemsPair
-    from collections import OrderedDict
-
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
             csv_in = args['--input']
@@ -133,45 +132,22 @@ def mapping(args: dict):
             with open(csv_in, 'wb') as fout:
                 fout.write(sys.stdin.buffer.read())
 
-        # しきい値
-        # 手作業で修正することを前提とするため、緩い値を用いる
-        th = 20
-
-        # 入力 CSV の見出し行を取得
         table = Table(csv_in, sheet=args['--sheet'])
-        with table.open() as reader:
-            headers = reader.__next__()
 
-        # テンプレート CSV の見出し行を取得
+        # しきい値
+        # 手作業で修正することを前提とするため、
+        # デフォルトは緩い値（20）
+        th = int(args['--th'])
+
+        logger.debug("マッピング中")
         if args['<template>']:
-            # ファイル名を指定
+            # テンプレートとなる表データファイルを指定
             template = Table(
                 file=args['<template>'],
                 sheet=args['--template-sheet'])
-            with template.open() as reader:
-                template_headers = reader.__next__()
-
+            mapping = table.mapping(template, th)
         elif args['--headers']:
-            with io.StringIO(
-                    args['--headers'], newline='') as stream:
-                reader = csv.reader(stream)
-                template_headers = reader.__next__()
-
-        # 項目マッピング
-        logger.debug("マッピング中")
-        pair = ItemsPair(template_headers, headers)
-        mapping = OrderedDict()
-        for result in pair.mapping():
-            output, header, score = result
-            if output is None:
-                # マッピングされなかったカラムは除去
-                continue
-
-            if score * 100.0 < th or \
-                    header is None:
-                mapping[output] = None
-            else:
-                mapping[output] = header
+            mapping = table.mapping_with_headers(args['--headers'], th)
 
         logger.debug("マッピング完了：{}".format(dict(mapping)))
 
@@ -179,7 +155,7 @@ def mapping(args: dict):
             # 結果出力
             result = json.dumps({
                 "convertor": "mapping_cols",
-                "params": {"column_map": dict(mapping)},
+                "params": {"column_map": mapping},
             }, indent=2, ensure_ascii=False)
 
             if args['--output']:
@@ -192,7 +168,7 @@ def mapping(args: dict):
             # "--auto" オプションが指定されている場合は変換結果を出力
             table = table.convert(
                 convertor='mapping_cols',
-                params={'column_map': dict(mapping)})
+                params={'column_map': mapping})
             if args['--output'] is None:
                 table.write(skip_header=args['--merge'])
             elif args['--merge']:
@@ -217,14 +193,23 @@ def parse_relaxed_json(val: str):
         '"' が欠けた JSON のような文字列。
         例： '{input_col_idx:住所, output_col_names:[緯度0,経度0,レベル0]}'
     """
+    try:
+        parsed = json.loads(val)
+        # 正常な JSON フォーマットの場合
+        return parsed
+    except json.decoder.JSONDecodeError as exc:
+        pass
+
     fixed = re.sub(r'(\w+)', r'"\g<1>"', val)
     try:
         parsed = json.loads(fixed)
+        # 語の周りを '"' で囲えば解析できる場合
+        return parsed
     except json.decoder.JSONDecodeError as exc:
-        logger.error("パラメータ '{}' を解釈できません。".format(str))
-        sys.exit(-1)
+        pass
 
-    return parsed
+    logger.error("パラメータ '{}' を解釈できません。".format(val))
+    sys.exit(-1)
 
 
 if __name__ == '__main__':
