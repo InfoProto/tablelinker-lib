@@ -53,8 +53,8 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
         help_text = None
         params = params.ParamSet()
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         if self.__class__.j2w is None:
             self.__class__.j2w = jeraconv.J2W()
 
@@ -127,8 +127,8 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
         help_text = None
         params = params.ParamSet()
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         if self.__class__.w2j is None:
             self.__class__.w2j = jeraconv.W2J()
 

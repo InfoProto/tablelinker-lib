@@ -129,16 +129,8 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
 
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
         self.lines = context.get_param("lines")
         self.wikidata = None

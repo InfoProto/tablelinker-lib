@@ -79,11 +79,38 @@ class Context(object):
     def input(self):
         return self._current
 
-    def set_data(self, name, value):
-        self._data[name] = value
+    def set_data(self, key: str, value):
+        """
+        コンテキスト依存の動的な値に名前を付けて保存します。
 
-    def get_data(self, name):
-        return self._data[name]
+        Parameters
+        ----------
+        key: str
+            値を保存するキー。
+        value: Any
+            保存する値。
+
+        Notes
+        -----
+        保存した値は get_data(key) で取得できます。
+        """
+        self._data[key] = value
+
+    def get_data(self, key: str):
+        """
+        コンテキスト依存の動的な値を取得します。
+
+        Parameters
+        ----------
+        key: str
+            値に付与されたキー。
+
+        Returns
+        -------
+        Any
+            保存されている値。
+        """
+        return self._data[key]
 
     def get_proxy(self, value):
         return self._proxy(value)

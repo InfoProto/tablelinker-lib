@@ -93,20 +93,9 @@ class ConcatColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 2:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
-        headers = context.get_data("headers")
-
+    def preproc(self, context):
+        super().preproc(context)
+        self.headers = context.get_data("headers")
         self.attr1 = context.get_param("input_col_idx1")
         self.attr2 = context.get_param("input_col_idx2")
         self.output_col_name = context.get_param("output_col_name")
@@ -116,12 +105,12 @@ class ConcatColConvertor(convertors.Convertor):
 
         if self.output_col_name is None:
             self.output_col_name = concat(
-                [headers[self.attr1], headers[self.attr2]],
+                [self.headers[self.attr1], self.headers[self.attr2]],
                 self.separator)
 
         # 出力列名が存在するかどうかを確認
         try:
-            idx = headers.index(self.output_col_name)
+            idx = self.headers.index(self.output_col_name)
             if self.output_col_idx is None:
                 self.output_col_idx = idx
 
@@ -134,8 +123,8 @@ class ConcatColConvertor(convertors.Convertor):
         except ValueError:
             # 存在しない場合
             if self.output_col_idx is None or \
-                    self.output_col_idx > len(headers):
-                self.output_col_idx = len(headers)
+                    self.output_col_idx > len(self.headers):
+                self.output_col_idx = len(self.headers)
 
     def process_header(self, headers, context):
         if self.del_col:
@@ -233,20 +222,9 @@ class ConcatColsConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) < 2:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
-        headers = context.get_data("headers")
-
+    def preproc(self, context):
+        super().preproc(context)
+        self.headers = context.get_data("headers")
         self.input_col_idxs = context.get_param("input_col_idxs")
         self.output_col_name = context.get_param("output_col_name")
         self.output_col_idx = context.get_param("output_col_idx")
@@ -255,12 +233,12 @@ class ConcatColsConvertor(convertors.Convertor):
 
         if self.output_col_name is None:
             self.output_col_name = concat([
-                headers[x] for x in self.input_col_idxs],
+                self.headers[x] for x in self.input_col_idxs],
                 self.separator)
 
         # 出力列名が存在するかどうかを確認
         try:
-            idx = headers.index(self.output_col_name)
+            idx = self.headers.index(self.output_col_name)
             if self.output_col_idx is None:
                 self.del_col = idx
                 self.output_col_idx = idx
@@ -273,8 +251,8 @@ class ConcatColsConvertor(convertors.Convertor):
         except ValueError:
             # 存在しない場合
             if self.output_col_idx is None or \
-                    self.output_col_idx > len(headers):
-                self.output_col_idx = len(headers)
+                    self.output_col_idx > len(self.headers):
+                self.output_col_idx = len(self.headers)
 
     def process_header(self, headers, context):
         if self.del_col:

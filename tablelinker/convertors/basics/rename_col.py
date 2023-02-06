@@ -59,14 +59,6 @@ class RenameColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 1
-
     def process_header(self, headers, context):
         input_col_idx = context.get_param("input_col_idx")
         new_name = context.get_param("output_col_name")

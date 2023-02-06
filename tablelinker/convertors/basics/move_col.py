@@ -55,21 +55,15 @@ class MoveColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 1
-
-    def process_header(self, headers, context):
+    def preproc(self, context):
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
         self.output_col_idx = context.get_param("output_col_idx") or \
-            len(headers)
+            len(self.headers)
         if self.output_col_idx > self.input_col_idx:
             self.output_col_idx -= 1
 
+    def process_header(self, headers, context):
         headers = self.move_list(
             self.input_col_idx, self.output_col_idx, headers)
         context.output(headers)

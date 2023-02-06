@@ -121,18 +121,8 @@ class ConcatTitleConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) > 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.lineno_from = context.get_param("lineno_from")
         self.lines = context.get_param("lines")
         self.empty_value = context.get_param("empty_value")

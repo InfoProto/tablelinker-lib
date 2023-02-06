@@ -52,18 +52,8 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
 
@@ -121,18 +111,8 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
 
@@ -192,18 +172,8 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
         self.re_pattern = re.compile(context.get_param('pattern'))
 

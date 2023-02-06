@@ -45,16 +45,6 @@ class DeleteColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
-
     def process_header(self, headers, context):
         input_col_idx = context.get_param("input_col_idx")
         headers = self.delete_col(input_col_idx, headers)
@@ -112,16 +102,6 @@ class DeleteColsConvertor(convertors.Convertor):
                 description="削除する列",
                 required=True),
         )
-
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
 
     def process_header(self, headers, context):
         self.input_col_idxs = sorted(

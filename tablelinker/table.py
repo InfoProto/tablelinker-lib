@@ -591,11 +591,11 @@ class Table(object):
     def mapping(
             self,
             template: "Table",
-            threshold: Optional[int]=None) -> dict:
+            threshold: Optional[int] = None) -> dict:
         """
         他のテーブル（テンプレート）に変換するための
         対応表を生成します。
-        
+
         Parameters
         -----------
         template: Table
@@ -613,7 +613,7 @@ class Table(object):
 
         Notes
         -----
-        結果の dict はコンバータ mapping_cols の column_map 
+        結果の dict はコンバータ mapping_cols の column_map
         パラメータにそのまま利用できます。
 
         .. code-block: python
@@ -625,7 +625,7 @@ class Table(object):
             )
 
         """
-        threshold = 20 if threshold is None else threshold # デフォルトは 20
+        threshold = 20 if threshold is None else threshold  # デフォルトは 20
 
         # テンプレート CSV の見出し行を取得
         with template.open() as reader:
@@ -638,11 +638,11 @@ class Table(object):
     def mapping_with_headers(
             self,
             headers: List[str],
-            threshold: Optional[int]=None) -> dict:
+            threshold: Optional[int] = None) -> dict:
         """
         テンプレートの見出し列に一致するように変換するための
         対応表を生成します。
-        
+
         Parameters
         -----------
         headers: List[str]
@@ -660,7 +660,7 @@ class Table(object):
 
         Notes
         -----
-        結果の dict はコンバータ mapping_cols の column_map 
+        結果の dict はコンバータ mapping_cols の column_map
         パラメータにそのまま利用できます。
 
         .. code-block: python
@@ -672,7 +672,7 @@ class Table(object):
             )
 
         """
-        threshold = 20 if threshold is None else threshold # デフォルトは 20
+        threshold = 20 if threshold is None else threshold  # デフォルトは 20
         logger.debug("しきい値： {}".format(threshold))
 
         # 自テーブルの見出し行を取得

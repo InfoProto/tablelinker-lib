@@ -1,56 +1,35 @@
-from ..core import convertors
+import glob
+import inspect
+import importlib
+import os
 
-from . import (
-    calc_col,
-    concat_col,
-    concat_title,
-    delete_col,
-    delete_row,
-    generate_pk,
-    insert_col,
-    mapping_col,
-    move_col,
-    rename_col,
-    reorder_col,
-    select_row,
-    split_col,
-    truncate,
-    update_row,
-    zenkaku,
-)
+from ..core.convertors import Convertor, register_convertor
 
-selectable_convertors = (
-    calc_col.CalcColConvertor,
-    concat_col.ConcatColConvertor,
-    concat_col.ConcatColsConvertor,
-    concat_title.ConcatTitleConvertor,
-    delete_col.DeleteColConvertor,
-    delete_col.DeleteColsConvertor,
-    delete_row.StringMatchDeleteRowConvertor,
-    delete_row.StringContainDeleteRowConvertor,
-    delete_row.PatternMatchDeleteRowConvertor,
-    generate_pk.GeneratePkConvertor,
-    insert_col.InsertColConvertor,
-    insert_col.InsertColsConvertor,
-    mapping_col.MappingColsConvertor,
-    move_col.MoveColConvertor,
-    rename_col.RenameColConvertor,
-    rename_col.RenameColsConvertor,
-    reorder_col.ReorderColsConvertor,
-    select_row.StringMatchSelectRowConvertor,
-    select_row.StringContainSelectRowConvertor,
-    select_row.PatternMatchSelectRowConvertor,
-    split_col.SplitColConvertor,
-    split_col.SplitRowConvertor,
-    truncate.TruncateConvertor,
-    update_row.StringMatchUpdateRowConvertor,
-    update_row.StringContainUpdateRowConvertor,
-    update_row.PatternMatchUpdateRowConvertor,
-    zenkaku.ToHankakuConvertor,
-    zenkaku.ToZenkakuConvertor,
-)
+
+__all__ = []
 
 
 def register():
-    for convertor in selectable_convertors:
-        convertors.registry_convertor(convertor)
+    """
+    このディレクトリにある全てのモジュールをインポートします。
+    """
+    modules = glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))
+    for f in modules:
+        if os.path.isfile(f) and not f.endswith('__init__.py'):
+            __all__.append(os.path.basename(f)[:-3])  # '.py' を除く
+
+    for m in __all__:
+        importlib.import_module("." + m, __name__)
+
+    # モジュール内の Convertor のサブクラスを探して登録します。
+    module_dict = globals()
+    for m in __all__:
+        # module_name = __name__ + '.' + m
+        module = module_dict.get(m)
+        for name in dir(module):
+            c = getattr(module, name)
+            if not inspect.isclass(c):
+                continue
+
+            if issubclass(c, Convertor):
+                register_convertor(c)

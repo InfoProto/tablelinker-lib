@@ -452,6 +452,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
 
         $ python -m tablelinker -i sample.xlsx
 
+.. _mapping_commandline:
 
 見出し列のマッピング
 --------------------
@@ -561,7 +562,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
       }
     }
 
-生成された :py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsConvertor>` 
+生成されたタスクファイルに記載されている :py:class:`mapping_cols <tablelinker.convertors.basics.mapping_col.MappingColsConvertor>` 
 コンバータは、入力表データの列を出力の列に割り当てる変換を行います。
 
 **column_map** が作成された入力列と出力列の対応表です。

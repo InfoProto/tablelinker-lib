@@ -74,8 +74,8 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
                 help_text="日時が抽出できない場合の値。"),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
 
         self.format = context.get_param("format")
         self.default = context.get_param("default")
@@ -213,8 +213,8 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
                 help_text="日付が抽出できない場合の値。"),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
 
         self.format = context.get_param("format")
         self.default = context.get_param("default")

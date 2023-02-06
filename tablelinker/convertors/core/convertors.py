@@ -1,5 +1,6 @@
 from abc import ABC
 from logging import getLogger
+from typing import Any, List
 
 from . import params
 
@@ -7,6 +8,26 @@ logger = getLogger(__name__)
 
 
 class ConvertorMeta(object):
+    """
+    コンバータのメタデータを管理するクラス。
+
+    Attrubutes
+    ----------
+    key: str
+        コンバータ名。コンバータを指定する際に指定します。
+    name: str
+        コンバータの表示名。
+    description: str
+        簡単な説明。
+    message: str
+        表示用の簡単な説明。クラスで定義されていない場合は
+        description を代わりに用います。
+    help_text: str
+        ヘルプ用メッセージ。
+    params: params.ParamSet
+        コンバータが受け付けるパラメータの集合です。
+    """
+
     def __init__(self, meta):
         self.key = meta.key
         self.name = meta.name
@@ -33,7 +54,7 @@ class ConvertorMeta(object):
 
 class Convertor(ABC):
     """
-    変換処理
+    コンバータのベースクラス。
     """
 
     def __repr__(self):
@@ -41,36 +62,91 @@ class Convertor(ABC):
 
     @classmethod
     def meta(cls):
+        """
+        コンバータクラスのメタデータクラスを返します。
+        """
         return ConvertorMeta(cls.Meta)
 
     @classmethod
     def key(cls):
+        """
+        コンバータクラスの名前を返します。
+        """
         return cls.meta().key
 
     @property
     def params(self):
+        """
+        コンバータクラスが受け付けるパラメータの集合を返します。
+        """
         return self.__class__.meta().params
 
-    def process(self, context):
-        self.initial_context(context)
-        self.initial(context)
+    def process(self, context: "Context"):
+        """
+        変換処理を実行します。
 
-        # 念のため先頭に戻し、2行目から処理する
+        Parameters
+        ----------
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        ベースクラスの実装では、以下のメソッドを呼び出します。
+        - preproc: 前処理。
+        - process_header: 見出し行に対する処理。
+        - process_record: データ行に対する処理。
+        - postproc: 後処理。
+
+        これ以外の処理を行うクラスを実装する場合は、 process を
+        オーバーライドしてください。
+        """
+        # 前処理
+        self.preproc(context)
+
+        # データの先頭に巻き戻し、見出し行を取得します。
         context.reset()
         context.next()
 
-        self.process_header(context.get_data('headers'), context)
-        for record in context.read():
-            if not self.check_process_record(record, context):
-                continue
-            self.process_record(record, context)
+        # 見出し行の処理
+        self.process_header(context.get_data("headers"), context)
 
-    def initial_context(self, context):
+        # データ行の処理
+        for rows in context.read():
+            if not self.check_record(rows, context):
+                # データ行に異常がある場合はスキップ
+                logger.warning("データ行をスキップ: '{}...'".format(
+                    (",".join(rows))[0:10]))
+                continue
+
+            self.process_record(rows, context)
+
+    def preproc(self, context: "Context"):
         """
-        パラメータの前処理と、ヘッダ情報の登録を行う。
+        前処理を行います。
+
+        Parameters
+        ----------
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        ベースクラスの実装では、以下の処理を行います。
+        - コンテキストに渡された実行時パラメータの値のチェック。
+        - "input_col_idx" から始まるパラメータに「列名」が渡された場合に
+          列番号に置き換える処理。
+        - "output_col_idx" から始まるパラメータに「列名」が渡された場合に
+          列番号に置き換える処理。
+
+        これ以外の前処理を行うクラスを実装する場合は、 preproc を
+        オーバーライドしてください。
         """
         headers = context.next()
-        context.set_data("num_of_columns", len(headers))  # 入力データ列数
+        context.set_data("headers", headers)
+        context.set_data("num_of_columns", len(headers))
 
         # 入出力列番号に列名が指定された場合、列番号に変換する
         for key in context.get_params():
@@ -117,38 +193,85 @@ class Convertor(ABC):
 
                             context._convertor_params[key][i] = idx
 
-        context.set_data("headers", headers)
+        self.headers = headers
+        self.num_of_columns = len(headers)
 
-    def initial(self, context):
-        pass
+    def process_header(self, headers: List[str], context: "Context"):
+        """
+        ヘッダ行に対する処理を実行します。
 
-    def process_header(self, headers, context):
+        Parameters
+        ----------
+        headers: List[str]
+            見出しの列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        ベースクラスの実装では、そのまま見出し列を出力します。
+
+        これ以外の処理を行うクラスを実装する場合は、 process_header を
+        オーバーライドしてください。
+        """
         context.output(headers)
 
-    def check_process_record(self, record, context):
+    def check_record(self, rows: List[Any], context: "Context") -> bool:
         """
         入力するレコードへのチェックを行います。
-        :return: boolean
+
+        Parameters
+        ----------
+        rows: List[Any]
+            データ行の値の列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Returns
+        -------
+        bool
+            正常な場合は True, 異常が見つかった場合は False を返します。
+
+        Notes
+        -----
+        ベースクラスの実装では、入力レコードに含まれる列数が
+        見出し行と一致しているかどうかをチェックします。
+
+        これ以外の処理を行うクラスを実装する場合は、 check_record を
+        オーバーライドしてください。
         """
-        if context.get_data("num_of_columns") != len(record):
+        num_of_columns = context.get_data("num_of_columns")
+        if num_of_columns != len(rows):
             logger.warning(
                 "num_of_columns: {:d} but record has {:d} fields.".format(
-                    context.get_data("num_of_columns"),
-                    len(record)))
+                    num_of_columns,
+                    len(rows)))
             return False
         else:
             return True
 
-    def process_record(self, record, context):
-        context.output(record)
+    def process_record(self, rows: List[Any], context: "Context"):
+        """
+        データ行に対する処理を実行します。
 
-    @classmethod
-    def can_apply(cls, attrs):
+        Parameters
+        ----------
+        rows: List[Any]
+            データ列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        ベースクラスの実装では、そのままデータ列を出力します。
+
+        これ以外の処理を行うクラスを実装する場合は、 process_record を
+        オーバーライドしてください。
         """
-        対象の属性がこのコンバータに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return True
+        context.output(rows)
 
     @classmethod
     def get_message(cls, params):
@@ -160,6 +283,21 @@ class Convertor(ABC):
 
 
 class InputOutputConvertor(Convertor):
+    """
+    1列の値を入力として、変換した結果を1列に出力する
+    コンバータのベースクラスです。
+
+    Attributes
+    ----------
+    input_col_idx: int
+        入力値を持つ列番号（0が先頭列）。
+    output_col_name: str
+        出力列の列名。新規の列名も指定できます。
+    output_col_idx: int
+        出力する列の列番号（0が先頭列）。
+    overwrite: bool [False]
+        False の場合、出力列が空欄の場合のみ出力します。
+    """
     @classmethod
     def meta(cls):
         _meta = ConvertorMeta(cls.Meta)
@@ -197,32 +335,44 @@ class InputOutputConvertor(Convertor):
         )
         return _meta
 
-    @classmethod
-    def can_apply(cls, attrs):
+    def preproc(self, context):
         """
-        対象の属性がこのコンバータに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
+        前処理を行います。
 
-    def initial_context(self, context):
-        super().initial_context(context)
+        Parameters
+        ----------
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        InputOutputConvertor クラスの実装では、以下の処理を行います。
+        - ベースクラスのすべての処理。
+        - 出力列名 output_col_name が指定されていない場合、
+          入力列名 input_col_name をコピー。
+        - 出力列名 output_col_name が入力列に存在する場合、
+          上書き列として記録。
+        - 出力列番号 output_col_idx が指定されていない場合、
+          末尾に新規列を追加。
+
+        これ以外の前処理を行うクラスを実装する場合は、 preproc を
+        オーバーライドしてください。
+        """
+        super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
-        self.output_col_idx = context.get_param("output_col_idx")
         self.output_col_name = context.get_param("output_col_name")
+        self.output_col_idx = context.get_param("output_col_idx")
         self.overwrite = context.get_param("overwrite")
 
-    def process_header(self, header, context):
         if self.output_col_name is None:
             # 出力列名が指定されていない場合は既存列名を利用する
-            self.output_col_name = header[self.input_col_idx]
+            self.output_col_name = self.headers[self.input_col_idx]
             self.del_col = self.input_col_idx
         else:
             # 出力列名が存在するかどうか調べる
             try:
-                idx = header.index(self.output_col_name)
+                idx = self.headers.index(self.output_col_name)
                 self.del_col = idx
             except ValueError:
                 # 存在しない場合は新規列
@@ -231,45 +381,111 @@ class InputOutputConvertor(Convertor):
 
         if self.output_col_idx is None:
             # 出力列番号が指定されていない場合は末尾に追加
-            self.output_col_idx = len(header)
+            self.output_col_idx = self.num_of_columns
 
-        header = self.reorder(
-            original=header,
+    def process_header(self, headers, context):
+        """
+        ヘッダ行に対する処理を実行します。
+
+        Parameters
+        ----------
+        headers: List[str]
+            見出しの列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        このクラスの実装では、以下の処理を行います。
+        - 上書きされる列を削除。
+        - 新しい列名を output_col_idx の位置に挿入。
+
+        これ以外の処理を行うクラスを実装する場合は、 process_header を
+        オーバーライドしてください。
+        """
+        headers = self.reorder(
+            original=headers,
             del_idx=self.del_col,
             insert_idx=self.output_col_idx,
             insert_value=self.output_col_name)
 
-        context.output(header)
+        context.output(headers)
 
-    def process_record(self, record, context):
+    def process_record(self, rows: List[Any], context: "Context"):
+        """
+        データ行に対する処理を実行します。
+
+        Parameters
+        ----------
+        rows: List[Any]
+            データ列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        このクラスの実装では、以下の処理を行います。
+        - 上書きされる列を削除。
+        - 処理結果を output_col_idx の位置に挿入。
+
+        これ以外の処理を行うクラスを実装する場合は、 process_record を
+        オーバーライドしてください。
+        """
         need_value = False
         if self.overwrite:
             need_value = True
         else:
             # 置き換える列に空欄があるかどうか
-            if self.del_col >= len(record) or \
-                    record[self.del_col] == "":
+            if self.del_col >= len(rows) or \
+                    rows[self.del_col] == "":
                 need_value = True
 
         if need_value:
-            value = self.process_convertor(record, context)
+            value = self.process_convertor(rows, context)
             if value is False:
                 # コンバータの process_convertor で False を返す行はスキップされる
                 return
 
         else:
-            value = record[self.del_col]
+            value = rows[self.del_col]
 
-        record = self.reorder(
-            original=record,
+        rows = self.reorder(
+            original=rows,
             del_idx=self.del_col,
             insert_idx=self.output_col_idx,
             insert_value=value)
 
-        context.output(record)
+        context.output(rows)
 
-    def process_convertor(self, record, context):
-        return record[self.input_col_idx]
+    def process_convertor(self, rows: List[Any], context: "Context"):
+        """
+        データに対する処理を実行します。
+        
+        一般的な1入力-1出力コンバータでは、このメソッドをオーバーライドすれば
+        必要な処理が実装できます。
+
+        Parameters
+        ----------
+        rows: List[Any]
+            データ列。
+        context: Context
+            コンバータを呼び出したコンテキスト情報です。
+            入力データや出力先、実行時のパラメータを含みます。
+
+        Notes
+        -----
+        このクラスの実装では、入力列の値をそのまま返します。
+        入力列の値は rows[self.input_col_idx] で取得できます。
+
+        処理を行った結果を返してください。
+        ただし False を返すと、その行全体がスキップされます。
+
+        これ以外の処理を行うクラスを実装する場合は、 process_convertor を
+        オーバーライドしてください。
+        """
+        return rows[self.input_col_idx]
 
     def reorder(self, original, del_idx, insert_idx, insert_value):
         new_list = original[:]
@@ -326,37 +542,26 @@ class InputOutputsConvertor(Convertor):
         )
         return _meta
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのコンバータに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.old_col_indexes = []
         self.del_col_indexes = []
         self.input_col_idx = context.get_param("input_col_idx")
         self.output_col_idx = context.get_param("output_col_idx")
         self.output_col_names = context.get_param("output_col_names")
 
-    def process_header(self, header, context):
         # 既存列をチェック
         for output_col_name in self.output_col_names:
-            if output_col_name in header:
-                idx = header.index(output_col_name)
+            if output_col_name in self.headers:
+                idx = self.headers.index(output_col_name)
                 self.old_col_indexes.append(idx)
             else:
                 self.old_col_indexes.append(None)
 
         # 挿入する位置
         if self.output_col_idx is None or \
-                self.output_col_idx >= len(header):  # 末尾
-            self.output_col_idx = len(header)
+                self.output_col_idx >= len(self.headers):  # 末尾
+            self.output_col_idx = len(self.headers)
 
         # 列を一つずつ削除した場合に正しい列番号になるよう調整
         self.del_col_indexes = self.old_col_indexes[:]
@@ -371,25 +576,27 @@ class InputOutputsConvertor(Convertor):
                 if d is not None and del_index < d:
                     self.del_col_indexes[i + j + 1] -= 1
 
-        header = self.reorder(
-            original=header,
+
+    def process_header(self, headers, context):
+        headers = self.reorder(
+            original=headers,
             delete_idxs=self.del_col_indexes,
             insert_idx=self.output_col_idx,
             insert_values=self.output_col_names
         )
-        context.output(header)
+        context.output(headers)
 
-    def process_record(self, record, context):
+    def process_record(self, rows, context):
         old_values = []
         for idx in self.old_col_indexes:
             if idx is None:
                 old_values.append("")
             else:
-                old_values.append(record[idx])
+                old_values.append(rows[idx])
 
         if context.get_param("overwrite"):
             new_values = self.process_convertor(
-                record, context)
+                rows, context)
         else:
             values = None
             new_values = []
@@ -397,21 +604,21 @@ class InputOutputsConvertor(Convertor):
                 if old_value == "":
                     if values is None:
                         values = self.process_convertor(
-                            record, context)
+                            rows, context)
 
                     new_values.append(values[i])
                 else:
                     new_values.append(old_value)
 
-        record = self.reorder(
-            original=record,
+        rows = self.reorder(
+            original=rows,
             delete_idxs=self.del_col_indexes,
             insert_idx=self.output_col_idx,
             insert_values=new_values)
-        context.output(record)
+        context.output(rows)
 
-    def process_convertor(self, record, context):
-        return record[self.input_col_idx]
+    def process_convertor(self, rows, context):
+        return rows[self.input_col_idx]
 
     def reorder(self, original, delete_idxs, insert_idx, insert_values):
         """
@@ -473,7 +680,7 @@ for f in CONVERTORS:
     CONVERTOR_DICT[f.key()] = f
 
 
-def registry_convertor(convertor, selectable=True):
+def register_convertor(convertor, selectable=True):
     """
     コンバータを登録します。
     convertor: コンバータクラス
@@ -490,17 +697,6 @@ def convertor_find_by(name):
 
 def convertor_all():
     return [f for f in CONVERTORS]
-
-
-def convertor_meta_list(attrs=[]):
-    """
-    適用可能なコンバータのメタ情報を取得します。
-    """
-    _attrs = attrs if attrs is not None else []
-    return [
-        convertor.meta() for convertor in convertor_all()
-        if convertor.can_apply(_attrs)
-    ]
 
 
 def convertor_keys():

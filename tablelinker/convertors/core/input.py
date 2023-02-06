@@ -161,7 +161,7 @@ for i in INPUTS:
     INPUTS_DICT[i.key()] = i
 
 
-def registry_input(input_class):
+def register_input(input_class):
     INPUTS.append(input_class)
     INPUTS_DICT[input_class.key()] = input_class
 

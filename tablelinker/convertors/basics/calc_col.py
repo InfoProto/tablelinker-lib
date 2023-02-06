@@ -113,51 +113,42 @@ class CalcColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 2:
-            return False
-        return True
+    def preproc(self, context):
+        super().preproc(context)
+
+        self.attr1 = context.get_param("input_col_idx1")
+        self.attr2 = context.get_param("input_col_idx2")
+        self.output_col_name = context.get_param("output_col_name")
+        self.delete_col = context.get_param("delete_col")
+        self.operator = context.get_param("operator")
+
+        if self.output_col_name is None:
+            self.output_col_name = "+".join([
+                self.headers[self.attr1],
+                self.headers[self.attr2]])
 
     def process_header(self, headers, context):
-        attr1 = context.get_param("input_col_idx1")
-        attr2 = context.get_param("input_col_idx2")
-        output_col_name = context.get_param("output_col_name")
-        delete_col = context.get_param("delete_col")
+        if self.delete_col:
+            headers.pop(self.attr1)
+            if self.attr1 != self.attr2:
+                headers.pop(self.attr2 - 1)
 
-        if output_col_name is None:
-            output_col_name = "+".join([headers[attr1], headers[attr2]])
-
-        if delete_col:
-            headers.pop(attr1)
-            if attr1 != attr2:
-                headers.pop(attr2 - 1)
-
-        headers = headers + [output_col_name]
+        headers = headers + [self.output_col_name]
 
         context.output(headers)
 
     def process_record(self, record, context):
-        attr1 = context.get_param("input_col_idx1")
-        attr2 = context.get_param("input_col_idx2")
-        calculation = context.get_param("operator")
-        delete_col = context.get_param("delete_col")
-
         try:
-            valueA = int(record[attr1])
-            valueB = int(record[attr2])
-            calc_value = calc(valueA, valueB, calculation)
+            valueA = int(record[self.attr1])
+            valueB = int(record[self.attr2])
+            calc_value = calc(valueA, valueB, self.operator)
             record.append(calc_value)
         except ValueError:
             record.append(None)
 
-        if delete_col:
-            record.pop(attr1)
-            if attr1 != attr2:
-                record.pop(attr2)
+        if self.delete_col:
+            record.pop(self.attr1)
+            if self.attr1 != self.attr2:
+                record.pop(self.attr2)
 
         context.output(record)

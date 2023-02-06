@@ -1,5 +1,3 @@
-import csv
-import io
 import json
 from logging import getLogger
 import os
@@ -182,6 +180,7 @@ def mapping(args: dict):
 
                 table.save(args['--output'], encoding=encoding)
 
+
 def parse_relaxed_json(val: str):
     """
     Windows 環境でパラメータの " が除去されてしまうため、
@@ -197,7 +196,7 @@ def parse_relaxed_json(val: str):
         parsed = json.loads(val)
         # 正常な JSON フォーマットの場合
         return parsed
-    except json.decoder.JSONDecodeError as exc:
+    except json.decoder.JSONDecodeError:
         pass
 
     fixed = re.sub(r'(\w+)', r'"\g<1>"', val)
@@ -205,7 +204,7 @@ def parse_relaxed_json(val: str):
         parsed = json.loads(fixed)
         # 語の周りを '"' で囲えば解析できる場合
         return parsed
-    except json.decoder.JSONDecodeError as exc:
+    except json.decoder.JSONDecodeError:
         pass
 
     logger.error("パラメータ '{}' を解釈できません。".format(val))

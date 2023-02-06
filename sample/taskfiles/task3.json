@@ -1,16 +1,18 @@
-    [
-        {
-            "convertor":"rename_col",
-            "params":{
-                "input_col_idx":0,
-                "output_col_name":"都道府県名"
-            }
-        },
-        {
-            "convertor":"reorder_cols",
-            "params":{
-                "column_list":["都道府県名","人口","出生数","死亡数"]
-            }
+[
+    {
+        "convertor":"rename_col",
+        "params":{
+            "input_col_idx":0,
+            "output_col_name":"地域"
         }
-    ]
+    },
+    {
+        "convertor":"concat_title",
+        "params":{
+            "lines":3,
+            "separator":"",
+            "hierarchical_heading":true
+        }
+    }
+]
 

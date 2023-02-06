@@ -70,8 +70,8 @@ class TruncateConvertor(convertors.InputOutputConvertor):
             ),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.length = context.get_param("length")
         self.ellipsis = context.get_param("ellipsis")
 

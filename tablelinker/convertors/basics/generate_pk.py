@@ -249,8 +249,8 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
             ),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.length = context.get_param("length")
         self.error_if_not_unique = context.get_param("error_if_not_unique")
         self.skip_if_not_unique = context.get_param("skip_if_not_unique")

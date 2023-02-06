@@ -13,13 +13,10 @@ class SplitColConvertor(convertors.Convertor):
 
     パラメータ
         * "input_col_idx": 対象列の列番号または列名 [必須]
-        * "output_col_idxs": 分割した結果を出力する列番号または
-          列名のリスト [必須]
+        * "output_col_names": 分割した結果を出力する列名のリスト [必須]
         * "separator": 区切り文字（正規表現） [","]
 
     注釈
-        - ``output_col_idxs`` で指定された列名が存在しない場合、
-          最後尾に追加されます。
         - 分割した列の数が ``output_col_idxs`` よりも少ない場合は
           足りない列の値が "" になります。
         - 分割した列の数が ``output_col_idxs`` よりも多い場合は
@@ -34,7 +31,7 @@ class SplitColConvertor(convertors.Convertor):
                 "convertor": "split_col",
                 "params": {
                     "input_col_idx": "氏名",
-                    "output_col_idxs": ["姓", "名"],
+                    "output_col_names": ["姓", "名"],
                     "separator": "\\s+",
                 }
             }
@@ -48,7 +45,7 @@ class SplitColConvertor(convertors.Convertor):
         列を指定された文字列で分割して、複数の列を生成します
         """
         help_text = """
-        生成した列は、一番うしろに追加され、数字が付きます。
+        生成した列は、最後尾に追加されます。
         """
 
         params = params.ParamSet(
@@ -58,8 +55,8 @@ class SplitColConvertor(convertors.Convertor):
                 description="処理をする対象の列を選択してください。",
                 required=True),
             params.OutputAttributeListParam(
-                "output_col_idxs",
-                label="分割後に出力する列番号または列名のリスト",
+                "output_col_names",
+                label="分割後に出力する列名のリスト",
                 description="変換結果を出力する列名です。",
                 required=True,
             ),
@@ -83,33 +80,28 @@ class SplitColConvertor(convertors.Convertor):
             return False
         return True
 
-    def initial_context(self, context):
-        super().initial_context(context)
-        self.headers = context.get_data("headers")
+    def preproc(self, context):
+        super().preproc(context)
         self.re_separator = re.compile(context.get_param("separator"))
         self.input_col_idx = context.get_param("input_col_idx")
-        self.output_col_idxs = context.get_param("output_col_idxs")
+        self.output_col_names = context.get_param("output_col_names")
 
     def process_header(self, headers, context):
-        # 出力列として指定された列番号が存在しない場合の処理
         counter = 1
-        for i, idx in enumerate(self.output_col_idxs):
-            if idx >= len(self.headers):
-                input_header = headers[self.input_col_idx]
-                self.output_col_idxs[i] = len(self.headers)
-                self.headers.append(f"{input_header}_{counter:d}")
-                counter += 1
+        for name in self.output_col_names:
+            headers.append(name)
+            counter += 1
 
-        context.output(self.headers)
+        context.output(headers)
 
     def process_record(self, record, context):
         original = record[self.input_col_idx]
         splits = self.re_separator.split(
-            original, maxsplit=len(self.output_col_idxs) - 1)
+            original, maxsplit=len(self.output_col_names) - 1)
 
-        new_record = record + [""] * (len(self.headers) - len(record))
+        new_record = record + [""] * (len(self.output_col_names))
         for i, new_val in enumerate(splits):
-            new_record[self.output_col_idxs[i]] = new_val
+            new_record[self.num_of_columns + i] = new_val
 
         context.output(new_record)
 
@@ -178,8 +170,8 @@ class SplitRowConvertor(convertors.Convertor):
             return False
         return True
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.re_separator = re.compile(context.get_param("separator"))
         self.input_col_idx = context.get_param("input_col_idx")
 

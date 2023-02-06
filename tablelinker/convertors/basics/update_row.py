@@ -62,16 +62,8 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
             )
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
         self.new_value = context.get_param("new")
@@ -143,16 +135,8 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
             )
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.idx = context.get_param("input_col_idx")
         self.query = context.get_param("query")
         self.new_value = context.get_param("new")
@@ -228,18 +212,8 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
             )
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.idx = context.get_param("input_col_idx")
         self.re_pattern = re.compile(context.get_param('pattern'))
         self.new_value = context.get_param("new")

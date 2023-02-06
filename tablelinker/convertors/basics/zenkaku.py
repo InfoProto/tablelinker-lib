@@ -91,8 +91,8 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
             ),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.kana = context.get_param("kana")
         self.ascii = context.get_param("ascii")
         self.digit = context.get_param("digit")
@@ -189,8 +189,8 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
             ),
         )
 
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.kana = context.get_param("kana")
         self.ascii = context.get_param("ascii")
         self.digit = context.get_param("digit")

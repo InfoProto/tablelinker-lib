@@ -78,14 +78,6 @@ class InsertColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
-
     def process_header(self, headers, context):
         new_name = context.get_param("output_col_name")
         output_col_idx = context.get_param("output_col_idx")
@@ -175,16 +167,8 @@ class InsertColsConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.output_col_idx = context.get_param("output_col_idx")
         self.new_names = context.get_param("output_col_names")
         self.new_values = context.get_param("values")

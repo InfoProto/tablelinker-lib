@@ -528,7 +528,7 @@ def test_split_col():
         convertor="split_col",
         params={
             "input_col_idx": 0,
-            "output_col_idxs": ["コード", "地域名"],
+            "output_col_names": ["コード", "地域名"],
             "separator": r"\s+",
         },
     )

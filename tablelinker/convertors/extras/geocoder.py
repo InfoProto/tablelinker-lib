@@ -158,18 +158,9 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
                 default_value=False,
                 help_text="6桁団体コードの場合はチェック。"),)
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        res = len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-        return res
-
     @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         self.with_check_digit = context.get_param("with_check_digit")
@@ -268,18 +259,9 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
                 help_text=""),
         )
 
-    @classmethod
     @check_jageocoder
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-
-    @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
@@ -390,17 +372,9 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
                 default_value=["", ""]),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-
     @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
@@ -539,18 +513,9 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
                 help_text="住所が解析できない場合の値。"),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        res = len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-        return res
-
     @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
@@ -651,18 +616,9 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
                 help_text="3桁目の後ろにハイフンを入れるかどうか。"),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        res = len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-        return res
-
     @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         self.hiphen = context.get_param("hiphen")
@@ -753,17 +709,9 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
                 default_value=""),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 1 and attrs[0]["attr_type"] == "address"
-
     @check_jageocoder
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)

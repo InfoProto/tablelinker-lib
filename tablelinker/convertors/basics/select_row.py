@@ -46,14 +46,6 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
             params.StringParam("query", label="文字列", required=True),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
-
     def process_record(self, record, context):
         idx = context.get_param("input_col_idx")
         query = context.get_param("query")
@@ -104,14 +96,6 @@ class StringContainSelectRowConvertor(convertors.Convertor):
                 "input_col_idx", label="対象列", required=True),
             params.StringParam("query", label="文字列", required=True),
         )
-
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        return len(attrs) == 0
 
     def process_record(self, record, context):
         idx = context.get_param("input_col_idx")
@@ -164,18 +148,8 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
             params.StringParam("pattern", label="正規表現", required=True),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 0:
-            return False
-        return True
-
-    def initial_context(self, context):
-        super().initial_context(context)
+    def preproc(self, context):
+        super().preproc(context)
         self.re_pattern = re.compile(context.get_param('pattern'))
 
     def process_record(self, record, context):

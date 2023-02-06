@@ -50,14 +50,16 @@ class ReorderColsConvertor(convertors.Convertor):
                 required=True),
         )
 
-    def process_header(self, headers, context):
+    def preproc(self, context):
+        super().preproc(context)
+
         output_headers = context.get_param("column_list")
         missed_headers = []
         for idx in output_headers:
-            if isinstance(idx, str) and idx not in headers:
+            if isinstance(idx, str) and idx not in self.headers:
                 missed_headers.append(idx)
             elif isinstance(idx, int) and (
-                    idx < 0 or idx >= len(headers)):
+                    idx < 0 or idx >= len(self.headers)):
                 missed_headers.append(str(idx))
 
         if len(missed_headers) > 0:
@@ -72,9 +74,10 @@ class ReorderColsConvertor(convertors.Convertor):
         self.mapping = []
         for idx in output_headers:
             if isinstance(idx, str):
-                idx = headers.index(idx)
+                idx = self.headers.index(idx)
             self.mapping.append(idx)
 
+    def process_header(self, headers, context):
         context.output(self.reorder(headers))
 
     def process_record(self, record, context):

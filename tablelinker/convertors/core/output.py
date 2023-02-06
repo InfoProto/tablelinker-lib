@@ -103,7 +103,7 @@ for o in OUTPUTS:
     OUTPUTS_DICT[o.key()] = o
 
 
-def registry_output(output):
+def register_output(output):
     OUTPUTS.append(output)
     OUTPUTS_DICT[output.key()] = output
 
