@@ -22,6 +22,11 @@ def initialize_jageocoder() -> bool:
     try:
         jageocoder.init()
         jageocoder_initialized = True
+    except TypeError as e:
+        jageocoder_initialized = False
+        logger.error((
+            "jageocoder の初期化に失敗しました。"
+            "辞書データがインストールされていません。"))
     except RuntimeError as e:
         logger.error(e)
         jageocoder_initialized = False

@@ -103,7 +103,10 @@ class Convertor(ABC):
         オーバーライドしてください。
         """
         # 前処理
-        self.preproc(context)
+        if self.preproc(context) is False:
+            raise RuntimeError((
+                "コンバータ {} は利用できません。"
+                "エラーメッセージを確認してください。").format(self.key()))
 
         # データの先頭に巻き戻し、見出し行を取得します。
         context.reset()
@@ -122,7 +125,7 @@ class Convertor(ABC):
 
             self.process_record(rows, context)
 
-    def preproc(self, context: "Context"):
+    def preproc(self, context: "Context") -> bool:
         """
         前処理を行います。
 
@@ -131,6 +134,12 @@ class Convertor(ABC):
         context: Context
             コンバータを呼び出したコンテキスト情報です。
             入力データや出力先、実行時のパラメータを含みます。
+
+        Returns
+        -------
+        bool
+            コンバータが利用できない等の理由で前処理に失敗した場合、
+            False を返します。この場合処理は継続できません。
 
         Notes
         -----
@@ -335,7 +344,7 @@ class InputOutputConvertor(Convertor):
         )
         return _meta
 
-    def preproc(self, context):
+    def preproc(self, context) -> bool:
         """
         前処理を行います。
 
@@ -382,6 +391,8 @@ class InputOutputConvertor(Convertor):
         if self.output_col_idx is None:
             # 出力列番号が指定されていない場合は末尾に追加
             self.output_col_idx = self.num_of_columns
+
+        return True
 
     def process_header(self, headers, context):
         """
@@ -462,7 +473,7 @@ class InputOutputConvertor(Convertor):
     def process_convertor(self, rows: List[Any], context: "Context"):
         """
         データに対する処理を実行します。
-        
+
         一般的な1入力-1出力コンバータでは、このメソッドをオーバーライドすれば
         必要な処理が実装できます。
 
@@ -542,7 +553,7 @@ class InputOutputsConvertor(Convertor):
         )
         return _meta
 
-    def preproc(self, context):
+    def preproc(self, context) -> bool:
         super().preproc(context)
         self.old_col_indexes = []
         self.del_col_indexes = []
@@ -576,6 +587,7 @@ class InputOutputsConvertor(Convertor):
                 if d is not None and del_index < d:
                     self.del_col_indexes[i + j + 1] -= 1
 
+        return True
 
     def process_header(self, headers, context):
         headers = self.reorder(
