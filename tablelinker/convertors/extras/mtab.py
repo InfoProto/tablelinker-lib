@@ -3,7 +3,7 @@ import io
 
 import requests
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 MTAB_URL = "https://mtab.app/api/v1/mtab"
 

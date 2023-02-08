@@ -1,5 +1,5 @@
-from ..core import convertors, params
-from ..core.mapping import ItemsPair
+from ...core import convertors, params
+from ...core.mapping import ItemsPair
 
 
 class AutoMappingColsConvertor(convertors.Convertor):

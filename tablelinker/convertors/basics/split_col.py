@@ -1,6 +1,6 @@
 import re
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 
 class SplitColConvertor(convertors.Convertor):
@@ -17,9 +17,9 @@ class SplitColConvertor(convertors.Convertor):
         * "separator": 区切り文字（正規表現） [","]
 
     注釈
-        - 分割した列の数が ``output_col_idxs`` よりも少ない場合は
+        - 分割した列の数が ``output_col_names`` よりも少ない場合は
           足りない列の値が "" になります。
-        - 分割した列の数が ``output_col_idxs`` よりも多い場合は
+        - 分割した列の数が ``output_col_names`` よりも多い場合は
           最後の列に残りのすべての文字列が出力されます。
 
     サンプル

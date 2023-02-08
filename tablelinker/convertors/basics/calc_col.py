@@ -1,5 +1,6 @@
-from ..core import convertors, params
 from enum import Enum
+
+from ...core import convertors, params
 
 
 class Calculation(Enum):

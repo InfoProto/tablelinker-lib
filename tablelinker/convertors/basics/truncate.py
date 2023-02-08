@@ -1,4 +1,4 @@
-from ..core import convertors, params, validators
+from ...core import convertors, params, validators
 
 
 class TruncateConvertor(convertors.InputOutputConvertor):

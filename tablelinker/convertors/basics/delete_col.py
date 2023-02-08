@@ -1,4 +1,4 @@
-from ..core import convertors, params
+from ...core import convertors, params
 
 
 class DeleteColConvertor(convertors.Convertor):

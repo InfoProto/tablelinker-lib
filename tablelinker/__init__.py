@@ -1,7 +1,7 @@
 from logging import getLogger
 
-from .table import Table
-from .task import Task
+from .core.table import Table
+from .core.task import Task
 
 __version__ = "0.1.0"
 

@@ -1,6 +1,6 @@
 import re
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 
 class StringMatchSelectRowConvertor(convertors.Convertor):

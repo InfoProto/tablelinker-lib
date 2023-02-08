@@ -6,11 +6,11 @@ API リファレンス
 Table クラス
 ------------
 
-.. autoclass:: tablelinker.table.Table
+.. autoclass:: tablelinker.core.table.Table
     :members:
 
 Task クラス
 ------------
 
-.. autoclass:: tablelinker.task.Task
+.. autoclass:: tablelinker.core.task.Task
     :members:

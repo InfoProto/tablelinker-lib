@@ -12,9 +12,12 @@ from typing import List, Optional
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from .convertors import basics as basic_convertors
-from .convertors import core
-from .convertors.core.mapping import ItemsPair
+from ..convertors import basics as basic_convertors
+from .context import Context
+from .convertors import convertor_find_by
+from .input import CsvInputCollection
+from .mapping import ItemsPair
+from .output import CsvOutputCollection
 from .task import Task
 
 
@@ -36,9 +39,9 @@ def escape_encoding(exc):
 
 class Table(object):
     """
-    表形式 CSV データを管理するクラス。
+    表形式データを管理するクラスです。
 
-    Attributes
+    Parameters
     ----------
     file: File-like, Path-like
         このテーブルが管理する入力表データファイルのパス、
@@ -53,8 +56,21 @@ class Table(object):
     skip_cleaning: bool
         表データを読み込む際にクリーニングをスキップするか
         どうかを指定するフラグ。
-        True を指定した場合、 UTF-8 でカンマ区切りの CSV ファイルで
-        先頭部分に余計な行が含まれていない必要があります。
+        True を指定した場合、 file で指定したファイルは
+        文字エンコーディングが UTF-8（BOM無し）、区切り文字はカンマ、
+        先頭部分に説明などの余計な行が含まれていない
+        CSV ファイルである必要があります。
+
+    Attributes
+    ----------
+    file: File-like, Path-like
+        パラメータ参照。
+    sheet: str, optional
+        パラメータ参照。
+    is_tempfile: bool
+        パラメータ参照・
+    skip_cleaning: bool
+        パラメータ参照。
     filetype: str
         入力表データファイルの種別。 CSV の場合は ``csv``、
         Excel の場合は ``excel`` になります。
@@ -99,6 +115,9 @@ class Table(object):
             skip_cleaning: bool = False):
         """
         オブジェクトを初期化します。
+
+        Notes
+        -----
         ファイルは開きません。
         """
         self.file = file
@@ -203,7 +222,7 @@ class Table(object):
                     df = df[sheets[0]]
 
                 data = df.to_csv(index=False)
-                self._reader = core.CsvInputCollection(
+                self._reader = CsvInputCollection(
                     file_or_path=io.StringIO(data),
                     skip_cleaning=True).open(
                         as_dict=as_dict, **kwargs)
@@ -223,7 +242,7 @@ class Table(object):
                     raise ValueError("Invalid sheet name.")
 
         # CSV 読み込み
-        self._reader = core.CsvInputCollection(
+        self._reader = CsvInputCollection(
             self.file,
             skip_cleaning=self.skip_cleaning).open(
                 as_dict=as_dict, **kwargs)
@@ -298,25 +317,15 @@ class Table(object):
         --------
         >>> import pandas as pd
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table = Table("hachijo_sightseeing.xslx")
         >>> df = table.toPandas()
         >>> df.columns
         Index(['観光スポット名称', '所在地', '緯度', '経度', '座標系',\
           '説明', '八丈町ホームページ記載'], dtype='object')
 
         """
-        with tempfile.TemporaryDirectory() as td:
-            fname = os.path.join(td, 'topandas.csv')
-            with open(
-                    fname,
-                    mode="w",
-                    newline="") as f:
-                writer = csv.writer(f)
-                input = self.open()
-                for row in input:
-                    writer.writerow(row)
-
-            df = pd.read_csv(fname)
+        with self.open(as_dict) as reader:
+            df = pd.DataFrame.from_records(reader)
 
         return df
 
@@ -551,18 +560,18 @@ class Table(object):
             delete=False,
             prefix='table_').name
         input = self._reader
-        output = core.CsvOutputCollection(csv_out)
-        conv = core.convertor_find_by(convertor)
+        output = CsvOutputCollection(csv_out)
+        conv = convertor_find_by(convertor)
         if conv is None:
             # 拡張コンバータも読み込み、もう一度確認する
             self.useExtraConvertors()
-            conv = core.convertor_find_by(convertor)
+            conv = convertor_find_by(convertor)
 
         if conv is None:
             raise ValueError("コンバータ '{}' は未登録です".format(
                 convertor))
 
-        with core.Context(
+        with Context(
                 convertor=conv,
                 convertor_params=params,
                 input=input,

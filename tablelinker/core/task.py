@@ -11,7 +11,7 @@ class Task(object):
     """
     タスクを管理するクラス。
 
-    Attributes
+    Parameters
     ----------
     convertor: str
         コンバータ名。
@@ -19,6 +19,16 @@ class Task(object):
         パラメータ名と値を持つ dict。
     note: str, optional
         タスクの内容に対するメモ。
+
+    Attributes
+    ----------
+    convertor: str
+        パラメータ参照。
+    params: dict
+        パラメータ参照。
+    note: str, optional
+        パラメータ参照。
+
     """
 
     def __init__(

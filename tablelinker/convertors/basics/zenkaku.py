@@ -2,7 +2,7 @@ from logging import getLogger
 
 import jaconv
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 logger = getLogger(__name__)
 

@@ -2,7 +2,7 @@ import re
 
 from jeraconv import jeraconv
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 
 class ToSeirekiConvertor(convertors.InputOutputConvertor):

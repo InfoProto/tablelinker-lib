@@ -38,7 +38,7 @@ def test_calc_col():
 
 def test_concat_col():
     table = Table(os.path.join(
-        sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
+        sample_dir, "yanai_tourism_sjis.csv"))
     table = table.convert(
         convertor="concat_col",
         params={
@@ -71,7 +71,7 @@ def test_concat_col():
 
 def test_concat_cols():
     table = Table(os.path.join(
-        sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
+        sample_dir, "yanai_tourism_sjis.csv"))
     table = table.convert(
         convertor="concat_cols",
         params={
@@ -550,7 +550,7 @@ def test_split_col():
 
 def test_split_row():
     table = Table(
-        os.path.join(sample_dir, "sakurai_sightseeing_spots_sjis.csv"))
+        os.path.join(sample_dir, "yanai_tourism_sjis.csv"))
     table = table.convert(
         convertor="split_row",
         params={

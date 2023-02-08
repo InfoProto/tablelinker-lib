@@ -3,7 +3,7 @@ import re
 
 import jageocoder
 
-from ..core import convertors, params
+from ...core import convertors, params
 
 logger = getLogger(__name__)
 

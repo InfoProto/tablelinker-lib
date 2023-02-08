@@ -3,7 +3,7 @@ import inspect
 import importlib
 import os
 
-from ..core.convertors import Convertor, register_convertor
+from ...core.convertors import Convertor, register_convertor
 
 
 __all__ = []
