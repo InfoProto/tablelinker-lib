@@ -1,6 +1,7 @@
 from abc import ABC
 import json
 from logging import getLogger
+import re
 
 from .validators import IntValidator, BooleanValidator, RequiredValidator
 
@@ -274,11 +275,63 @@ class AttributeParam(Param):
             "empty_label": self.empty_label,
         }
 
-    # def default_validators(self):
-    #     return (IntValidator(),)
+    def default_validators(self):
+        return (IntValidator(),)
+
+    def get_column_number(
+            self,
+            value,
+            context: "Context",
+            allow_error: bool=False) -> int:
+        """
+        指定した列名が存在すればその列番号を返します。
+
+        Parameters
+        ----------
+        value: int, str
+            列名または列番号。
+        context: Context
+            コンテキスト情報。
+        allow_error: bool (default: False)
+            存在しない列名や範囲外の列番号を許容するかどうか。
+            True の場合は -1 を返します。
+            False の場合は ValueError 例外を送出します。
+
+        Returns
+        -------
+        int
+            列番号。存在しない場合は -1。
+        """
+        headers = context.get_data("headers") or []
+        if isinstance(value, str):
+            try:
+                idx = headers.index(value)
+                value = idx
+            except ValueError:
+                # 数値を文字列で指定している場合に対応
+                if re.match(r'^\d+$', value):
+                    value = int(value)
+                elif allow_error:
+                    value = -1
+                else:
+                    raise ValueError((
+                        "パラメータ '{}' で指定された列名 '{}' は"
+                        "有効な列名ではありません。有効な列名は次の通り; {}"
+                    ).format(self.name, value, ",".join(headers)))
+
+        if value < -1 or value >= len(headers):
+            if allow_error:
+                value = -1
+            else:
+                raise ValueError((
+                    "パラメータ '{}' で指定された列番号 '{}' は"
+                    "有効な範囲ではありません。 0 以上 {} 以下で指定してください。"
+                ).format(self.name, value, len(headers) - 1))
+
+        return value
 
 
-class AttributeListParam(Param):
+class AttributeListParam(AttributeParam):
     """
     複数の列を指定するためのパラメータ
     """
@@ -290,9 +343,6 @@ class AttributeListParam(Param):
         super(AttributeListParam, self).__init__(*args, **kwargs)
         self.collection_param_name = collection_param_name
 
-    def parse_value(self, value):
-        return [int(val) for val in value]
-
     @property
     def arguments(self):
         return {"collection_param_name": self.collection_param_name}
@@ -300,6 +350,36 @@ class AttributeListParam(Param):
     def default_validators(self):
         return ()
 
+    def get_column_numbers(
+            self,
+            values: list,
+            context: "Context",
+            allow_error: bool=False) -> list:
+        """
+        指定した列名が存在すればその列番号を返します。
+        存在しない場合は -1 を返します。
+
+        Parameters
+        ----------
+        values: List[int, str]
+            列名または列番号のリスト。
+        context: Context
+            コンテキスト情報。
+        allow_error: bool (default: False)
+            存在しない列名や範囲外の列番号を許容するかどうか。
+            True の場合は -1 を返します。
+            False の場合は ValueError 例外を送出します。
+
+        Returns
+        -------
+        List[int]
+            列番号のリスト。存在しない列は -1。
+        """
+        headers = context.get_data("headers") or []
+        for i, value in enumerate(values):
+            values[i] = self.get_column_number(value, context, allow_error)
+
+        return values
 
 class InputAttributeParam(AttributeParam):
     """
@@ -310,8 +390,22 @@ class InputAttributeParam(AttributeParam):
     class Meta:
         type = "input-attribute"
 
+    def get_value(self, value, context):
+        """
+        入力列の番号を取得します。
 
-class InputAttributeListParam(AttributeParam):
+        文字列が渡された場合、列名ならばその位置を返し、
+        列名になければ数値として解析します。
+        正しい列名でも列番号でもない場合は
+        ValueError 例外を送出します。
+        """
+        if value is None:
+            return self.default_value
+
+        return self.get_column_number(value, context, allow_error=False)
+
+
+class InputAttributeListParam(AttributeListParam):
     """
     入力列を指定するためのパラメータです。
     列のインデックスを返します。
@@ -320,10 +414,24 @@ class InputAttributeListParam(AttributeParam):
     class Meta:
         type = "input-attribute-list"
 
+    def get_value(self, values, context):
+        """
+        入力列の番号リストを取得します。
 
-class OutputAttributeParam(StringParam):
+        要素として文字列が渡された場合、列名ならばその位置を返し、
+        列名になければ数値として解析します。
+        正しい列名でも列番号でもない場合は
+        ValueError 例外を送出します。
+        """
+        if values is None:
+            return self.default_value
+
+        return self.get_column_numbers(values, context, allow_error=False)
+
+
+class OutputAttributeParam(AttributeParam):
     """
-    新規列の為のパラメータです。
+    出力列の為のパラメータです。
     """
 
     class Meta:
@@ -337,14 +445,40 @@ class OutputAttributeParam(StringParam):
     def arguments(self):
         return {"prefix": self.prefix}
 
+    def get_value(self, value, context):
+        """
+        出力列の番号を取得します。
 
-class OutputAttributeListParam(StringListParam):
+        文字列が渡された場合、列名ならばその位置を返し、
+        列名になければ数値として解析します。
+        正しい列名でも列番号でもない場合は -1 を返します。
+        """
+        if value is None:
+            return self.default_value
+
+        return self.get_column_number(value, context, allow_error=True)
+
+
+class OutputAttributeListParam(AttributeListParam):
     """
-    複数の列を指定するためのパラメータ
+    複数の出力列を指定するためのパラメータ
     """
 
     class Meta:
         type = "output-attribute-list"
+
+    def get_value(self, values, context):
+        """
+        出力列の番号のリストを取得します。
+
+        要素として文字列が渡された場合、列名ならばその位置を返し、
+        列名になければ数値として解析します。
+        正しい列名でも列番号でもない場合は -1 を返します。
+        """
+        if values is None:
+            return self.default_value
+
+        return self.get_column_numbers(values, context, allow_error=True)
 
 
 class DictParam(Param):

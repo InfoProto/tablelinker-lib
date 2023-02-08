@@ -45,14 +45,16 @@ class DeleteColConvertor(convertors.Convertor):
             ),
         )
 
+    def preproc(self, context: "Context"):
+        super().preproc(context)
+        self.input_col_idx = context.get_param("input_col_idx")
+
     def process_header(self, headers, context):
-        input_col_idx = context.get_param("input_col_idx")
-        headers = self.delete_col(input_col_idx, headers)
+        headers = self.delete_col(self.input_col_idx, headers)
         context.output(headers)
 
     def process_record(self, record, context):
-        input_col_idx = context.get_param("input_col_idx")
-        record = self.delete_col(input_col_idx, record)
+        record = self.delete_col(self.input_col_idx, record)
         context.output(record)
 
     def delete_col(self, input_col_idx, target_list):

@@ -54,7 +54,7 @@ class SplitColConvertor(convertors.Convertor):
                 label="入力列",
                 description="処理をする対象の列を選択してください。",
                 required=True),
-            params.OutputAttributeListParam(
+            params.StringListParam(
                 "output_col_names",
                 label="分割後に出力する列名のリスト",
                 description="変換結果を出力する列名です。",

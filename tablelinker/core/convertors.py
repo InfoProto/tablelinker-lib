@@ -113,7 +113,7 @@ class Convertor(ABC):
         context.next()
 
         # 見出し行の処理
-        self.process_header(context.get_data("headers"), context)
+        self.process_header(self.headers, context)
 
         # データ行の処理
         for rows in context.read():
@@ -158,6 +158,7 @@ class Convertor(ABC):
         context.set_data("num_of_columns", len(headers))
 
         # 入出力列番号に列名が指定された場合、列番号に変換する
+        """
         for key in context.get_params():
             if key.startswith('input_col_idx'):
                 val = context.get_param(key)
@@ -181,7 +182,7 @@ class Convertor(ABC):
                                     "パラメータ '{}' の {} 番目で指定された列 '{}' は"
                                     "有効な列名ではありません。有効な列名は次の通り; {}"
                                 ).format(key, i + 1, v, ",".join(headers)))
-
+            
             if key.startswith('output_col_idx'):
                 val = context.get_param(key)
                 if isinstance(val, str):
@@ -201,7 +202,7 @@ class Convertor(ABC):
                                 headers.append(v)
 
                             context._convertor_params[key][i] = idx
-
+        """
         self.headers = headers
         self.num_of_columns = len(headers)
 
@@ -317,14 +318,14 @@ class InputOutputConvertor(Convertor):
                     label="入力列",
                     description="処理をする対象の列",
                     required=True),
-                params.OutputAttributeParam(
+                params.StringParam(
                     "output_col_name",
                     label="出力列名",
                     description="変換結果を出力する列名です。",
                     help_text="空もしくは既存の名前が指定された場合、置換となります。",
                     required=False,
                 ),
-                params.AttributeParam(
+                params.OutputAttributeParam(
                     "output_col_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",
@@ -524,7 +525,7 @@ class InputOutputsConvertor(Convertor):
                     label="入力列",
                     description="処理をする対象の列",
                     required=True),
-                params.OutputAttributeListParam(
+                params.StringListParam(
                     "output_col_names",
                     label="出力列名のリスト",
                     description="変換結果を出力する列名のリストです。",
@@ -532,7 +533,7 @@ class InputOutputsConvertor(Convertor):
                     required=False,
                     default_value=[],
                 ),
-                params.AttributeParam(
+                params.OutputAttributeParam(
                     "output_col_idx",
                     label="出力列の位置",
                     description="新しい列の挿入位置です。",

@@ -44,7 +44,7 @@ class MoveColConvertor(convertors.Convertor):
                 label="移動する列",
                 description="処理をする対象の列",
                 required=True),
-            params.AttributeParam(
+            params.OutputAttributeParam(
                 "output_col_idx",
                 label="移動する列の移動先の位置",
                 description="新しく列の挿入位置です。",

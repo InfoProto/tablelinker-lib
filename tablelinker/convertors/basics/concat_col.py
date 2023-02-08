@@ -75,12 +75,12 @@ class ConcatColConvertor(convertors.Convertor):
                 label="対象列2",
                 required=True
             ),
-            params.OutputAttributeParam(
+            params.StringParam(
                 "output_col_name",
                 label="新しい列名",
                 required=False
             ),
-            params.AttributeParam(
+            params.OutputAttributeParam(
                 "output_col_idx",
                 label="出力する位置",
                 required=False
@@ -117,7 +117,7 @@ class ConcatColConvertor(convertors.Convertor):
             if idx < self.output_col_idx:
                 self.output_col_idx -= 1
                 self.del_col = idx
-            elif idx > self.output_col_idx:
+            elif idx >= self.output_col_idx:
                 self.del_col = idx
 
         except ValueError:
@@ -205,12 +205,13 @@ class ConcatColsConvertor(convertors.Convertor):
                 label="対象列",
                 required=True,
             ),
-            params.OutputAttributeParam(
+            params.StringParam(
                 "output_col_name",
                 label="新しい列名",
-                required=True,
+                required=False,
+                default_value=None,
             ),
-            params.AttributeParam(
+            params.OutputAttributeParam(
                 "output_col_idx",
                 label="出力する位置",
                 required=False,

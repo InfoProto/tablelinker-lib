@@ -52,7 +52,6 @@ class Context(object):
                 raise ValueError("Param '{}' is required.".format(name))
 
     def __enter__(self):
-        # TODO: preheat params
         self._input.__enter__()
         self._output.__enter__()
         return self
@@ -116,20 +115,22 @@ class Context(object):
         return self._proxy(value)
 
     def get_param(self, name):
-        # TODO: memo化
         convertor_meta = self._convertor.meta()
         declared_params = convertor_meta.params
         convertor_key = convertor_meta.key
         if name not in declared_params:
             msg = (
-                "Accessing param '{}' of the converter '{}' "
-                "which is not declared.").format(name, convertor_key)
+                "コンバータ実装のエラー："
+                "コンバータ '{}' 内で宣言されていないパラメータ '{}' に"
+                "アクセスしようとしました。").format(name, convertor_key)
             logger.error(msg)
             raise ValueError(msg)
 
         param = declared_params[name]
         if param.required and name not in self._convertor_params:
-            logger.error("コンバータ '{}' のパラメータ '{}' は必須です（終了します）".format(
+            logger.error((
+                "コンバータ '{}' のパラメータ '{}' は"
+                "必須です（終了します）").format(
                 convertor_key, name))
             msg = "Param '{}' of the convertor '{}' is required.".format(
                 convertor_key, name)

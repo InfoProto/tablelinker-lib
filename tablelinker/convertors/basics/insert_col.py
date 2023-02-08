@@ -54,14 +54,14 @@ class InsertColConvertor(convertors.Convertor):
         help_text = None
 
         params = params.ParamSet(
-            params.OutputAttributeParam(
+            params.StringParam(
                 "output_col_name",
                 label="出力列名",
                 description="新しく追加する列名です。",
                 help_text="既存の名前が指定された場合も同じ名前の列が追加されます。",
                 required=True,
             ),
-            params.AttributeParam(
+            params.OutputAttributeParam(
                 "output_col_idx",
                 label="出力列の位置",
                 description="新しい列の挿入位置です。",
@@ -78,24 +78,22 @@ class InsertColConvertor(convertors.Convertor):
             ),
         )
 
-    def process_header(self, headers, context):
-        new_name = context.get_param("output_col_name")
-        output_col_idx = context.get_param("output_col_idx")
-        if output_col_idx is None:
-            output_col_idx = len(headers)
+    def preproc(self, context):
+        super().preproc(context)
+        self.output_col_name = context.get_param("output_col_name")
+        self.output_col_idx = context.get_param("output_col_idx")
+        self.value = context.get_param("value")
+        if self.output_col_idx is None:
+            self.output_col_idx = len(headers)
 
-        headers = self.insert_list(output_col_idx, new_name, headers)
+
+    def process_header(self, headers, context):
+        headers.insert(self.output_col_idx, self.output_col_name)
         context.output(headers)
 
     def process_record(self, record, context):
-        value = context.get_param("value")
-        output_col_idx = context.get_param("output_col_idx")
-        record = self.insert_list(output_col_idx, value, record)
+        record.insert(self.output_col_idx, self.value)
         context.output(record)
-
-    def insert_list(self, output_col_idx, value, target_list):
-        target_list.insert(output_col_idx, value)
-        return target_list
 
 
 class InsertColsConvertor(convertors.Convertor):
@@ -148,7 +146,7 @@ class InsertColsConvertor(convertors.Convertor):
         help_text = None
 
         params = params.ParamSet(
-            params.AttributeParam(
+            params.OutputAttributeParam(
                 "output_col_idx",
                 label="新規列を追加する位置",
                 description="新規列の挿入位置です。",
