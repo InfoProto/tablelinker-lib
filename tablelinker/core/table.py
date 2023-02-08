@@ -68,7 +68,7 @@ class Table(object):
     sheet: str, optional
         パラメータ参照。
     is_tempfile: bool
-        パラメータ参照・
+        パラメータ参照。
     skip_cleaning: bool
         パラメータ参照。
     filetype: str
@@ -162,7 +162,7 @@ class Table(object):
             as_dict: bool = False,
             **kwargs):
         """
-        表データを開き、 csv.reader オブジェクトを返します。
+        表データを開きます。既に開いている場合、先頭に戻します。
 
         Parameters
         ----------
@@ -174,8 +174,11 @@ class Table(object):
 
         Returns
         -------
-        csv.reader, csv.DictReader
-            CSV データを1レコードずつ読み込むリーダー。
+        Table
+            自分自身を返します。
+            Table はジェネレータ・イテレータインタフェースを
+            備えているので、サンプルのように for 文で行を順番に
+            読みだしたり、 with 構文でバインドすることができます。
 
         Examples
         --------
@@ -196,10 +199,10 @@ class Table(object):
         --------
         >>> from tablelinker import Table
         >>> table = Table("sample/hachijo_sightseeing.csv")
-        >>> dictreader = table.open(as_dict=True)
-        >>> for row in dictreader:
-        ...     print(",".join([row[x] for x in [
-        ...         "観光スポット名称", "所在地", "経度", "緯度"]]))
+        >>> with table.open(as_dict=True) as dictreader:
+        >>>     for row in dictreader:
+        >>>         print(",".join([row[x] for x in [
+        ...             "観光スポット名称", "所在地", "経度", "緯度"]]))
         ...
         ホタル水路,,139.80102,33.108218
         登龍峠展望,,139.835245,33.113154
@@ -209,9 +212,9 @@ class Table(object):
 
         Notes
         -----
-        - CSV、タブ区切りテキスト、 Excel に対応。
-        - CSV データのクリーニングはこのメソッドが呼ばれたときに
-          実行されます。
+        - CSV、タブ区切りテキスト、 Excel に対応しています。
+        - 表データの確認とクリーニングは、このメソッドが
+          呼ばれたときに実行されます。
         """
         if not self.skip_cleaning:
             # エクセルファイルとして読み込む
@@ -249,6 +252,22 @@ class Table(object):
 
         self.filetype = "csv"
         return self
+
+    def get_reader(self):
+        """
+        管理している表データへの reader オブジェクトを取得します。
+
+        Returns
+        -------
+        csv.reader, csv.DictReader
+            reader オブジェクト。ただし ``open()`` を実行する前は
+            ``None`` を返します。
+
+        """
+        if self._reader is not None:
+            return self._reader.get_reader()
+
+        return None
 
     @classmethod
     def useExtraConvertors(cls) -> None:
@@ -293,6 +312,10 @@ class Table(object):
         日本,JPN
         中国,CHN
 
+        Notes
+        -----
+        このメソッドは、一度 DataFrame のすべてのデータを
+        CSV ファイルに出力します。
         """
         table = None
         with tempfile.NamedTemporaryFile(
@@ -324,7 +347,7 @@ class Table(object):
           '説明', '八丈町ホームページ記載'], dtype='object')
 
         """
-        with self.open(as_dict) as reader:
+        with self.open(as_dict=True) as reader:
             df = pd.DataFrame.from_records(reader)
 
         return df

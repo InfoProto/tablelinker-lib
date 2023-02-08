@@ -70,6 +70,12 @@ class CSVCleaner(object):
 
         return self.csv_reader
 
+    def get_reader(self):
+        if self.csv_reader is not None:
+            return self.csv_reader
+
+        return False
+
     def __enter__(self, as_dict: bool = False):
         return self.open(as_dict=as_dict)
 

@@ -133,6 +133,12 @@ class CsvInputCollection(InputCollection):
 
         return self
 
+    def get_reader(self):
+        if self._reader is not None:
+            return self._reader
+
+        return False
+
     def reset(self):
         self.open()
 
