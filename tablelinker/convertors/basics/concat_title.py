@@ -1,4 +1,4 @@
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 
 def concat(value_list, separator=""):
@@ -40,7 +40,12 @@ class ConcatTitleConvertor(convertors.Convertor):
           このオプションを指定してください。
 
     サンプル
-        表の1行目から3行目までを結合して列見出しを作ります。
+
+        統計局の集計表によく見られる、1行目に大項目、2行目と3行目に
+        小項目が分割して記載されているタイトルを、
+        ``hierarchical_heading`` を True にして階層見出しとして結合します。
+
+        - タスクファイル例
 
         .. code-block:: json
 
@@ -48,33 +53,35 @@ class ConcatTitleConvertor(convertors.Convertor):
                 "convertor": "concat_title",
                 "params": {
                     "lines": 3,
-                    "separator": "-"
+                    "separator": "",
+                    "hierarchical_heading": true
                 }
             }
 
-        ``hierarchical_heading`` の利用例。1行目に大項目、2行目と3行目に
-        小項目が分割して記載されているので、階層見出しとして結合します。
+        - コード例
 
         .. code-block:: python
 
+            >>> import io
             >>> from tablelinker import Table
-            >>> table = Table("ma030000.csv")
-            >>> table.write(lines=4)
-            ,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
-            ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
-            ,,,,,死亡数,,,,,,の死産数,死亡数,,
-            全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
+            >>> stream = io.StringIO((
+            ...     ',人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数\\n'
+            ...     ',,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,\\n'
+            ...     ',,,,,死亡数,,,,,,の死産数,死亡数,,\\n'
+            ...     '全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253\\n'
+            ... ))
+            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="concat_title",
             ...     params={
-            ...         "lines":3,
-            ...         "separator":"",
-            ...         "hierarchical_heading":True,
+            ...         "lines": 3,
+            ...         "separator": "",
+            ...         "hierarchical_heading": True,
             ...     },
             ... )
-            >>> table.write(lines=2)
+            >>> table.write(lineterminator="\\n")
             ,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
-            01 北海道,5188441,29523,65078,59,25,-35555,728,304,424,92,75,17,20904,9070
+            全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
 
     """
 
@@ -146,7 +153,8 @@ class ConcatTitleConvertor(convertors.Convertor):
                 else:
                     new_headers[i].append("")
 
-            headers = context.next()
+            if lineno < self.lines - 1:
+                headers = context.next()
 
         for i, values in enumerate(new_headers):
             if self.empty_value != "":

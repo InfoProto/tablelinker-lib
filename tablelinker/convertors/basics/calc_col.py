@@ -1,6 +1,7 @@
 from enum import Enum
+import re
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 
 class Calculation(Enum):
@@ -24,6 +25,19 @@ def calc(valueA, valueB, calculation):
     valueB: 数値B
     separator: 区切り文字
     """
+    def eval_number(val:str) -> float:
+        # 桁区切り "," を含む場合は除去
+        val = val.replace(',', '')
+
+        # 数字と小数点以外を含む場合は例外
+        if not re.match(r'^[\-?\d*\.?\d+]+$', val):
+            raise ValueError("値 '{}' は数値ではありません。".format(val))
+
+        return float(val)
+
+    valueA = eval_number(valueA)
+    valueB = eval_number(valueB)
+
     if calculation == Calculation.Add:
         return valueA + valueB
     elif calculation == Calculation.Sub:
@@ -59,6 +73,8 @@ class CalcColConvertor(convertors.Convertor):
         表の「人口」列の値を「面積」列の値で割った商を「人口密度」列に
         出力します。
 
+        - タスクファイル例
+
         .. code-block:: json
 
             {
@@ -71,6 +87,33 @@ class CalcColConvertor(convertors.Convertor):
                     "delete_col": false
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '都道府県名,人口,面積\\n'
+            ...     '北海道 ほっかいどう,"5,139,522","83,423.81"\\n'
+            ...     '青森県 あおもりけん,"1,204,372","9,645.95"\\n'
+            ...     '岩手県 いわてけん,"1,180,512","15,275.01"\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="calc",
+            ...     params={
+            ...         "input_col_idx1": "人口",
+            ...         "input_col_idx2": "面積",
+            ...         "operator": "/",
+            ...         "output_col_name": "人口密度",
+            ...         "delete_col": False,
+            ...     },
+            ... )
+            >>> table.write(lines=2, lineterminator="\\n")
+            都道府県名,人口,面積,人口密度
+            北海道 ほっかいどう,"5,139,522","83,423.81",61.60737564012001
 
     """
 
@@ -140,8 +183,8 @@ class CalcColConvertor(convertors.Convertor):
 
     def process_record(self, record, context):
         try:
-            valueA = int(record[self.attr1])
-            valueB = int(record[self.attr2])
+            valueA = record[self.attr1]
+            valueB = record[self.attr2]
             calc_value = calc(valueA, valueB, self.operator)
             record.append(calc_value)
         except ValueError:

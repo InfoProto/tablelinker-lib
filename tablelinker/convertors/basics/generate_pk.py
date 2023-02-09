@@ -1,7 +1,7 @@
 import hashlib
 from logging import getLogger
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 logger = getLogger(__name__)
 
@@ -31,7 +31,7 @@ class UniqueKeyGenerator(object):
 
         Examples
         --------
-        >>> md5hex('Lorem Ipsum')
+        >>> UniqueKeyGenerator.md5hex('Lorem Ipsum')
         '6dbd01b4309de2c22b027eb35a3ce18b'
         """
         return hashlib.md5(val.encode('utf-8')).hexdigest()
@@ -57,9 +57,9 @@ class UniqueKeyGenerator(object):
 
         Examples
         --------
-        >>> radix2number('45ac')
+        >>> UniqueKeyGenerator.radix2number('45ac')
         17836
-        >>> radix2number('a39c22e0')
+        >>> UniqueKeyGenerator.radix2number('a39c22e0')
         2744918752
         """
         result = 0
@@ -90,9 +90,9 @@ class UniqueKeyGenerator(object):
 
         Examples
         --------
-        >>> number2radix(17836)
+        >>> UniqueKeyGenerator.number2radix(17836)
         '45ac'
-        >>> number2radix(2744918752)
+        >>> UniqueKeyGenerator.number2radix(2744918752)
         'a39c22e0'
         """
         result = ''
@@ -205,19 +205,51 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
           RuntimeError 例外が発生するので ``length`` を増やしてください。
 
     サンプル
-        「名称」列の値からキーを生成し、先頭に「PK」列として追加します。
+        「クレジットカード」列の値から 6 桁のキーを生成し、
+        先頭に「PK」列として追加します。
+
+        - タスクファイル例
+
+        .. code-block:: json
 
         .. code-block :: json
 
             {
                 "convertor": "generate_pk",
                 "params": {
-                    "input_col_idx": "名称",
+                    "input_col_idx": "クレジットカード",
                     "output_col_name": "PK",
                     "output_col_idx": 0,
                     "length": 6
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="generate_pk",
+            ...     params={
+            ...         "input_col_idx": "クレジットカード",
+            ...         "output_col_name": "PK",
+            ...         "output_col_idx": 0,
+            ...         "length": 6,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            PK,氏名,生年月日,性別,クレジットカード
+            9wUXiv,小室 友子,1990年06月20日,女,3562635454918233
+            ...
 
     """
 

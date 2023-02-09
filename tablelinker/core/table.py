@@ -496,6 +496,30 @@ class Table(object):
 
                 writer.writerow(row)
 
+
+    def to_str(self, **kwargs):
+        """
+        write() を利用して、クリーンな CSV 文字列を返します。
+
+        Parameters
+        ----------
+        **kwargs: dict
+            write() に渡すパラメータを指定します。
+
+        Returns
+        -------
+        str
+            CSV 文字列を含む文字列。
+
+        Notes
+        -----
+        このメソッドはメモリ上に表データのコピーを作成します。
+        """
+        buf = io.StringIO()
+        self.write(file=buf, **kwargs)
+
+        return buf.getvalue()
+
     def apply(self, task: Task) -> 'Table':
         """
         テーブルが管理する表データにタスクを適用して変換し、

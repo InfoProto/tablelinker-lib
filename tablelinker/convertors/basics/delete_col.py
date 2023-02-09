@@ -1,4 +1,4 @@
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 
 class DeleteColConvertor(convertors.Convertor):
@@ -13,16 +13,42 @@ class DeleteColConvertor(convertors.Convertor):
         * "input_col_idx": 削除する入力列の列番号または列名 [必須]
 
     サンプル
-        表の「備考」列を削除します。
+        「クレジットカード」列を削除します。
+
+        - タスクファイル例
 
         .. code-block:: json
 
             {
                 "convertor": "delete_col",
                 "params": {
-                    "input_col_idx": "備考"
+                    "input_col_idx": "クレジットカード"
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="delete_col",
+            ...     params={
+            ...         "input_col_idx": "クレジットカード",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            氏名,生年月日,性別
+            小室 友子,1990年06月20日,女
+            ...
 
     """
 
@@ -74,16 +100,42 @@ class DeleteColsConvertor(convertors.Convertor):
         * "input_col_idxs": 削除する入力列の列番号または列名のリスト [必須]
 
     サンプル
-        表の「その他」と「備考」列を削除します。
+        「生年月日」「クレジットカード」列を削除します。
+
+        - タスクファイル例
 
         .. code-block:: json
 
             {
                 "convertor": "delete_cols",
                 "params": {
-                    "input_col_idxs": ["その他", "備考"]
+                    "input_col_idxs": ["生年月日", "クレジットカード"]
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="delete_cols",
+            ...     params={
+            ...         "input_col_idxs": ["生年月日", "クレジットカード"],
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            氏名,性別
+            小室 友子,女
+            ...
 
     """
 
