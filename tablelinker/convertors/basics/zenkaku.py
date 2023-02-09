@@ -2,7 +2,7 @@ from logging import getLogger
 
 import jaconv
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 logger = getLogger(__name__)
 
@@ -39,21 +39,51 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
         - 変換処理は列名には適用されません。
 
     サンプル
-        「説明」列に含まれる全角数字を半角数字に置き換えます。
+        「連絡先電話番号」列に含まれる全角数字と記号を半角に置き換えます。
+
+        - タスクファイル例
 
         .. code-block :: json
 
             {
                 "convertor": "to_hankaku",
                 "params": {
-                    "input_col_idx": "説明",
-                    "output_col_idx": "説明",
+                    "input_col_idx": "連絡先電話番号",
+                    "output_col_idx": "連絡先電話番号",
                     "kana": false,
-                    "ascii": false,
+                    "ascii": true,
                     "digit": true,
                     "overwrite": true
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     "機関名,部署名,連絡先電話番号\\n"
+            ...     "国立情報学研究所,総務チーム,０３－４２１２－２０００\\n"
+            ...     "国立情報学研究所,広報チーム,０３－４２１２－２１６４\\n"
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="to_hankaku",
+            ...     params={
+            ...         "input_col_idx": "連絡先電話番号",
+            ...         "output_col_idx": "連絡先電話番号",
+            ...         "kana": False,
+            ...         "ascii": True,
+            ...         "digit": True,
+            ...         "overwrite": True,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            機関名,部署名,連絡先電話番号
+            国立情報学研究所,総務チーム,03-4212-2000
+            国立情報学研究所,広報チーム,03-4212-2164
 
     """
 
@@ -141,19 +171,51 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
     サンプル
         「所在地」列に含まれる半角文字を全角文字に置き換えます。
 
+        - タスクファイル例
+
         .. code-block :: json
 
             {
                 "convertor": "to_zenkaku",
                 "params": {
-                    "input_col_idx": "所在地",
-                    "output_col_idx": "所在地",
+                    "input_col_idx": "住所",
+                    "output_col_idx": "住所",
                     "kana": true,
                     "ascii": true,
                     "digit": true,
                     "overwrite": true
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     'ＮＯ,名称,住所\\n'
+            ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1\\n'
+            ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3\\n'
+            ...     '101010014,JR札幌病院,北海道札幌市中央区北3条東1丁目1番地\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="to_zenkaku",
+            ...     params={
+            ...         "input_col_idx": "住所",
+            ...         "output_col_idx": "住所",
+            ...         "kana": True,
+            ...         "ascii": True,
+            ...         "digit": True,
+            ...         "overwrite": True,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            ＮＯ,名称,住所
+            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北１条西１８丁目１番１
+            101010421,時計台記念病院,北海道札幌市中央区北１条東１丁目２番地３
+            101010014,JR札幌病院,北海道札幌市中央区北３条東１丁目１番地
 
     """
 

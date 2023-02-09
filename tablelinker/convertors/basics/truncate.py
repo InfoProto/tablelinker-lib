@@ -1,4 +1,4 @@
-from ...core import convertors, params, validators
+from tablelinker.core import convertors, params, validators
 
 
 class TruncateConvertor(convertors.InputOutputConvertor):
@@ -33,7 +33,10 @@ class TruncateConvertor(convertors.InputOutputConvertor):
           ``ellipsis`` は追加されません。
 
     サンプル
-        「説明」列を 120 文字で切り詰めます。
+        「説明」列を 40 文字で切り詰めます。
+
+
+        - タスクファイル例
 
         .. code-block :: json
 
@@ -41,10 +44,39 @@ class TruncateConvertor(convertors.InputOutputConvertor):
                 "convertor": "truncate",
                 "params": {
                     "input_col_idx": "説明",
-                    "length": 120,
-                    "ellipsis": "..."
+                    "length": 20,
+                    "ellipsis": "...",
+                    "overwrite": true
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '観光スポット名称,説明\\n'
+            ...     'ホタル水路,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。\\n'
+            ...     '登龍峠展望,「ノボリュウトウゲ」または「ノボリョウトウゲ」といい、この道を下方から望むとあたかも龍が昇天するように見えるので、この名が付けられました。峠道の頂上近くの展望台は、八丈島で一、二を争う景勝地として名高く、新東京百景の一つにも選ばれました。眼前に八丈富士と神止山、八丈小島を、眼下には底土港や神湊港、三根市街を一望できます。\\n'
+            ...     '八丈富士,八丈島の北西部を占める山で、東の三原山に対して『西山』と呼ばれます。伊豆諸島の中では最も高い標高854.3メートル。1605年の噴火後、活動を停止している火山で火口は直径400メートル深さ50メートルで、 さらに火口底には中央火口丘がある二重式火山です。裾野が大きくのびた優雅な姿は、八丈島を代表する美しさのひとつです。\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="truncate",
+            ...     params={
+            ...         "input_col_idx": "説明",
+            ...         "length": 20,
+            ...         "ellipsis": "...",
+            ...         "overwrite": True,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            観光スポット名称,説明
+            ホタル水路,八丈島は伊豆諸島で唯一、水田耕作がなされ...
+            登龍峠展望,「ノボリュウトウゲ」または「ノボリョウト...
+            八丈富士,八丈島の北西部を占める山で、東の三原山に...
 
     """
 

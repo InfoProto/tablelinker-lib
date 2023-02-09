@@ -1,6 +1,6 @@
 import re
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 
 class SplitColConvertor(convertors.Convertor):
@@ -14,6 +14,7 @@ class SplitColConvertor(convertors.Convertor):
     パラメータ
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_names": 分割した結果を出力する列名のリスト [必須]
+        * "output_col_idx": 出力列の直後にくる列名、または列番号 [最後尾]
         * "separator": 区切り文字（正規表現） [","]
 
     注釈
@@ -23,18 +24,49 @@ class SplitColConvertor(convertors.Convertor):
           最後の列に残りのすべての文字列が出力されます。
 
     サンプル
-        「氏名」列を空白で区切り、「姓」列と「名」列に分割します。
+        「姓名」列を空白で区切り、「姓」列と「名」列に分割し、
+        「生年月日」列の前に出力します。
 
-        .. code-block :: json
+        - タスクファイル例
+
+        .. code-block:: json
 
             {
                 "convertor": "split_col",
                 "params": {
-                    "input_col_idx": "氏名",
+                    "input_col_idx": "姓名",
                     "output_col_names": ["姓", "名"],
-                    "separator": "\\s+",
+                    "output_col_idx": "生年月日",
+                    "separator": " "
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     '"姓名","生年月日","性別"\\n'
+            ...     '"生田 直樹","1930年08月11日","男"\\n'
+            ...     '"石橋 絵理","1936年01月28日","女"\\n'
+            ...     '"菊池 浩二","1985年12月17日","男"\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="split_col",
+            ...     params={
+            ...         "input_col_idx": "姓名",
+            ...         "output_col_names": ["姓", "名"],
+            ...         "output_col_idx": "生年月日",
+            ...         "separator": " ",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            姓名,姓,名,生年月日,性別
+            生田 直樹,生田,直樹,1930年08月11日,男
+            ...
 
     """
 
@@ -60,6 +92,12 @@ class SplitColConvertor(convertors.Convertor):
                 description="変換結果を出力する列名です。",
                 required=True,
             ),
+            params.OutputAttributeParam(
+                "output_col_idx",
+                label="分割後に出力する列の位置",
+                description="列を出力する列の位置、または直後にくる列名です。",
+                required=False,
+            ),
             params.StringParam(
                 "separator",
                 label="区切り文字",
@@ -70,40 +108,25 @@ class SplitColConvertor(convertors.Convertor):
             ),
         )
 
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
-
     def preproc(self, context):
         super().preproc(context)
         self.re_separator = re.compile(context.get_param("separator"))
         self.input_col_idx = context.get_param("input_col_idx")
         self.output_col_names = context.get_param("output_col_names")
+        self.output_col_idx = context.get_param("output_col_idx")
 
     def process_header(self, headers, context):
-        counter = 1
-        for name in self.output_col_names:
-            headers.append(name)
-            counter += 1
-
+        headers = headers[0:self.output_col_idx] + self.output_col_names \
+            + headers[self.output_col_idx:]
         context.output(headers)
 
     def process_record(self, record, context):
         original = record[self.input_col_idx]
         splits = self.re_separator.split(
             original, maxsplit=len(self.output_col_names) - 1)
-
-        new_record = record + [""] * (len(self.output_col_names))
-        for i, new_val in enumerate(splits):
-            new_record[self.num_of_columns + i] = new_val
-
-        context.output(new_record)
+        record = record[0:self.output_col_idx] + splits \
+            + record[self.output_col_idx:]
+        context.output(record)
 
 
 class SplitRowConvertor(convertors.Convertor):
@@ -112,7 +135,7 @@ class SplitRowConvertor(convertors.Convertor):
         指定した列を区切り文字で複数行に分割します。
 
     コンバータ名
-        "explode_col"
+        "split_row"
 
     パラメータ
         * "input_col_idx": 対象列の列番号または列名 [必須]
@@ -123,7 +146,9 @@ class SplitRowConvertor(convertors.Convertor):
         - 区切り文字が末尾の場合、対象列が空欄の行も出力されます。
 
     サンプル
-        「アクセス方法」列を「。」で区切り、複数行に分割します。
+        「診療科目」列を「;」で区切り、複数行に分割します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
@@ -134,6 +159,34 @@ class SplitRowConvertor(convertors.Convertor):
                     "separator": "。",
                 }
             }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> import io
+            >>> from tablelinker import Table
+            >>> stream = io.StringIO((
+            ...     'ＮＯ,名称,住所,診療科目\\n'
+            ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,外;リハ;放;形;麻;消内;呼内\\n'
+            ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3,内;循内;消内;糖尿病内科;整;リハ;形;婦;脳外;眼;精;麻;放;リウ;外;緩和ケア内科;血管外科;腎臓内科;泌\\n'
+            ...     '101010014,JR札幌病院,北海道札幌市中央区北3条東1丁目1番地,内;精;小;外;整;皮;泌;肛門外科;産婦;眼;耳;放;歯外;麻;リウ;呼内;呼吸器外科;循内;血管外科;消内;腎臓内科;乳腺外科;病理診断科;糖尿病内科\\n'
+            ... ))
+            >>> table = Table(stream)
+            >>> table = table.convert(
+            ...     convertor="split_row",
+            ...     params={
+            ...         "input_col_idx": "診療科目",
+            ...         "separator": ";",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\\n")
+            ＮＯ,名称,住所,診療科目
+            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,外
+            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,リハ
+            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,放
+            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,形
+            ...
 
     """
 
@@ -159,16 +212,6 @@ class SplitRowConvertor(convertors.Convertor):
                 default_value=","
             ),
         )
-
-    @classmethod
-    def can_apply(cls, attrs):
-        """
-        対象の属性がこのフィルタに適用可能かどうかを返します。
-        attrs: 属性のリスト({name, attr_type, data_type})
-        """
-        if len(attrs) != 1:
-            return False
-        return True
 
     def preproc(self, context):
         super().preproc(context)

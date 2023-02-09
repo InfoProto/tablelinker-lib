@@ -110,6 +110,9 @@ SQL では **SELECT**, **INSERT**, **DELETE** を必要とする処理に該当�
 SQL では **UPDATE** を必要とする処理に該当します。
 
 .. autoclass::
+    tablelinker.convertors.basics.round.RoundConvertor
+
+.. autoclass::
     tablelinker.convertors.basics.truncate.TruncateConvertor
 
 .. autoclass::

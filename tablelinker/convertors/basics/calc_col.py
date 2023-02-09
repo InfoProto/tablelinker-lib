@@ -25,18 +25,8 @@ def calc(valueA, valueB, calculation):
     valueB: 数値B
     separator: 区切り文字
     """
-    def eval_number(val:str) -> float:
-        # 桁区切り "," を含む場合は除去
-        val = val.replace(',', '')
-
-        # 数字と小数点以外を含む場合は例外
-        if not re.match(r'^[\-?\d*\.?\d+]+$', val):
-            raise ValueError("値 '{}' は数値ではありません。".format(val))
-
-        return float(val)
-
-    valueA = eval_number(valueA)
-    valueB = eval_number(valueB)
+    valueA = params.Param.eval_number(valueA)
+    valueB = params.Param.eval_number(valueB)
 
     if calculation == Calculation.Add:
         return valueA + valueB
@@ -111,9 +101,11 @@ class CalcColConvertor(convertors.Convertor):
             ...         "delete_col": False,
             ...     },
             ... )
-            >>> table.write(lines=2, lineterminator="\\n")
+            >>> table.write(lineterminator="\\n")
             都道府県名,人口,面積,人口密度
             北海道 ほっかいどう,"5,139,522","83,423.81",61.60737564012001
+            青森県 あおもりけん,"1,204,372","9,645.95",124.8577900569669
+            岩手県 いわてけん,"1,180,512","15,275.01",77.28387739189697
 
     """
 

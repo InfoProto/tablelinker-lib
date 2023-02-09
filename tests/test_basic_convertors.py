@@ -159,11 +159,11 @@ def test_delete_col():
                     "mitsune.html#01")
 
 
-def test_delete_string_match():
+def test_delete_row_match():
     table = Table(os.path.join(
         sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="delete_string_match",
+        convertor="delete_row_match",
         params={
             "input_col_idx": 0,
             "query": "",
@@ -183,11 +183,11 @@ def test_delete_string_match():
         assert lines == 72
 
 
-def test_delete_string_contains():
+def test_delete_row_contains():
     table = Table(os.path.join(
         sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="delete_string_contains",
+        convertor="delete_row_contains",
         params={
             "input_col_idx": 0,
             "query": "市",
@@ -207,14 +207,14 @@ def test_delete_string_contains():
     assert lines == 54
 
 
-def test_delete_pattern_match():
+def test_delete_row_pattern():
     table = Table(os.path.join(
         sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="delete_pattern_match",
+        convertor="delete_row_pattern",
         params={
             "input_col_idx": 0,
-            "pattern": "(^$|.+区部$|.+市$)",
+            "query": "(^$|.+区部$|.+市$)",
         },
     )
 
@@ -456,10 +456,10 @@ def test_reorder_cols():
                 assert row == ["所在地", "経度", "緯度", "説明"]
 
 
-def test_select_string_match():
+def test_select_row_match():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="select_string_match",
+        convertor="select_row_match",
         params={
             "input_col_idx": 0,
             "query": "13 東京都"
@@ -478,10 +478,10 @@ def test_select_string_match():
         assert lines == 2
 
 
-def test_select_string_contains():
+def test_select_row_contains():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="select_string_contains",
+        convertor="select_row_contains",
         params={
             "input_col_idx": 0,
             "query": "東京都"
@@ -500,13 +500,13 @@ def test_select_string_contains():
         assert lines == 3
 
 
-def test_select_pattern_match():
+def test_select_row_pattern():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="select_pattern_match",
+        convertor="select_row_pattern",
         params={
             "input_col_idx": 0,
-            "pattern": ".*東京都?$"
+            "query": ".*東京都?$"
         },
     )
 
@@ -628,10 +628,10 @@ def test_truncate_replace():
                 assert value.endswith("...")
 
 
-def test_update_string_match():
+def test_update_row_match():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="update_string_match",
+        convertor="update_row_match",
         params={
             "input_col_idx": 0,
             "query": "全　国",
@@ -650,10 +650,10 @@ def test_update_string_match():
         assert lines == 74
 
 
-def test_update_string_contains():
+def test_update_row_contains():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="update_string_contains",
+        convertor="update_row_contains",
         params={
             "input_col_idx": 0,
             "query": "　",
@@ -673,13 +673,13 @@ def test_update_string_contains():
         assert lines == 74
 
 
-def test_update_pattern_match():
+def test_update_row_pattern():
     table = Table(os.path.join(sample_dir, "ma030000.csv"))
     table = table.convert(
-        convertor="update_pattern_match",
+        convertor="update_row_pattern",
         params={
             "input_col_idx": 0,
-            "pattern": r"^\d\d\s",
+            "query": r"^\d\d\s",
             "new": ""
         },
     )

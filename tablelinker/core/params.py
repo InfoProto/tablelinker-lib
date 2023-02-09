@@ -143,6 +143,17 @@ class Param(ABC):
     def arguments(self):
         return {}
 
+    @classmethod
+    def eval_number(cls, val: str) -> float:
+        # 桁区切り "," を含む場合は除去
+        val = val.replace(',', '')
+
+        # 数字と小数点以外を含む場合は例外
+        if not re.match(r'^[\-?\d*\.?\d+]+$', val):
+            raise ValueError("値 '{}' は数値ではありません。".format(val))
+
+        return float(val)
+
 
 class TextParam(Param):
     class Meta:
@@ -282,7 +293,7 @@ class AttributeParam(Param):
             self,
             value,
             context: "Context",
-            allow_error: bool=False) -> int:
+            allow_error: bool = False) -> int:
         """
         指定した列名が存在すればその列番号を返します。
 
@@ -354,7 +365,7 @@ class AttributeListParam(AttributeParam):
             self,
             values: list,
             context: "Context",
-            allow_error: bool=False) -> list:
+            allow_error: bool = False) -> list:
         """
         指定した列名が存在すればその列番号を返します。
         存在しない場合は -1 を返します。
@@ -380,6 +391,7 @@ class AttributeListParam(AttributeParam):
             values[i] = self.get_column_number(value, context, allow_error)
 
         return values
+
 
 class InputAttributeParam(AttributeParam):
     """
