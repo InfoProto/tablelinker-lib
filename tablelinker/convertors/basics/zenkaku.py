@@ -8,7 +8,7 @@ logger = getLogger(__name__)
 
 
 class ToHankakuConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         全角文字を半角文字に変換します。
 
@@ -48,8 +48,8 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
             {
                 "convertor": "to_hankaku",
                 "params": {
-                    "input_col_idx": "連絡先電話番号",
-                    "output_col_idx": "連絡先電話番号",
+                    "input_col_idx": "電話番号",
+                    "output_col_idx": "電話番号",
                     "kana": false,
                     "ascii": true,
                     "digit": true,
@@ -61,31 +61,37 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「東京都災害拠点病院一覧」（東京都福祉局）より作成（令和4年1月1日現在）
+            >>> # https://www.fukushihoken.metro.tokyo.lg.jp/iryo/kyuukyuu/saigai/kyotenbyouinlist.html
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     "機関名,部署名,連絡先電話番号\\n"
-            ...     "国立情報学研究所,総務チーム,０３－４２１２－２０００\\n"
-            ...     "国立情報学研究所,広報チーム,０３－４２１２－２１６４\\n"
+            >>> table = Table((
+            ...    '施設名,所在地,電話番号,病床数\n'
+            ...    '日本大学病院,千代田区神田駿河台1-6,03－3293－1711,320\n'
+            ...    '三井記念病院,千代田区神田和泉町１,03－3862－9111,482\n'
+            ...    '聖路加国際病院,中央区明石町9-1,03－3541－5151,520\n'
+            ...    '東京都済生会中央病院,港区三田1－4－17,03－3451－8211,535\n'
+            ...    '東京慈恵会医科大学附属病院,港区西新橋3-19-18,03－3433－1111,"1,075"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="to_hankaku",
             ...     params={
-            ...         "input_col_idx": "連絡先電話番号",
-            ...         "output_col_idx": "連絡先電話番号",
+            ...         "input_col_idx": "電話番号",
+            ...         "output_col_idx": "電話番号",
             ...         "kana": False,
             ...         "ascii": True,
             ...         "digit": True,
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
-            機関名,部署名,連絡先電話番号
-            国立情報学研究所,総務チーム,03-4212-2000
-            国立情報学研究所,広報チーム,03-4212-2164
+            >>> table.write(lineterminator="\n")
+            施設名,所在地,電話番号,病床数
+            日本大学病院,千代田区神田駿河台1-6,03-3293-1711,320
+            三井記念病院,千代田区神田和泉町１,03-3862-9111,482
+            聖路加国際病院,中央区明石町9-1,03-3541-5151,520
+            東京都済生会中央病院,港区三田1－4－17,03-3451-8211,535
+            東京慈恵会医科大学附属病院,港区西新橋3-19-18,03-3433-1111,"1,075"
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "to_hankaku"
@@ -138,7 +144,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
 
 
 class ToZenkakuConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         半角文字を全角文字に変換します。
 
@@ -191,15 +197,15 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> #「札幌市内の医療機関一覧」より作成
+            >>> # https://ckan.pf-sapporo.jp/dataset/sapporo_hospital
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     'ＮＯ,名称,住所\\n'
-            ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1\\n'
-            ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3\\n'
-            ...     '101010014,JR札幌病院,北海道札幌市中央区北3条東1丁目1番地\\n'
+            >>> table = Table((
+            ...     'ＮＯ,名称,住所\n'
+            ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1\n'
+            ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3\n'
+            ...     '101010014,JR札幌病院,北海道札幌市中央区北3条東1丁目1番地\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="to_zenkaku",
             ...     params={
@@ -211,7 +217,7 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             ＮＯ,名称,住所
             101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北１条西１８丁目１番１
             101010421,時計台記念病院,北海道札幌市中央区北１条東１丁目２番地３

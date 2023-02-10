@@ -2,7 +2,7 @@ from tablelinker.core import convertors, params
 
 
 class DeleteColConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列を削除します。
 
@@ -30,25 +30,25 @@ class DeleteColConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="delete_col",
             ...     params={
             ...         "input_col_idx": "クレジットカード",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             氏名,生年月日,性別
             小室 友子,1990年06月20日,女
-            ...
+            江島 佳洋,1992年10月07日,男
+            三沢 大志,1995年02月13日,男
 
     """
 
@@ -71,7 +71,7 @@ class DeleteColConvertor(convertors.Convertor):
             ),
         )
 
-    def preproc(self, context: "Context"):
+    def preproc(self, context):
         super().preproc(context)
         self.input_col_idx = context.get_param("input_col_idx")
 
@@ -89,7 +89,7 @@ class DeleteColConvertor(convertors.Convertor):
 
 
 class DeleteColsConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した複数の列を削除します。
 
@@ -117,25 +117,25 @@ class DeleteColsConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="delete_cols",
             ...     params={
             ...         "input_col_idxs": ["生年月日", "クレジットカード"],
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             氏名,性別
             小室 友子,女
-            ...
+            江島 佳洋,男
+            三沢 大志,男
 
     """
 

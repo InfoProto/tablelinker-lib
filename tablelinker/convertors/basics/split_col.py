@@ -4,7 +4,7 @@ from tablelinker.core import convertors, params
 
 
 class SplitColConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列を区切り文字で複数列に分割します。
 
@@ -45,15 +45,14 @@ class SplitColConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"姓名","生年月日","性別"\\n'
-            ...     '"生田 直樹","1930年08月11日","男"\\n'
-            ...     '"石橋 絵理","1936年01月28日","女"\\n'
-            ...     '"菊池 浩二","1985年12月17日","男"\\n'
+            >>> table = Table((
+            ...     '"姓名","生年月日","性別"\n'
+            ...     '"生田 直樹","1930年08月11日","男"\n'
+            ...     '"石橋 絵理","1936年01月28日","女"\n'
+            ...     '"菊池 浩二","1985年12月17日","男"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="split_col",
             ...     params={
@@ -63,10 +62,11 @@ class SplitColConvertor(convertors.Convertor):
             ...         "separator": " ",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             姓名,姓,名,生年月日,性別
             生田 直樹,生田,直樹,1930年08月11日,男
-            ...
+            石橋 絵理,石橋,絵理,1936年01月28日,女
+            菊池 浩二,菊池,浩二,1985年12月17日,男
 
     """
 
@@ -130,7 +130,7 @@ class SplitColConvertor(convertors.Convertor):
 
 
 class SplitRowConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列を区切り文字で複数行に分割します。
 
@@ -155,8 +155,8 @@ class SplitRowConvertor(convertors.Convertor):
             {
                 "convertor": "split_row",
                 "params": {
-                    "input_col_idx": "アクセス方法",
-                    "separator": "。",
+                    "input_col_idx": "診療科目",
+                    "separator": ";"
                 }
             }
 
@@ -164,15 +164,15 @@ class SplitRowConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> #「札幌市内の医療機関一覧」より作成
+            >>> # https://ckan.pf-sapporo.jp/dataset/sapporo_hospital
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     'ＮＯ,名称,住所,診療科目\\n'
-            ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,外;リハ;放;形;麻;消内;呼内\\n'
-            ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3,内;循内;消内;糖尿病内科;整;リハ;形;婦;脳外;眼;精;麻;放;リウ;外;緩和ケア内科;血管外科;腎臓内科;泌\\n'
-            ...     '101010014,JR札幌病院,北海道札幌市中央区北3条東1丁目1番地,内;精;小;外;整;皮;泌;肛門外科;産婦;眼;耳;放;歯外;麻;リウ;呼内;呼吸器外科;循内;血管外科;消内;腎臓内科;乳腺外科;病理診断科;糖尿病内科\\n'
+            >>> table = Table((
+            ...     '名称,診療科目\n'
+            ...     '特定医療法人平成会平成会病院,外;リハ;放;形;麻;消内;呼内\n'
+            ...     '時計台記念病院,内;循内;消内;糖尿病内科;整;リハ;形;婦;脳外;眼;精;麻;放;リウ;外;緩和ケア内科;血管外科;腎臓内科;泌\n'
+            ...     'JR札幌病院,内;精;小;外;整;皮;泌;肛門外科;産婦;眼;耳;放;歯外;麻;リウ;呼内;呼吸器外科;循内;血管外科;消内;腎臓内科;乳腺外科;病理診断科;糖尿病内科\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="split_row",
             ...     params={
@@ -180,15 +180,60 @@ class SplitRowConvertor(convertors.Convertor):
             ...         "separator": ";",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
-            ＮＯ,名称,住所,診療科目
-            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,外
-            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,リハ
-            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,放
-            101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1,形
-            ...
+            >>> table.write(lineterminator="\n")
+            名称,診療科目
+            特定医療法人平成会平成会病院,外
+            特定医療法人平成会平成会病院,リハ
+            特定医療法人平成会平成会病院,放
+            特定医療法人平成会平成会病院,形
+            特定医療法人平成会平成会病院,麻
+            特定医療法人平成会平成会病院,消内
+            特定医療法人平成会平成会病院,呼内
+            時計台記念病院,内
+            時計台記念病院,循内
+            時計台記念病院,消内
+            時計台記念病院,糖尿病内科
+            時計台記念病院,整
+            時計台記念病院,リハ
+            時計台記念病院,形
+            時計台記念病院,婦
+            時計台記念病院,脳外
+            時計台記念病院,眼
+            時計台記念病院,精
+            時計台記念病院,麻
+            時計台記念病院,放
+            時計台記念病院,リウ
+            時計台記念病院,外
+            時計台記念病院,緩和ケア内科
+            時計台記念病院,血管外科
+            時計台記念病院,腎臓内科
+            時計台記念病院,泌
+            JR札幌病院,内
+            JR札幌病院,精
+            JR札幌病院,小
+            JR札幌病院,外
+            JR札幌病院,整
+            JR札幌病院,皮
+            JR札幌病院,泌
+            JR札幌病院,肛門外科
+            JR札幌病院,産婦
+            JR札幌病院,眼
+            JR札幌病院,耳
+            JR札幌病院,放
+            JR札幌病院,歯外
+            JR札幌病院,麻
+            JR札幌病院,リウ
+            JR札幌病院,呼内
+            JR札幌病院,呼吸器外科
+            JR札幌病院,循内
+            JR札幌病院,血管外科
+            JR札幌病院,消内
+            JR札幌病院,腎臓内科
+            JR札幌病院,乳腺外科
+            JR札幌病院,病理診断科
+            JR札幌病院,糖尿病内科
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "split_row"

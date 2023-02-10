@@ -292,7 +292,7 @@ class AttributeParam(Param):
     def get_column_number(
             self,
             value,
-            context: "Context",
+            context,
             allow_error: bool = False) -> int:
         """
         指定した列名が存在すればその列番号を返します。
@@ -364,7 +364,7 @@ class AttributeListParam(AttributeParam):
     def get_column_numbers(
             self,
             values: list,
-            context: "Context",
+            context,
             allow_error: bool = False) -> list:
         """
         指定した列名が存在すればその列番号を返します。
@@ -386,7 +386,6 @@ class AttributeListParam(AttributeParam):
         List[int]
             列番号のリスト。存在しない列は -1。
         """
-        headers = context.get_data("headers") or []
         for i, value in enumerate(values):
             values[i] = self.get_column_number(value, context, allow_error)
 

@@ -172,7 +172,7 @@ class UniqueKeyGenerator(object):
 
 
 class GeneratePkConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         指定した列の文字列をシードとして、
         ユニークなキー文字列を生成します。
@@ -220,7 +220,9 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
                     "input_col_idx": "クレジットカード",
                     "output_col_name": "PK",
                     "output_col_idx": 0,
-                    "length": 6
+                    "length": 6,
+                    "error_if_not_unique": false,
+                    "skip_if_not_unique": true
                 }
             }
 
@@ -228,15 +230,15 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"小室 雅代","1963年08月19日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="generate_pk",
             ...     params={
@@ -244,12 +246,15 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
             ...         "output_col_name": "PK",
             ...         "output_col_idx": 0,
             ...         "length": 6,
+            ...         "error_if_not_unique": False,
+            ...         "skip_if_not_unique": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             PK,氏名,生年月日,性別,クレジットカード
             9wUXiv,小室 友子,1990年06月20日,女,3562635454918233
-            ...
+            JtFkJ7,江島 佳洋,1992年10月07日,男,376001629316609
+            KP9RIz,三沢 大志,1995年02月13日,男,4173077927458449
 
     """
 

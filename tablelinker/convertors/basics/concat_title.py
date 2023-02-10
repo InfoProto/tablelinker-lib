@@ -15,7 +15,7 @@ def concat(value_list, separator=""):
 
 
 class ConcatTitleConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         タイトル行が複数行に分割されている場合に結合して
         列見出しに設定します。
@@ -41,7 +41,7 @@ class ConcatTitleConvertor(convertors.Convertor):
 
     サンプル
 
-        統計局の集計表によく見られる、1行目に大項目、2行目と3行目に
+        国の集計表によく見られる、1行目に大項目、2行目と3行目に
         小項目が分割して記載されているタイトルを、
         ``hierarchical_heading`` を True にして階層見出しとして結合します。
 
@@ -62,15 +62,16 @@ class ConcatTitleConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「人口動態調査(2020年)上巻_3-3-1_都道府県（特別区－指定都市再掲）
+            >>> # 別にみた人口動態総覧」（厚生労働省）より作成
+            >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     ',人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数\\n'
-            ...     ',,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,\\n'
-            ...     ',,,,,死亡数,,,,,,の死産数,死亡数,,\\n'
-            ...     '全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253\\n'
+            >>> table = Table((
+            ...     ',人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数\n'
+            ...     ',,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,\n'
+            ...     ',,,,,死亡数,,,,,,の死産数,死亡数,,\n'
+            ...     '全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="concat_title",
             ...     params={
@@ -79,11 +80,11 @@ class ConcatTitleConvertor(convertors.Convertor):
             ...         "hierarchical_heading": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             ,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
             全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "concat_title"

@@ -1,9 +1,9 @@
-import csv
-import json
 from logging import getLogger
 import regex as re
 
 from datetime import datetime, timedelta
+
+logger = getLogger(__name__)
 
 
 def is_integer(s):

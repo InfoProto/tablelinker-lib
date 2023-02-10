@@ -38,14 +38,14 @@ def escape_encoding(exc):
 
 
 class Table(object):
-    """
+    r"""
     表形式データを管理するクラスです。
 
     Parameters
     ----------
-    file: File-like, Path-like
+    file: File-like, Path-like, str
         このテーブルが管理する入力表データファイルのパス、
-        または file-like オブジェクト。
+        または file-like オブジェクト、または CSV 文字列。
     sheet: str, None
         入力ファイルが Excel の場合など、複数の表データを含む場合に
         対象を指定するためのシート名。省略された場合は最初の表。
@@ -64,7 +64,8 @@ class Table(object):
     Attributes
     ----------
     file: File-like, Path-like
-        パラメータ参照。
+        パラメータ参照。文字列で初期化した場合には、
+        文字列を保存した一時ファイル名を参照します。
     sheet: str, optional
         パラメータ参照。
     is_tempfile: bool
@@ -78,14 +79,16 @@ class Table(object):
     Examples
     --------
     >>> from tablelinker import Table
-    >>> table = Table("sample/hachijo_sightseeing.csv")
-    >>> table.write(lines=2)
+    >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
+    >>> table.write(lines=2, lineterminator="\n")
     観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
     ホタル水路,,33.108218,139.80102,JGD2011,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01
-    >>> import io
-    >>> stream = io.StringIO("国名,3文字コード\\nアメリカ合衆国,USA\\n日本,JPN\\n")
-    >>> table = Table(stream)
-    >>> table.write()
+
+    Examples
+    --------
+    >>> from tablelinker import Table
+    >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+    >>> table.write(lineterminator="\n")
     国名,3文字コード
     アメリカ合衆国,USA
     日本,JPN
@@ -126,6 +129,15 @@ class Table(object):
         self.skip_cleaning = skip_cleaning
         self.filetype = "csv"
         self._reader = None
+
+        # 文字列が渡された場合は一時ファイルに保存する
+        if isinstance(self.file, str) and not os.path.exists(self.file):
+            with tempfile.NamedTemporaryFile(
+                    mode="w", delete=False) as f:
+                f.write(self.file)
+
+            self.file = f.name
+            self.is_tempfile = True
 
     def __del__(self):
         """
@@ -183,7 +195,7 @@ class Table(object):
         Examples
         --------
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
         >>> reader = table.open()
         >>> for row in reader:
         ...     print(",".join(row[0:4]))
@@ -198,10 +210,10 @@ class Table(object):
         Examples
         --------
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
         >>> with table.open(as_dict=True) as dictreader:
-        >>>     for row in dictreader:
-        >>>         print(",".join([row[x] for x in [
+        ...     for row in dictreader:
+        ...         print(",".join([row[x] for x in [
         ...             "観光スポット名称", "所在地", "経度", "緯度"]]))
         ...
         ホタル水路,,139.80102,33.108218
@@ -281,76 +293,6 @@ class Table(object):
         """
         import tablelinker
         tablelinker.useExtraConvertors()
-
-    @classmethod
-    def fromPandas(cls, df: DataFrame) -> "Table":
-        """
-        Pandas DataFrame から Table オブジェクトを作成します。
-
-        Parameters
-        ----------
-        df: pandas.core.frame.DataFrame
-            CSV データを持つ Pandas DataFrame オブジェクト。
-
-        Returns
-        -------
-        Table
-            新しい Table オブジェクト。
-
-        Examples
-        --------
-        >>> from tablelinker import Table
-        >>> import pandas as pd
-        >>> df = pd.DataFrame({
-        ...     "国名":["アメリカ合衆国","日本","中国"],
-        ...     "3文字コード":["USA","JPN","CHN"],
-        ... })
-        >>> table = Table.fromPandas(df)
-        >>> table.write()
-        国名,3文字コード
-        アメリカ合衆国,USA
-        日本,JPN
-        中国,CHN
-
-        Notes
-        -----
-        このメソッドは、一度 DataFrame のすべてのデータを
-        CSV ファイルに出力します。
-        """
-        table = None
-        with tempfile.NamedTemporaryFile(
-                mode="w+b", delete=False) as f:
-            df.to_csv(f, index=False)
-            table = Table(
-                f.name,
-                is_tempfile=True,
-                skip_cleaning=True)
-
-        return table
-
-    def toPandas(self) -> DataFrame:
-        """
-        Table オブジェクトから Pandas DataFrame を作成します。
-
-        Returns
-        -------
-        pandas.core.frame.DataFrame
-
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from tablelinker import Table
-        >>> table = Table("hachijo_sightseeing.xslx")
-        >>> df = table.toPandas()
-        >>> df.columns
-        Index(['観光スポット名称', '所在地', '緯度', '経度', '座標系',\
-          '説明', '八丈町ホームページ記載'], dtype='object')
-
-        """
-        with self.open(as_dict=True) as reader:
-            df = pd.DataFrame.from_records(reader)
-
-        return df
 
     def save(self, path: os.PathLike, encoding="utf-8", **fmtparams):
         """
@@ -496,7 +438,6 @@ class Table(object):
 
                 writer.writerow(row)
 
-
     def to_str(self, **kwargs):
         """
         write() を利用して、クリーンな CSV 文字列を返します。
@@ -521,7 +462,7 @@ class Table(object):
         return buf.getvalue()
 
     def apply(self, task: Task) -> 'Table':
-        """
+        r"""
         テーブルが管理する表データにタスクを適用して変換し、
         変換結果を管理する新しい Table オブジェクトを返します。
 
@@ -538,15 +479,15 @@ class Table(object):
         Examples
         --------
         >>> from tablelinker import Table, Task
-        >>> table = Table("sample/hachijo_sightseeing.csv")
-        >>> table.write(lines=1)
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
+        >>> table.write(lines=1, lineterminator="\n")
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         >>> task = Task.create({
         ...     "convertor":"rename_col",
         ...     "params":{"input_col_idx":"観光スポット名称", "output_col_name":"名称"},
         ... })
         >>> table = table.apply(task)
-        >>> table.write(lines=1)
+        >>> table.write(lines=1, lineterminator="\n")
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
 
         Notes
@@ -563,7 +504,7 @@ class Table(object):
             self,
             convertor: str,
             params: dict) -> 'Table':
-        """
+        r"""
         テーブルが管理する表データにコンバータを適用して変換し、
         変換結果を管理する新しい Table オブジェクトを返します。
 
@@ -583,14 +524,14 @@ class Table(object):
         Examples
         --------
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
-        >>> table.write(lines=1)
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
+        >>> table.write(lines=1, lineterminator="\n")
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         >>> table = table.convert(
         ...     convertor="rename_col",
         ...     params={"input_col_idx":0, "output_col_name":"名称"},
         ... )
-        >>> table.write(lines=1)
+        >>> table.write(lines=1, lineterminator="\n")
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
 
         Notes
@@ -754,3 +695,171 @@ class Table(object):
                 mapping[output] = header
 
         return dict(mapping)
+
+    @classmethod
+    def fromPandas(cls, df: DataFrame) -> "Table":
+        r"""
+        Pandas DataFrame から Table オブジェクトを作成します。
+
+        Parameters
+        ----------
+        df: pandas.core.frame.DataFrame
+            表データを持つ Pandas DataFrame オブジェクト。
+
+        Returns
+        -------
+        Table
+            新しい Table オブジェクト。
+
+        Examples
+        --------
+        >>> from tablelinker import Table
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({
+        ...     "国名":["アメリカ合衆国","日本","中国"],
+        ...     "3文字コード":["USA","JPN","CHN"],
+        ... })
+        >>> table = Table.fromPandas(df)
+        >>> table.write(lineterminator="\n")
+        国名,3文字コード
+        アメリカ合衆国,USA
+        日本,JPN
+        中国,CHN
+
+        Notes
+        -----
+        このメソッドは、一度 DataFrame のすべてのデータを
+        CSV ファイル（一時ファイル）に出力します。
+        """
+        table = None
+        with tempfile.NamedTemporaryFile(
+                mode="w+b", delete=False) as f:
+            df.to_csv(f, index=False)
+            table = Table(
+                f.name,
+                is_tempfile=True,
+                skip_cleaning=True)
+
+        return table
+
+    def toPandas(self) -> DataFrame:
+        r"""
+        Table オブジェクトから Pandas DataFrame を作成します。
+
+        Returns
+        -------
+        pandas.core.frame.DataFrame
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from tablelinker import Table
+        >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+        >>> df = table.toPandas()
+        >>> df.columns
+        Index(['国名', '3文字コード'], dtype='object')
+
+        """
+        with self.open(as_dict=True) as reader:
+            df = pd.DataFrame.from_records(reader)
+
+        return df
+
+    @classmethod
+    def fromPolars(cls, df) -> Optional["Table"]:
+        r"""
+        Polars DataFrame から Table オブジェクトを作成します。
+
+        Parameters
+        ----------
+        df: polars.DataFrame
+            表データを持つ Polars DataFrame オブジェクト。
+
+        Returns
+        -------
+        Table
+            新しい Table オブジェクト。
+
+        Examples
+        --------
+        >>> from tablelinker import Table
+        >>> import polars as pl
+        >>> df = pl.DataFrame({
+        ...     "国名":["アメリカ合衆国","日本","中国"],
+        ...     "3文字コード":["USA","JPN","CHN"],
+        ... })
+        >>> df.columns
+        ['国名', '3文字コード']
+        >>> table = Table.fromPolars(df)
+        >>> table.write(lineterminator="\n")
+        国名,3文字コード
+        アメリカ合衆国,USA
+        日本,JPN
+        中国,CHN
+
+        Notes
+        -----
+        このメソッドは、一度 DataFrame のすべてのデータを
+        CSV ファイル（一時ファイル）に出力します。
+        """
+        try:
+            import polars  # noqa: F401
+        except ModuleNotFoundError:
+            logger.error("Polars がインストールされていません。")
+            return None
+
+        table = None
+        with tempfile.NamedTemporaryFile(
+                mode="w+b", delete=False) as f:
+            df.write_csv(f.name)
+            table = Table(
+                f.name,
+                is_tempfile=True,
+                skip_cleaning=True)
+
+        return table
+
+    def toPolars(self):
+        r"""
+        Table オブジェクトから Polars DataFrame を作成します。
+
+        Returns
+        -------
+        polars.DataFrame
+
+        Examples
+        --------
+        >>> import polars as pl
+        >>> from tablelinker import Table
+        >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+        >>> df = table.toPolars()
+        >>> df.columns
+        ['国名', '3文字コード']
+
+        Notes
+        -----
+        - Table オブジェクトが明示的にクリーニング不要（skip_cleaning = True）
+          な CSV ファイルを参照している場合、 Polars DataFrame も
+          直接そのファイルを開きます。
+        - それ以外の場合は、 一度 Table が参照しているすべてのデータを
+          メモリに読み込んでから Polars DataFrame に渡すため、
+          ファイルサイズが大きい場合には時間がかかることがあります。
+
+        """
+        try:
+            import polars as pl
+        except ModuleNotFoundError:
+            logger.error("Polars がインストールされていません。")
+            return None
+
+        if self.skip_cleaning:
+            # クリーニング不要な CSV ファイルを開いている場合、
+            # そのまま Polars でファイルを開く。
+            df = pl.read_csv(self.file)
+        else:
+            # メモリに読み込んでから渡す。
+            buffer = io.StringIO()
+            self.write(file=buffer)
+            df = pl.read_csv(buffer)
+
+        return df

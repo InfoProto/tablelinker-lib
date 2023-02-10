@@ -81,7 +81,7 @@ class Convertor(ABC):
         """
         return self.__class__.meta().params
 
-    def process(self, context: "Context"):
+    def process(self, context):
         """
         変換処理を実行します。
 
@@ -125,7 +125,7 @@ class Convertor(ABC):
 
             self.process_record(rows, context)
 
-    def preproc(self, context: "Context") -> bool:
+    def preproc(self, context) -> bool:
         """
         前処理を行います。
 
@@ -182,7 +182,7 @@ class Convertor(ABC):
                                     "パラメータ '{}' の {} 番目で指定された列 '{}' は"
                                     "有効な列名ではありません。有効な列名は次の通り; {}"
                                 ).format(key, i + 1, v, ",".join(headers)))
-            
+
             if key.startswith('output_col_idx'):
                 val = context.get_param(key)
                 if isinstance(val, str):
@@ -206,7 +206,7 @@ class Convertor(ABC):
         self.headers = headers
         self.num_of_columns = len(headers)
 
-    def process_header(self, headers: List[str], context: "Context"):
+    def process_header(self, headers: List[str], context):
         """
         ヘッダ行に対する処理を実行します。
 
@@ -227,7 +227,7 @@ class Convertor(ABC):
         """
         context.output(headers)
 
-    def check_record(self, rows: List[Any], context: "Context") -> bool:
+    def check_record(self, rows: List[Any], context) -> bool:
         """
         入力するレコードへのチェックを行います。
 
@@ -262,7 +262,7 @@ class Convertor(ABC):
         else:
             return True
 
-    def process_record(self, rows: List[Any], context: "Context"):
+    def process_record(self, rows: List[Any], context):
         """
         データ行に対する処理を実行します。
 
@@ -424,7 +424,7 @@ class InputOutputConvertor(Convertor):
 
         context.output(headers)
 
-    def process_record(self, rows: List[Any], context: "Context"):
+    def process_record(self, rows: List[Any], context):
         """
         データ行に対する処理を実行します。
 
@@ -471,7 +471,7 @@ class InputOutputConvertor(Convertor):
 
         context.output(rows)
 
-    def process_convertor(self, rows: List[Any], context: "Context"):
+    def process_convertor(self, rows: List[Any], context):
         """
         データに対する処理を実行します。
 

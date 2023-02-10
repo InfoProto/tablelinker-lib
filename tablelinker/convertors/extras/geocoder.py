@@ -3,7 +3,7 @@ import re
 
 import jageocoder
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 logger = getLogger(__name__)
 
@@ -22,7 +22,7 @@ def initialize_jageocoder() -> bool:
     try:
         jageocoder.init()
         jageocoder_initialized = True
-    except TypeError as e:
+    except TypeError:
         jageocoder_initialized = False
         logger.error((
             "jageocoder の初期化に失敗しました。"
@@ -48,6 +48,7 @@ def check_jageocoder(func):
     return wrapper
 
 
+@check_jageocoder
 def search_node(address_or_id: str):
     """
     住所文字列またはノードIDから、対応する住所ノードを検索します。
@@ -55,13 +56,31 @@ def search_node(address_or_id: str):
     Parameters
     ----------
     address_or_id: str
-        住所文字列またはノードID
+        住所文字列、またはノードIDを変換した文字列。
 
     Returns
     -------
     jageocoder.node.AddressNode
         対応する住所要素ノードオブジェクト。
         見つからない場合には None を返します。
+
+    Notes
+    -----
+    住所文字列から検索するより、一度検索した住所ノードの ID から
+    検索する方がはるかに高速です。
+
+    Examples
+    --------
+    >>> from tablelinker.convertors.extras.geocoder import search_node
+    >>> node = search_node("東京都新宿区西新宿2-8-1")
+    >>> node.x, node.y
+    (139.691778, 35.689627)
+    >>> node.get_fullname()
+    ['東京都', '新宿区', '西新宿', '二丁目', '8番']
+    >>> node_by_id = search_node(str(node.id))
+    >>> node_by_id.get_fullname()
+    ['東京都', '新宿区', '西新宿', '二丁目', '8番']
+
     """
     node = None
     if address_or_id == '':
@@ -84,7 +103,7 @@ def search_node(address_or_id: str):
 
 
 class ToCodeConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         住所から自治体コードを計算します。
 
@@ -117,24 +136,55 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
           都道府県名や市区町村名を指定してください。
 
     サンプル
-        「所在地」列から 5 桁自治体コードを算出し、
-        先頭に新しく「市区町村コード」列を作って格納します。
-        「所在地」列が空欄などで計算できない場合は "0" を格納します。
+        「住所」列から 5 桁自治体コードを算出し、
+        1列目（先頭の次）に新しく「市区町村コード」列を作って格納します。
+        「住所」列が空欄などで計算できない場合は "-" を格納します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
             {
                 "convertor": "geocoder_code",
                 "params": {
-                    "input_col_idx": "所在地",
+                    "input_col_idx": "住所",
                     "output_col_name": "市区町村コード",
-                    "output_col_idx": 0,
-                    "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
-                    "default": "0"
+                    "output_col_idx": 1,
+                    "within": ["北海道"],
+                    "default": "-"
                 }
             }
 
-    """
+        - コード例
+
+        .. code-block :: python
+
+            >>> from tablelinker import Table
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_code",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_name": "市区町村コード",
+            ...         "output_col_idx": 1,
+            ...         "within": ["北海道"],
+            ...         "default": "-",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,市区町村コード,郵便番号,所在地
+            北海道大学,01102,060-0808,札幌市北区北8条西5
+            北海道教育大学,01102,002-8501,札幌市北区あいの里5条3-1-3
+            室蘭工業大学,01205,050-8585,室蘭市水元町27-1
+
+    """  # noqa: E501
 
     class Meta:
         key = "geocoder_code"
@@ -192,7 +242,7 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
 
 
 class ToLatLongConvertor(convertors.InputOutputsConvertor):
-    """
+    r"""
     概要
         住所から緯度・経度・住所レベルを計算します。
 
@@ -224,8 +274,10 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
     サンプル
         「所在地」列から経緯度と住所レベルを計算し、
-        先頭に新しく「緯度」「経度」「住所レベル」列を作って格納します。
-        「所在地」列が空欄などで計算できない場合は "" を格納します。
+        先頭に新しく「緯度」「経度」「住所レベル」列を作って最後尾に格納します。
+        「所在地」列が空欄などで計算できない場合は "-" を格納します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
@@ -234,13 +286,40 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
                 "params": {
                     "input_col_idx": "所在地",
                     "output_col_names": ["緯度", "経度", "住所レベル"],
-                    "output_col_idx": 0,
-                    "within": ["東京都"],
-                    "default": ""
+                    "output_col_idx": null,
+                    "default": "-"
                 }
             }
 
-    """
+        - コード例
+
+        .. code-block :: python
+
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> from tablelinker import Table
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_latlong",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_names": ["緯度", "経度", "住所レベル"],
+            ...         "output_col_idx": None,
+            ...         "default": "-",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,郵便番号,所在地,緯度,経度,住所レベル
+            北海道大学,060-0808,札幌市北区北8条西5,43.070446,141.347151,6
+            北海道教育大学,002-8501,札幌市北区あいの里5条3-1-3,43.170497,141.39375,7
+            室蘭工業大学,050-8585,室蘭市水元町27-1,42.378715,141.034036,7
+
+   """
 
     class Meta:
         key = "geocoder_latlong"
@@ -302,7 +381,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
 
 class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
-    """
+    r"""
     概要
         住所から市区町村名を計算します。
 
@@ -338,8 +417,10 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
 
     サンプル
         「所在地」列から市区町村名を計算し、
-        先頭に新しく「市区町村名」列を作って格納します。
-        「所在地」列が空欄などで計算できない場合は "" を格納します。
+        「所在地」列の前に新しく「市区町村」「（区）」列を作って格納します。
+        「所在地」列が空欄などで計算できない場合は "-" を格納します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
@@ -347,12 +428,39 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
                 "convertor": "geocoder_municipality",
                 "params": {
                     "input_col_idx": "所在地",
-                    "output_col_name": ["市区町村名", "政令市の区名"]
-                    "output_col_idx": 0,
-                    "within": ["東京都", "埼玉県", "神奈川県"],
-                    "default": "0"
+                    "output_col_name": ["市区町村", "（区）"]
+                    "output_col_idx": "所在地",
+                    "default": "-"
                 }
             }
+
+        - コード例
+
+        .. code-block :: python
+
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> from tablelinker import Table
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_municipality",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_names": ["市区町村", "（区）"],
+            ...         "output_col_idx": "所在地",
+            ...         "default": "-",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,郵便番号,市区町村,（区）,所在地
+            北海道大学,060-0808,札幌市,北区,札幌市北区北8条西5
+            北海道教育大学,002-8501,札幌市,北区,札幌市北区あいの里5条3-1-3
+            室蘭工業大学,050-8585,室蘭市,-,室蘭市水元町27-1
 
     """
 
@@ -439,7 +547,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
 
 
 class ToNodeIdConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         住所からノードIDを計算します。
 
@@ -447,9 +555,6 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
         そのたびに住所解析処理を行う必要があるため時間がかかりますが、
         住所の代わりにノードIDを入力とすることで
         住所解析を一度だけ行えば済むようになり、高速化できます。
-
-        ただしノードIDは住所辞書固有のIDなので、辞書を差し替えると
-        正常に動作しなくなる点に注意してください。
 
     コンバータ名
         "geocoder_nodeid"
@@ -462,7 +567,7 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
-        * "default": コードが計算できなかった場合の値 [""]
+        * "default": ノードが見つからなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
         - ``output_col_name`` が省略された場合、
@@ -475,24 +580,56 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
         - 住所が一意ではない場合、最初の候補を選択します。
           精度を向上させたい場合は ``within`` で候補となる
           都道府県名や市区町村名を指定してください。
+        - ノードIDは住所辞書固有のIDなので、辞書を差し替えると
+          同じ住所でも ID が変わる点に注意してください。
 
     サンプル
-        「所在地」列から 5 桁自治体コードを算出し、
-        先頭に新しく「市区町村コード」列を作って格納します。
-        「所在地」列が空欄などで計算できない場合は "0" を格納します。
+        「所在地」列から住所ノードIDを算出し、
+        最後尾に「住所ノードID」列を作って格納します。
+        「所在地」列が空欄などで計算できない場合は "" を格納します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
             {
-                "convertor": "geocoder_code",
+                "convertor": "geocoder_nodeid",
                 "params": {
                     "input_col_idx": "所在地",
-                    "output_col_name": "市区町村コード",
-                    "output_col_idx": 0,
-                    "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
-                    "default": "0"
+                    "output_col_name": "住所ノードID",
+                    "output_col_idx": null,
+                    "default": ""
                 }
             }
+
+        - コード例
+
+        .. code-block :: python
+
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> from tablelinker import Table
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_nodeid",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_name": "住所ノードID",
+            ...         "output_col_idx": None,
+            ...         "within": ["北海道"],
+            ...         "default": "",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,郵便番号,所在地,住所ノードID
+            北海道大学,060-0808,札幌市北区北8条西5,...
+            北海道教育大学,002-8501,札幌市北区あいの里5条3-1-3,...
+            室蘭工業大学,050-8585,室蘭市水元町27-1,...
 
     """
 
@@ -537,9 +674,10 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
 
 
 class ToPostcodeConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
-        住所から郵便番号を計算します。
+        住所から郵便番号を検索します。ただしビルのフロアごとに
+        振られている番号や、事業者の個別郵便番号は検索できません。
 
     コンバータ名
         "geocoder_postcode"
@@ -574,22 +712,54 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
 
     サンプル
         「所在地」列から郵便番号を算出し、
-        「所在地」列の前に「郵便番号」列を作って格納します。
+        「所在地」列の前の「郵便番号」列に上書きします。
         「所在地」列が空欄などで計算できない場合は空欄にします。
+
+        - タスクファイル例
 
         .. code-block:: json
 
             {
-                "convertor": "geocoder_postal",
+                "convertor": "geocoder_postcode",
                 "params": {
                     "input_col_idx": "所在地",
                     "output_col_name": "郵便番号",
                     "output_col_idx": "所在地",
-                    "within": ["千葉県", "埼玉県", "東京都", "神奈川県"],
                     "default": "",
-                    "hiphen": true
+                    "hiphen": true,
+                    "overwrite": true
                 }
             }
+
+        - コード例
+
+        .. code-block :: python
+
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> from tablelinker import Table
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_postcode",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_name": "郵便番号",
+            ...         "output_col_idx": "所在地",
+            ...         "default": "",
+            ...         "hiphen": True,
+            ...         "overwrite": True,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,郵便番号,所在地
+            北海道大学,060-0808,札幌市北区北8条西5
+            北海道教育大学,002-8075,札幌市北区あいの里5条3-1-3
+            室蘭工業大学,050-0071,室蘭市水元町27-1
 
     """
 
@@ -644,7 +814,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
 
 
 class ToPrefectureConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         住所から都道府県名を計算します。
 
@@ -675,8 +845,10 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
 
     サンプル
         「所在地」列から都道府県名を計算し、
-        先頭に新しく「都道府県名」列を作って格納します。
+        「郵便番号」列の前に新しく「都道府県名」列を作って格納します。
         「所在地」列が空欄などで計算できない場合は "" を格納します。
+
+        - タスクファイル例
 
         .. code-block :: json
 
@@ -685,11 +857,38 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
                 "params": {
                     "input_col_idx": "所在地",
                     "output_col_name": "都道府県名",
-                    "output_col_idx": 0,
-                    "within": ["東京都"],
-                    "default": "0"
+                    "output_col_idx": "郵便番号",
+                    "default": ""
                 }
             }
+
+        - コード例
+
+        .. code-block :: python
+
+            >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
+            >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
+            >>> from tablelinker import Table
+            >>> table = Table((
+            ...     '"機関名","郵便番号","所在地"\n'
+            ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
+            ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
+            ...     '"室蘭工業大学","050-8585","室蘭市水元町27-1"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="geocoder_prefecture",
+            ...     params={
+            ...         "input_col_idx": "所在地",
+            ...         "output_col_name": "都道府県名",
+            ...         "output_col_idx": "郵便番号",
+            ...         "default": "",
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            機関名,都道府県名,郵便番号,所在地
+            北海道大学,北海道,060-0808,札幌市北区北8条西5
+            北海道教育大学,北海道,002-8501,札幌市北区あいの里5条3-1-3
+            室蘭工業大学,北海道,050-8585,室蘭市水元町27-1
 
     """
 

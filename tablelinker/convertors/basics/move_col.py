@@ -2,7 +2,7 @@ from tablelinker.core import convertors, params
 
 
 class MoveColConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         列の位置を移動します。
 
@@ -36,15 +36,15 @@ class MoveColConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「八丈町営温泉一覧」より作成
+            >>> # https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000001
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\\n'
-            ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\\n'
-            ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\\n'
-            ...     'ブルーポート・スパ　ザ・BOON,東京都八丈島八丈町中之郷1448-1,33.060855 ,139.816199 ,JGD2011,10:00,21:00\\n'
+            >>> table = Table((
+            ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\n'
+            ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812-3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\n'
+            ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\n'
+            ...     'ブルーポート・スパ　ザ・BOON,東京都八丈島八丈町中之郷1448-1,33.060855 ,139.816199 ,JGD2011,10:00,21:00\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="move_col",
             ...     params={
@@ -52,12 +52,13 @@ class MoveColConvertor(convertors.Convertor):
             ...         "output_col_idx": "緯度",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             施設名,所在地,経度,緯度,座標系,営業開始時間,営業終了時間
-            樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,139.790328 ,33.075843 ,JGD2011,10:00,22:00
-            ...
+            樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812-3,139.790328 ,33.075843 ,JGD2011,10:00,22:00
+            裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,139.816513 ,33.063743 ,JGD2011,9:00,21:00
+            ブルーポート・スパ　ザ・BOON,東京都八丈島八丈町中之郷1448-1,139.816199 ,33.060855 ,JGD2011,10:00,21:00
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "move_col"

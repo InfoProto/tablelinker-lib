@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 
 
 class InsertColConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         新しい列を追加します。
 
@@ -45,17 +45,17 @@ class InsertColConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「東京都災害拠点病院一覧」（東京都福祉局）より作成（令和4年1月1日現在）
+            >>> # https://www.fukushihoken.metro.tokyo.lg.jp/iryo/kyuukyuu/saigai/kyotenbyouinlist.html
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...    '施設名,所在地,電話番号,病床数\\n'
-            ...    '日本大学病院,千代田区神田駿河台1-6,03－3293－1711,320\\n'
-            ...    '三井記念病院,千代田区神田和泉町１,03－3862－9111,482\\n'
-            ...    '聖路加国際病院,中央区明石町9-1,03－3541－5151,520\\n'
-            ...    '東京都済生会中央病院,港区三田1－4－17,03－3451－8211,535\\n'
-            ...    '東京慈恵会医科大学附属病院,港区西新橋3-19-18,03－3433－1111,"1,075"\\n'
+            >>> table = Table((
+            ...    '施設名,所在地,電話番号,病床数\n'
+            ...    '日本大学病院,千代田区神田駿河台1-6,03－3293－1711,320\n'
+            ...    '三井記念病院,千代田区神田和泉町１,03－3862－9111,482\n'
+            ...    '聖路加国際病院,中央区明石町9-1,03－3541－5151,520\n'
+            ...    '東京都済生会中央病院,港区三田1－4－17,03－3451－8211,535\n'
+            ...    '東京慈恵会医科大学附属病院,港区西新橋3-19-18,03－3433－1111,"1,075"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="insert_col",
             ...     params={
@@ -64,13 +64,13 @@ class InsertColConvertor(convertors.Convertor):
             ...         "value": "東京都",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             施設名,都道府県名,所在地,電話番号,病床数
             日本大学病院,東京都,千代田区神田駿河台1-6,03－3293－1711,320
             三井記念病院,東京都,千代田区神田和泉町１,03－3862－9111,482
             ...
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "insert_col"
@@ -115,8 +115,7 @@ class InsertColConvertor(convertors.Convertor):
         self.output_col_idx = context.get_param("output_col_idx")
         self.value = context.get_param("value")
         if self.output_col_idx is None:
-            self.output_col_idx = len(headers)
-
+            self.output_col_idx = len(self.headers)
 
     def process_header(self, headers, context):
         headers.insert(self.output_col_idx, self.output_col_name)
@@ -128,7 +127,7 @@ class InsertColConvertor(convertors.Convertor):
 
 
 class InsertColsConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         新しい複数の列を追加します。
 
@@ -170,15 +169,15 @@ class InsertColsConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「八丈町営温泉一覧」より作成
+            >>> # https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000001
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\\n'
-            ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\\n'
-            ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\\n'
-            ...     'ブルーポート・スパ　ザ・BOON,東京都八丈島八丈町中之郷1448-1,33.060855 ,139.816199 ,JGD2011,10:00,21:00\\n'
+            >>> table = Table((
+            ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\n'
+            ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\n'
+            ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\n'
+            ...     'ブルーポート・スパ　ザ・BOON,東京都八丈島八丈町中之郷1448-1,33.060855 ,139.816199 ,JGD2011,10:00,21:00\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="insert_cols",
             ...     params={
@@ -187,13 +186,13 @@ class InsertColsConvertor(convertors.Convertor):
             ...         "values": ["東京都", "八丈町"],
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             施設名,都道府県名,市区町村名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間
             樫立向里温泉「ふれあいの湯」,東京都,八丈町,東京都八丈島八丈町樫立1812?3,33.075843 ,139.790328 ,JGD2011,10:00,22:00
             裏見ヶ滝温泉,東京都,八丈町,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00
             ...
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "insert_cols"

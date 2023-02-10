@@ -67,6 +67,9 @@ def test_datetime_extract():
     with table.open(as_dict=True) as dictreader:
         for lineno, row in enumerate(dictreader):
             assert len(row) == 5
+            if lineno == 0:
+                assert row["正規化日時"] == "2023-01-31T04:15:00+0900"
+
             if lineno > 0:
                 assert re.match(
                     r'^\d{4}\-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}',

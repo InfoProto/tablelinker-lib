@@ -1,5 +1,4 @@
 from enum import Enum
-import re
 
 from tablelinker.core import convertors, params
 
@@ -41,7 +40,7 @@ def calc(valueA, valueB, calculation):
 
 
 class CalcColConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         2つの入力列に対して四則演算を実行し、結果を出力列に保存します。
 
@@ -82,15 +81,17 @@ class CalcColConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # 「国勢調査（令和２）都道府県・市区町村別の主な結果」
+            >>> # https://www.e-stat.go.jp/stat-search/files?layout=datalist&cycle=0&toukei=00200521&tstat=000001049104&tclass1=000001049105&tclass2val=0&stat_infid=000032143614
+            >>> # および「これまでに公表した面積調／令和4年10月1日」（国土地理院）より作成
+            >>> # https://www.gsi.go.jp/KOKUJYOHO/OLD-MENCHO-title.htm
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '都道府県名,人口,面積\\n'
-            ...     '北海道 ほっかいどう,"5,139,522","83,423.81"\\n'
-            ...     '青森県 あおもりけん,"1,204,372","9,645.95"\\n'
-            ...     '岩手県 いわてけん,"1,180,512","15,275.01"\\n'
+            >>> table = Table((
+            ...     '都道府県名,人口,面積\n'
+            ...     '北海道 ほっかいどう,"5,224,614","83423.81"\n'
+            ...     '青森県 あおもりけん,"1,237,984","9645.95"\n'
+            ...     '岩手県 いわてけん,"1,210,534","15275.01"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="calc",
             ...     params={
@@ -101,13 +102,13 @@ class CalcColConvertor(convertors.Convertor):
             ...         "delete_col": False,
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             都道府県名,人口,面積,人口密度
-            北海道 ほっかいどう,"5,139,522","83,423.81",61.60737564012001
-            青森県 あおもりけん,"1,204,372","9,645.95",124.8577900569669
-            岩手県 いわてけん,"1,180,512","15,275.01",77.28387739189697
+            北海道 ほっかいどう,"5,224,614",83423.81,62.6273...
+            青森県 あおもりけん,"1,237,984",9645.95,128.3423...
+            岩手県 いわてけん,"1,210,534",15275.01,79.2493...
 
-    """
+    """  # noqa: E501
 
     class Meta:
         key = "calc"

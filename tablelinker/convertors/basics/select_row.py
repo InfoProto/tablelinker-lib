@@ -4,7 +4,7 @@ from tablelinker.core import convertors, params
 
 
 class StringMatchSelectRowConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列が、指定した文字列と一致する行を選択します。
 
@@ -34,15 +34,14 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="select_row_match",
             ...     params={
@@ -50,7 +49,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
             ...         "query": "女",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,女,3562635454918233
 
@@ -81,7 +80,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
 
 
 class StringContainSelectRowConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列に、指定した文字列を含む行を選択します。
 
@@ -111,15 +110,14 @@ class StringContainSelectRowConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="select_row_contains",
             ...     params={
@@ -127,7 +125,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
             ...         "query": "10月",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             氏名,生年月日,性別,クレジットカード
             江島 佳洋,1992年10月07日,男,376001629316609
 
@@ -158,7 +156,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
 
 
 class PatternMatchSelectRowConvertor(convertors.Convertor):
-    """
+    r"""
     概要
         指定した列が指定した正規表現と一致する行を選択します。
         正規表現は列の先頭から一致（match）する必要があります。
@@ -189,15 +187,14 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
 
         .. code-block:: python
 
-            >>> import io
+            >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> stream = io.StringIO((
-            ...     '"氏名","生年月日","性別","クレジットカード"\\n'
-            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\\n'
-            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\\n'
-            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\\n'
+            >>> table = Table((
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
-            >>> table = Table(stream)
             >>> table = table.convert(
             ...     convertor="select_row_pattern",
             ...     params={
@@ -205,7 +202,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
             ...         "query": r".*[02468]日",
             ...     },
             ... )
-            >>> table.write(lineterminator="\\n")
+            >>> table.write(lineterminator="\n")
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,女,3562635454918233
 

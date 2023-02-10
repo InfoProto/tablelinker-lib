@@ -3,7 +3,7 @@ import io
 
 import requests
 
-from ...core import convertors, params
+from tablelinker.core import convertors, params
 
 MTAB_URL = "https://mtab.app/api/v1/mtab"
 
@@ -71,7 +71,7 @@ def query_mtab(context, max_lines=None):
 
 
 class MtabWikilinkConvertor(convertors.InputOutputConvertor):
-    """
+    r"""
     概要
         Mtab を利用して、各行の情報に合致する
         Wikidata へのリンクを計算します。
@@ -100,18 +100,51 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
         先頭列の要素に対応する Wikidata へのリンクを末尾に追加します。
         最大100行まで処理します。
 
+        - タスクファイル例
+
         .. code-block :: json
 
             {
                 "convertor": "mtab_wikilink",
                 "params": {
-                    "input_col_idx": 0,
+                    "input_col_idx": "col0",
                     "output_col_name": "Wikilink",
-                    "lines": "100"
+                    "lines": 100
                 }
             }
 
-    """
+        - コード例
+
+        .. code-block:: python
+
+            >>> from tablelinker import Table
+            >>> # mTab API sample より取得
+            >>> # https://mtab.app/mtab
+            >>> table = Table((
+            ...     "col0,col1,col2,col3\n"
+            ...     "2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735\n"
+            ...     "2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,"
+            ...     "11.818755055646479\n"
+            ...     "2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955\n"
+            ...     "2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303\n"
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="mtab_wikilink",
+            ...     params={
+            ...         "input_col_idx": "col0",
+            ...         "output_col_name": "wikilink",
+            ...         "lines": 100,
+            ...     },
+            ... )
+            >>> table.write(lineterminator="\n")
+            col0,col1,col2,col3,wikilink
+            2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735,http://www.wikidata.org/entity/Q222120
+            2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,11.818755055646479,http://www.wikidata.org/entity/Q222110
+            2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955,http://www.wikidata.org/entity/Q78611172
+            2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303,http://www.wikidata.org/entity/Q78610810
+
+    """  # noqa: E501
+
     class Meta:
         key = "mtab_wikilink"
         name = "Mtabデータからwikidata列を追加する"
