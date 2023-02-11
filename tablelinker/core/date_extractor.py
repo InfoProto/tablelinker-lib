@@ -1,3 +1,4 @@
+# flake8: noqa
 from logging import getLogger
 import regex as re
 

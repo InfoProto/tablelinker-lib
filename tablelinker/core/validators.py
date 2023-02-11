@@ -18,7 +18,10 @@ class Errors(object):
         if key not in self.error_messages:
             self.error_messages[key] = []
 
-        formated_message = message if param is None else "%sは、%s" % (param.label, message)
+        if param is None:
+            formated_message = message
+        else:
+            formated_message = "{}は、{}".format(param.label, message)
 
         self.error_messages[key].append(formated_message)
 
@@ -81,7 +84,8 @@ class BooleanValidator(Validator):
             errors.append(self.BOOLEAN_MESSAGE, param)
             return False
         if value not in (True, False, "false"):
-            errors.append("{}({})".format(self.BOOLEAN_MESSAGE, str(value)), param)
+            errors.append("{}({})".format(
+                self.BOOLEAN_MESSAGE, str(value)), param)
             return False
 
         return True

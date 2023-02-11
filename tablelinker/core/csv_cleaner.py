@@ -1,8 +1,12 @@
 from collections import defaultdict
 import csv
 import io
+from logging import getLogger
 
-import chardet
+import charset_normalizer
+
+
+logger = getLogger(__name__)
 
 
 class CSVCleaner(object):
@@ -31,16 +35,24 @@ class CSVCleaner(object):
         # Check if the fp is a bytes-file or a text-file.
         line = fp.readline()
         if isinstance(line, bytes):
-            if line[0:3] == b'\xef\xbb\xbf':
+            if line[0:3] == b'\xef\xbb\xbf':  # UTF-8 with BOM
                 # UTF-8 BOM
                 line = line[3:]
                 self.encoding = "utf-8-sig"
             else:
-                self.data = line
-                for _ in range(100):
-                    self.data += fp.readline()
+                # Detect encoding
+                guess = charset_normalizer.detect(line)
+                n = 0
+                while guess["encoding"] is None:
+                    line = fp.readline()
+                    if line == "" or n > 1000:
+                        logger.warning(
+                            "Can't detect character encoding, give up.")
+                        guess["encoding"] = "UTF-8"
 
-                guess = chardet.detect(self.data)
+                    guess = charset_normalizer.detect(line)
+                    n += 1
+
                 self.encoding = guess["encoding"]
                 if self.encoding == "Shift_JIS":
                     self.encoding = "cp932"

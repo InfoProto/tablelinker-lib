@@ -41,7 +41,7 @@ if __name__ == '__main__':
     ])
     table = table.convert(
         convertor='mapping_cols',
-        params={"column_map":column_map},
+        params={"column_map": column_map},
     )
 
     table.save(output_path, encoding="utf-8-sig")  # BOM 付き UTF-8

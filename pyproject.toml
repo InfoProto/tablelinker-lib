@@ -29,7 +29,7 @@ ipadic = "^1.0.0"
 docopt = "^0.6.2"
 jaconv = "^0.3.3"
 openpyxl = "^3.0.10"
-chardet = "^5.1.0"
+charset-normalizer = "^3.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

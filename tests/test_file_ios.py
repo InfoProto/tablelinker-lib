@@ -109,3 +109,41 @@ def test_excel_convert():
                 assert row[5] == (
                     "http://www.town.hachijo.tokyo.jp/kankou_spot/"
                     "mitsune.html#01")
+
+
+def test_read_sjis():
+    """
+    シフトJIS CSV ファイルを読み込めることを確認。
+    """
+    table = Table(os.path.join(sample_dir, "yanai_tourism_sjis.csv"))
+    correct_headers = (
+        "市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,"
+        "POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
+        "利用可能日時特記事項,料金(基本),料金(詳細),説明,説明_英語,"
+        "アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,"
+        "連絡先内線番号,画像,画像_ライセンス,URL,備考"
+    )
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == len(correct_headers.split(","))
+            if lineno == 0:
+                assert ",".join(row) == correct_headers
+
+
+def test_read_tsv():
+    """
+    タブ区切り CSV ファイルを読めることを確認。
+    """
+    table = Table(os.path.join(sample_dir, "yanai_tourism_tsv.txt"))
+    correct_headers = (
+        "市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,"
+        "POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
+        "利用可能日時特記事項,料金(基本),料金(詳細),説明,説明_英語,"
+        "アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,"
+        "連絡先内線番号,画像,画像_ライセンス,URL,備考"
+    )
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == len(correct_headers.split(","))
+            if lineno == 0:
+                assert ",".join(row) == correct_headers

@@ -7,17 +7,24 @@
 ---------------------------------
 
 Tablelinker パッケージをモジュールとして実行すると、
-CSV や Excel の表データを読み込み、 JSON ファイルに記述したタスクを実行し、
-結果を CSV データとして出力するコマンドとして利用できます。
+CSV や Excel の表データを読み込み、用意されているコンバータを
+利用して表データを変換し、結果を CSV データとして出力する
+コマンドとして利用できます。
 
 実行例は次のようになります。
 
 .. code-block:: bash
 
+    $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv \
+      -c rename_col \
+      -p '{"input_col_idx":"市区町村コード", "output_col_name": "都道府県コード又は市区町村コード"}'
+
+毎回長いパラメータを指定するのは大変なので、利用したいコンバータ名と
+パラメータを JSON ファイルに記述しておき、呼び出すこともできます。
+
     $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv task.json
 
-``task.json`` には適用したいコンバータと、
-そのコンバータに渡すパラメータを次のような JSON で記述します。
+``task.json`` には次のような JSON を記述します。
 
 .. code-block:: json
 
@@ -43,21 +50,21 @@ Tablelinker パッケージを Python スクリプトに import することで�
 
 .. code-block:: python
 
-    from tablelinker import Table
-    table = Table("opendata.xlsx")  # Excel ファイルを読み込み
-    table = table.convert({         # コンバータで変換
-        convertor="rename_col",     # コンバータ名
-        params={                    # コンバータに渡すパラメータ
-            "input_col_idx": "市区町村コード",      # 入力列名
-            "output_col_name":
-                "都道府県コード又は市区町村コード"  # 出力列名
-        }
-    })
-    table.save("renamed_opendata.csv")
+    >>> from tablelinker import Table
+    >>> table = Table("opendata.xlsx")  # Excel ファイルを読み込み
+    >>> table = table.convert(          # コンバータで変換
+    ...     convertor="rename_col",     # コンバータ名
+    ...     params={                    # コンバータに渡すパラメータ
+    ...         "input_col_idx": "市区町村コード",       # 入力列名
+    ...         "output_col_name":
+    ...             "都道府県コード又は市区町村コード",  # 出力列名
+    ...     },
+    ... )
+    >>> table.save("opendata_renamed.csv")
 
-上記の例は、``opendata.xlsx`` を読み込み、「市区町村コード」列を
+上記の例は、``openada.xlsx`` を読み込み、「市区町村コード」列を
 「都道府県コード又は市区町村コード」列に変更します。
-その結果を ``renamed_opendata.csv`` に出力します。
+その結果を ``opendata_renamed.csv`` に出力します。
 
 Python スクリプトから直接 Table オブジェクトが管理している CSV データにアクセスすることもできるので、ファイルの読み込みや
 簡単な整形処理は Tablelinker で実装し、
