@@ -147,3 +147,18 @@ def test_read_tsv():
             assert len(row) == len(correct_headers.split(","))
             if lineno == 0:
                 assert ",".join(row) == correct_headers
+
+
+def test_skip_csv_comments():
+    """
+    CSV ファイルのコメント行を正しくスキップできることを確認。
+    """
+    table = Table(os.path.join(sample_dir, "kyotenbyoinlist20220101.csv"))
+    correct_headers = (
+        "二次保健医療圏,,施設名,所在地,電話番号,病床数,三次\n救急"
+    )
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == len(correct_headers.split(","))
+            if lineno == 0:
+                assert ",".join(row) == correct_headers

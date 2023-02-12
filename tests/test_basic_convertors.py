@@ -722,7 +722,7 @@ def test_to_zenkaku():
     stream = io.StringIO((
         "機関名,所在地\n"
         "国立情報学研究所,千代田区一ツ橋2-1-2\n"
-        "デジタル庁,千代田区紀尾井町1番3号 19階,20階\n"))
+        "デジタル庁,\"千代田区紀尾井町1番3号 19階,20階\"\n"))
     table = Table(stream)
     table = table.convert(
         convertor="to_zenkaku",

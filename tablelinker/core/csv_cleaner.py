@@ -134,31 +134,49 @@ class CSVCleaner(object):
         int
             Number of lines to be skipped.
         """
-        # Count the number of columns in the first 20 rows
-        nrows = []
+        # Count the number of columns in the first 20 rows,
+        # and determine the max value as the number of columns of the table.
+        ncols = []
         self.text_io.seek(0)
         reader = csv.reader(self.text_io, delimiter=self.delimiter)
         for i, row in enumerate(reader):
-            nrows.append(len(row))
+            while len(row) > 0 and row[-1] == '':
+                del row[-1]
+
+            ncols.append(len(row))
             if i > 20:
                 break
 
+        table_columns = max(ncols)
+
+        """
+        An alternative method
+
         # Make frequency table
         freqs = defaultdict(int)
-        for nrow in nrows:
-            freqs[nrow] += 1
+        for ncol in ncols:
+            freqs[ncol] += 1
 
-        # Get most frequent number of columns
-        max_freq = 0
-        most_freq_nrow = 0
-        for nrow, freq in freqs.items():
-            if freq > max_freq:
-                max_freq = freq
-                most_freq_nrow = nrow
+        freqs_sorted = sorted(freqs.items(), reverse=True, key=lambda x: x[1])
 
+        # Remain the top three candidates for the number of columns,
+        # with a frequency of occurrence of at least 1/3 of the number of rows.
+        freqs = {}
+        for ncol, freq in freqs_sorted[0:3]:
+            if freq <= len(ncols) / 3:
+                break
+
+            freqs[ncol] = freq
+
+        # Determine the largest value among the remaining candidates
+        # as the number of columns in the table.
+        table_columns = max(freqs.keys())
+        """
+
+        # Count the rows that do not match the calculated number of columns.
         skip_lines = 0
-        for nrow in nrows:
-            if nrow == most_freq_nrow:
+        for ncol in ncols:
+            if ncol == table_columns:
                 break
 
             skip_lines += 1
