@@ -55,7 +55,7 @@ class RoundConvertor(convertors.InputOutputConvertor):
             >>> # および「これまでに公表した面積調／令和4年10月1日」（国土地理院）より作成
             >>> # https://www.gsi.go.jp/KOKUJYOHO/OLD-MENCHO-title.htm
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '都道府県名,人口,面積,人口密度\n'
             ...     '北海道 ほっかいどう,"5,224,614",83423.81,62.627372209444765\n'
             ...     '青森県 あおもりけん,"1,237,984",9645.95,128.34236130189353\n'

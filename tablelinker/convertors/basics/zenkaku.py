@@ -64,7 +64,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
             >>> # 「東京都災害拠点病院一覧」（東京都福祉局）より作成（令和4年1月1日現在）
             >>> # https://www.fukushihoken.metro.tokyo.lg.jp/iryo/kyuukyuu/saigai/kyotenbyouinlist.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...    '施設名,所在地,電話番号,病床数\n'
             ...    '日本大学病院,千代田区神田駿河台1-6,03－3293－1711,320\n'
             ...    '三井記念病院,千代田区神田和泉町１,03－3862－9111,482\n'
@@ -200,7 +200,7 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
             >>> #「札幌市内の医療機関一覧」より作成
             >>> # https://ckan.pf-sapporo.jp/dataset/sapporo_hospital
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     'ＮＯ,名称,住所\n'
             ...     '101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北1条西18丁目1番1\n'
             ...     '101010421,時計台記念病院,北海道札幌市中央区北1条東1丁目2番地3\n'

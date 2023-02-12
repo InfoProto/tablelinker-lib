@@ -39,7 +39,7 @@ class MoveColConvertor(convertors.Convertor):
             >>> # 「八丈町営温泉一覧」より作成
             >>> # https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000001
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\n'
             ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812-3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\n'
             ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\n'

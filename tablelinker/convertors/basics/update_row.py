@@ -39,7 +39,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"氏名","生年月日","性別","クレジットカード"\n'
             ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
             ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
@@ -142,7 +142,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
             >>> # 別にみた人口動態総覧」（厚生労働省）より作成
             >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     ',人口,出生数,死亡数\n'
             ...     '全　国,123398962,840835,1372755\n'
             ...     '01 北海道,5188441,29523,65078\n'
@@ -252,7 +252,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
             >>> # 別にみた人口動態総覧」（厚生労働省）より作成
             >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     ',人口,出生数,死亡数\n'
             ...     '全　国,123398962,840835,1372755\n'
             ...     '01 北海道,5188441,29523,65078\n'

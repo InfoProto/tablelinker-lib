@@ -232,7 +232,7 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"氏名","生年月日","性別","クレジットカード"\n'
             ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
             ...     '"小室 雅代","1963年08月19日","女","3562635454918233"\n'

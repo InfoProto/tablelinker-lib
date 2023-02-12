@@ -1,6 +1,7 @@
 import json
 from logging import getLogger
 import os
+from pathlib import Path
 import re
 import sys
 import tempfile
@@ -74,11 +75,11 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
-            csv_in = args['--input']
+            csv_in = Path(args['--input'])
         else:
             logger.debug("Reading csv data from STDIN...")
             # sys.stdin は seek できないので、一時ファイルに保存する
-            csv_in = os.path.join(tmpdir, 'input.csv')
+            csv_in = Path(tmpdir) / 'input.csv'
             with open(csv_in, 'wb') as fout:
                 fout.write(sys.stdin.buffer.read())
 
@@ -107,7 +108,7 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
         if args['--output'] is None:
             table.write(skip_header=args['--merge'])
         elif args['--merge']:
-            table.merge(args['--output'])
+            table.merge(Path(args['--output']))
         else:
             encoding = "utf-8"
             if args["--sjis"]:
@@ -115,18 +116,18 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
             elif args["--bom"]:
                 encoding = "utf-8-sig"
 
-            table.save(args['--output'], encoding=encoding)
+            table.save(Path(args['--output']), encoding=encoding)
 
 
 def mapping(args: dict):
     with tempfile.TemporaryDirectory() as tmpdir:
         if args['--input'] is not None:
-            csv_in = args['--input']
+            csv_in = Path(args['--input'])
         else:
             # 標準入力のデータを一時ファイルに保存する
             # Note: stdin は seek() が利用できないため
             logger.debug("Reading csv data from STDIN...")
-            csv_in = os.path.join(tmpdir, 'input.csv')
+            csv_in = Path(tmpdir) / 'input.csv'
             with open(csv_in, 'wb') as fout:
                 fout.write(sys.stdin.buffer.read())
 
@@ -141,7 +142,7 @@ def mapping(args: dict):
         if args['<template>']:
             # テンプレートとなる表データファイルを指定
             template = Table(
-                file=args['<template>'],
+                file=Path(args['<template>']),
                 sheet=args['--template-sheet'])
             mapping = table.mapping(template, th)
         elif args['--headers']:
@@ -170,7 +171,7 @@ def mapping(args: dict):
             if args['--output'] is None:
                 table.write(skip_header=args['--merge'])
             elif args['--merge']:
-                table.merge(args['--output'])
+                table.merge(Path(args['--output']))
             else:
                 encoding = "utf-8"
                 if args["--sjis"]:
@@ -178,7 +179,7 @@ def mapping(args: dict):
                 elif args["--bom"]:
                     encoding = "utf-8-sig"
 
-                table.save(args['--output'], encoding=encoding)
+                table.save(Path(args['--output']), encoding=encoding)
 
 
 def parse_relaxed_json(val: str):

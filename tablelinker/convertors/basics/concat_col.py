@@ -60,7 +60,7 @@ class ConcatColConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"姓","名","生年月日","性別"\n'
             ...     '"生田","直樹","1930年08月11日","男"\n'
             ...     '"石橋","絵理","1936年01月28日","女"\n'
@@ -226,7 +226,7 @@ class ConcatColsConvertor(convertors.Convertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","都道府県","市区町村","所在地詳細"\n'
             ...     '"北海道大学","060-0808","北海道","札幌市","北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","北海道","札幌市","北区あいの里5条3-1-3"\n'

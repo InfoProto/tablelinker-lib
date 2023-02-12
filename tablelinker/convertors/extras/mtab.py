@@ -120,7 +120,7 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             >>> from tablelinker import Table
             >>> # mTab API sample より取得
             >>> # https://mtab.app/mtab
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     "col0,col1,col2,col3\n"
             ...     "2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735\n"
             ...     "2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,"

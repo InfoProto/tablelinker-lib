@@ -47,7 +47,7 @@ class SplitColConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"姓名","生年月日","性別"\n'
             ...     '"生田 直樹","1930年08月11日","男"\n'
             ...     '"石橋 絵理","1936年01月28日","女"\n'
@@ -167,7 +167,7 @@ class SplitRowConvertor(convertors.Convertor):
             >>> #「札幌市内の医療機関一覧」より作成
             >>> # https://ckan.pf-sapporo.jp/dataset/sapporo_hospital
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '名称,診療科目\n'
             ...     '特定医療法人平成会平成会病院,外;リハ;放;形;麻;消内;呼内\n'
             ...     '時計台記念病院,内;循内;消内;糖尿病内科;整;リハ;形;婦;脳外;眼;精;麻;放;リウ;外;緩和ケア内科;血管外科;腎臓内科;泌\n'

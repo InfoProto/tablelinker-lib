@@ -43,7 +43,7 @@ class RenameColConvertor(convertors.Convertor):
             >>> # 別にみた人口動態総覧」（厚生労働省）より作成
             >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     ',人口,出生数,死亡数\n'
             ...     '全　国,123398962,840835,1372755\n'
             ...     '01 北海道,5188441,29523,65078\n'
@@ -140,7 +140,7 @@ class RenameColsConvertor(convertors.Convertor):
             >>> # 別にみた人口動態総覧」（厚生労働省）より作成
             >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     ',人口,出生数,死亡数\n'
             ...     '全　国,123398962,840835,1372755\n'
             ...     '01 北海道,5188441,29523,65078\n'

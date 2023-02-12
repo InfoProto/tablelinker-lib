@@ -50,7 +50,7 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
             >>> # 気象庁「過去に発生した火山災害」より作成
             >>> # https://www.data.jma.go.jp/vois/data/tokyo/STOCK/kaisetsu/volcano_disaster.htm
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     "噴火年月日,火山名,犠牲者（人）,備考\n"
             ...     "享保6年6月22日,浅間山,15,噴石による\n"
             ...     "寛保元年8月29日,渡島大島,1467,岩屑なだれ・津波による\n"
@@ -173,7 +173,7 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
             >>> # （平成12年～令和２年）」より作成
             >>> from tablelinker import Table
             >>> # https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00200524&tstat=000000090001&cycle=0&tclass1=000000090004&tclass2=000001051180&tclass3val=0
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     "年次,総人口（千人）\n"
             ...     "2000,126926\n"
             ...     "2005,127768\n"

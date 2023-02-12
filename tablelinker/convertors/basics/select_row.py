@@ -36,7 +36,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"氏名","生年月日","性別","クレジットカード"\n'
             ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
             ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
@@ -112,7 +112,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"氏名","生年月日","性別","クレジットカード"\n'
             ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
             ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
@@ -189,7 +189,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
 
             >>> # データはランダム生成
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"氏名","生年月日","性別","クレジットカード"\n'
             ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
             ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'

@@ -66,7 +66,7 @@ class ConcatTitleConvertor(convertors.Convertor):
             >>> # 別にみた人口動態総覧」（厚生労働省）より作成
             >>> # https://www.data.go.jp/data/dataset/mhlw_20211015_0019
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     ',人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数\n'
             ...     ',,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,\n'
             ...     ',,,,,死亡数,,,,,,の死産数,死亡数,,\n'

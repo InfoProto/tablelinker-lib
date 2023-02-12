@@ -162,7 +162,7 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
             >>> from tablelinker import Table
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
@@ -298,7 +298,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
@@ -441,7 +441,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
@@ -609,7 +609,7 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
@@ -738,7 +738,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'
@@ -869,7 +869,7 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
             >>> # 「令和3年度全国大学一覧/01国立大学一覧 (Excel:8.7MB)」より作成
             >>> # https://www.mext.go.jp/a_menu/koutou/ichiran/mext_01856.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '"機関名","郵便番号","所在地"\n'
             ...     '"北海道大学","060-0808","札幌市北区北8条西5"\n'
             ...     '"北海道教育大学","002-8501","札幌市北区あいの里5条3-1-3"\n'

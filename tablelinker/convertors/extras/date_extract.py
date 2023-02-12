@@ -62,7 +62,7 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
             >>> # 「Yahoo 地震速報」より作成
             >>> # https://typhoon.yahoo.co.jp/weather/jp/earthquake/
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     "発生時刻,震源地,マグニチュード,最大震度\n"
             ...     "2023年1月31日 4時15分ごろ,宮城県沖,4.3,2\n"
             ...     "2023年1月30日 18時16分ごろ,富山県西部,3.4,2\n"
@@ -247,7 +247,7 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
             >>> # 東京国立博物館「展示・催し物」より作成
             >>> # https://www.tnm.jp/modules/r_calender/index.php
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     "展示名,会場,期間\n"
             ...     "令和5年 新指定 国宝・重要文化財,平成館 企画展示室,2023年1月31日（火） ～ 2023年2月19日（日）\n"
             ...     "特別企画「大安寺の仏像」,本館 11室,2023年1月2日（月・休） ～ 2023年3月19日（日）\n"

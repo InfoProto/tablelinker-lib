@@ -7,7 +7,7 @@ import math
 import os
 import sys
 import tempfile
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pandas as pd
 from pandas.core.frame import DataFrame
@@ -43,9 +43,11 @@ class Table(object):
 
     Parameters
     ----------
-    file: File-like, Path-like, str
+    file: File-like, Path-like
         このテーブルが管理する入力表データファイルのパス、
-        または file-like オブジェクト、または CSV 文字列。
+        または file-like オブジェクト。
+    data: str, bytes
+        CSV 文字列。 file を指定した場合、 data は無視されます。
     sheet: str, None
         入力ファイルが Excel の場合など、複数の表データを含む場合に
         対象を指定するためのシート名。省略された場合は最初の表。
@@ -64,8 +66,8 @@ class Table(object):
     Attributes
     ----------
     file: File-like, Path-like
-        パラメータ参照。文字列で初期化した場合には、
-        文字列を保存した一時ファイル名を参照します。
+        パラメータ参照。 data で初期化した場合には、
+        その内容を保存した一時ファイル名を参照します。
     sheet: str, optional
         パラメータ参照。
     is_tempfile: bool
@@ -87,7 +89,7 @@ class Table(object):
     Examples
     --------
     >>> from tablelinker import Table
-    >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+    >>> table = Table(data="国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
     >>> table.write(lineterminator="\n")
     国名,3文字コード
     アメリカ合衆国,USA
@@ -112,7 +114,8 @@ class Table(object):
 
     def __init__(
             self,
-            file,
+            file: Optional[os.PathLike] = None,
+            data: Union[str, bytes, None] = None,
             sheet: Optional[str] = None,
             is_tempfile: bool = False,
             skip_cleaning: bool = False):
@@ -130,11 +133,14 @@ class Table(object):
         self.filetype = "csv"
         self._reader = None
 
+        if file is None and data is None:
+            raise RuntimeError("file と data のどちらかを指定してください。")
+
         # 文字列が渡された場合は一時ファイルに保存する
-        if isinstance(self.file, str) and not os.path.exists(self.file):
+        if self.file is None:
             with tempfile.NamedTemporaryFile(
                     mode="w", delete=False) as f:
-                f.write(self.file)
+                f.write(data)
 
             self.file = f.name
             self.is_tempfile = True
@@ -312,7 +318,7 @@ class Table(object):
         --------
         >>> import csv
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
         >>> table.save("hachijo_sightseeing_utf8.csv", quoting=csv.QUOTE_ALL)
 
         """
@@ -337,8 +343,8 @@ class Table(object):
         --------
         >>> import csv
         >>> from tablelinker import Table
-        >>> table = Table("sample/shimabara_tourisum.csv")
-        >>> table.merge("sample/katsushika_tourism.csv")
+        >>> table = Table("sample/datafiles/shimabara_tourism.csv")
+        >>> table.merge("sample/datafiles/katsushika_tourism.csv")
 
         Notes
         -----
@@ -418,7 +424,7 @@ class Table(object):
         --------
         >>> import csv
         >>> from tablelinker import Table
-        >>> table = Table("sample/hachijo_sightseeing.csv")
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
         >>> with open("hachijo_2.csv", "w", newline="") as f:
         ...     table.write(lines=2, file=f, quoting=csv.QUOTE_ALL)
         ...
@@ -754,7 +760,7 @@ class Table(object):
         --------
         >>> import pandas as pd
         >>> from tablelinker import Table
-        >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+        >>> table = Table(data="国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
         >>> df = table.toPandas()
         >>> df.columns
         Index(['国名', '3文字コード'], dtype='object')
@@ -831,7 +837,7 @@ class Table(object):
         --------
         >>> import polars as pl
         >>> from tablelinker import Table
-        >>> table = Table("国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
+        >>> table = Table(data="国名,3文字コード\nアメリカ合衆国,USA\n日本,JPN\n")
         >>> df = table.toPolars()
         >>> df.columns
         ['国名', '3文字コード']

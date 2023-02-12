@@ -48,7 +48,7 @@ class InsertColConvertor(convertors.Convertor):
             >>> # 「東京都災害拠点病院一覧」（東京都福祉局）より作成（令和4年1月1日現在）
             >>> # https://www.fukushihoken.metro.tokyo.lg.jp/iryo/kyuukyuu/saigai/kyotenbyouinlist.html
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...    '施設名,所在地,電話番号,病床数\n'
             ...    '日本大学病院,千代田区神田駿河台1-6,03－3293－1711,320\n'
             ...    '三井記念病院,千代田区神田和泉町１,03－3862－9111,482\n'
@@ -172,7 +172,7 @@ class InsertColsConvertor(convertors.Convertor):
             >>> # 「八丈町営温泉一覧」より作成
             >>> # https://catalog.data.metro.tokyo.lg.jp/dataset/t134015d0000000001
             >>> from tablelinker import Table
-            >>> table = Table((
+            >>> table = Table(data=(
             ...     '施設名,所在地,緯度,経度,座標系,営業開始時間,営業終了時間\n'
             ...     '樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,33.075843 ,139.790328 ,JGD2011,10:00,22:00\n'
             ...     '裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,33.063743 ,139.816513 ,JGD2011,9:00,21:00\n'
