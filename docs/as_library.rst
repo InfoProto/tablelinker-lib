@@ -9,11 +9,10 @@ Tablelinker を Python アプリケーションやスクリプトに読み込む
 変換した表データは CSV ファイルとして保存したり、
 一行ずつ取り出して Python コード内で利用できます。
 
-より高度な使い方として、 `pandas <http://pandas.pydata.org/>`_
-の DataFrame を Tablelinker に読み込んだり、
-Tablelinker で変換した結果の表データを DataFrame に
-変換することもできます。
-詳細は :ref:`use_with_pandas` を参照してください。
+より高度な使い方として、 `pandas <http://pandas.pydata.org/>`_ や
+`Polars <https://www.pola.rs/>`_ の DataFrame を Tablelinker に読み込んだり、
+Tablelinker で変換した結果の表データを DataFrame に変換することもできます。
+詳細は :ref:`use_with_pandas` および :ref:`use_with_polars` を参照してください。
 
 - サンプルデータのダウンロード
 
@@ -290,4 +289,51 @@ Table オブジェクトから pandas.DataFrame を作成するには、
 
     DataFrame オブジェクトが利用可能なメソッドは 
     `Pandas API reference (DataFrame) <https://pandas.pydata.org/docs/reference/frame.html>`_
+    を参照してください。
+
+.. _use_with_polars:
+
+Polars 連携
+-----------
+
+Polars は軽量・高速な Dataframe ライブラリです。
+
+.. note::
+
+    Polars は Tablelinker をインストールしてもインストールされませんので、
+    利用する場合は別途インストールしてください。
+
+polars.DataFrame から Table オブジェクトを作成するには
+Table クラスメソッド
+:py:meth:`~tablelinker.table.Table.fromPolars` を利用します。
+
+.. code-block:: python
+
+    >>> import polars as pl
+    >>> df = pl.DataFrame({
+    ...     "都道府県名":["北海道", "青森県", "岩手県"],
+    ...     "人口":[5188441, 1232227, 1203203],})
+    >>> from tablelinker import Table
+    >>> table = Table.fromPolars(df)
+    >>> table.write()
+    都道府県名,人口
+    北海道,5188441
+    青森県,1232227
+    岩手県,1203203
+
+Table オブジェクトから polars.DataFrame を作成するには、
+:py:meth:`~tablelinker.table.Table.toPolars` メソッドを呼び出します。
+
+.. code-block:: python
+
+    >>> new_df = table.toPolars()
+    >>> new_df.columns
+    ['都道府県名', '人口']
+    >>> new_df.write_json()
+    '{"columns":[{"name":"都道府県名","datatype":"Utf8","values":["北海道","青森県","岩手県"]},{"name":"人口","datatype":"Int64","values":[5188441,1232227,1203203]}]}'
+
+.. note::
+
+    DataFrame オブジェクトが利用可能なメソッドは 
+    `Polars API reference <https://pola-rs.github.io/polars/py-polars/html/reference/>`_
     を参照してください。
