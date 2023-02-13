@@ -1,16 +1,15 @@
-import io
-import os
+from pathlib import Path
 import re
 
 import pytest
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
+sample_dir = Path(__file__).parent.parent / "sample/datafiles"
 
 
 def test_calc_col():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="calc",
         params={
@@ -37,8 +36,7 @@ def test_calc_col():
 
 
 def test_concat_col():
-    table = Table(os.path.join(
-        sample_dir, "yanai_tourism_sjis.csv"))
+    table = Table(sample_dir / "yanai_tourism_sjis.csv")
     table = table.convert(
         convertor="concat_col",
         params={
@@ -70,8 +68,7 @@ def test_concat_col():
 
 
 def test_concat_cols():
-    table = Table(os.path.join(
-        sample_dir, "yanai_tourism_sjis.csv"))
+    table = Table(sample_dir / "yanai_tourism_sjis.csv")
     table = table.convert(
         convertor="concat_cols",
         params={
@@ -107,11 +104,36 @@ def test_concat_cols():
 
 
 def test_concat_title():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="concat_title",
         params={
-            "lines": 3,
+            "title_lines": 3,
+            "empty_value": "",
+            "separator": "",
+            "hierarchical_heading": True,
+        },
+    )
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 15
+            if lineno == 0:
+                # ヘッダ確認
+                assert ",".join(row) == (
+                    ",人口,出生数,死亡数,（再掲）乳児死亡数,"
+                    "（再掲）新生児死亡数,自　然増減数,"
+                    "死産数総数,死産数自然死産,死産数人工死産,"
+                    "周産期死亡数総数,周産期死亡数22週以後の死産数,"
+                    "周産期死亡数早期新生児死亡数,婚姻件数,離婚件数")
+
+
+def test_concat_title_data_from():
+    table = Table(sample_dir / "ma030000.csv")
+    table = table.convert(
+        convertor="concat_title",
+        params={
+            "data_from": "全　国",
             "empty_value": "",
             "separator": "",
             "hierarchical_heading": True,
@@ -132,8 +154,7 @@ def test_concat_title():
 
 
 def test_delete_col():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="delete_col",
         params={
@@ -160,8 +181,7 @@ def test_delete_col():
 
 
 def test_delete_row_match():
-    table = Table(os.path.join(
-        sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="delete_row_match",
         params={
@@ -184,8 +204,7 @@ def test_delete_row_match():
 
 
 def test_delete_row_contains():
-    table = Table(os.path.join(
-        sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="delete_row_contains",
         params={
@@ -208,8 +227,7 @@ def test_delete_row_contains():
 
 
 def test_delete_row_pattern():
-    table = Table(os.path.join(
-        sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="delete_row_pattern",
         params={
@@ -234,8 +252,7 @@ def test_delete_row_pattern():
 
 
 def test_generate_pk():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="generate_pk",
         params={
@@ -263,8 +280,7 @@ def test_generate_pk():
 
 
 def test_generate_pk_not_unique():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
 
     with pytest.raises(ValueError):
         table = table.convert(
@@ -307,8 +323,7 @@ def test_generate_pk_not_unique():
 
 
 def test_insert_col():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="insert_col",
         params={
@@ -333,8 +348,7 @@ def test_insert_col():
 
 
 def test_insert_cols():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="insert_cols",
         params={
@@ -362,8 +376,7 @@ def test_insert_cols():
 
 
 def test_mapping_cols():
-    table = Table(os.path.join(
-        sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="mapping_cols",
         params={
@@ -390,8 +403,7 @@ def test_mapping_cols():
 
 
 def test_move_col():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="move_col",
         params={
@@ -416,7 +428,7 @@ def test_move_col():
 
 
 def test_rename_col():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="rename_col",
         params={
@@ -436,7 +448,7 @@ def test_rename_col():
 
 
 def test_reorder_cols():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="reorder_cols",
         params={
@@ -457,7 +469,7 @@ def test_reorder_cols():
 
 
 def test_select_row_match():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="select_row_match",
         params={
@@ -479,7 +491,7 @@ def test_select_row_match():
 
 
 def test_select_row_contains():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="select_row_contains",
         params={
@@ -501,7 +513,7 @@ def test_select_row_contains():
 
 
 def test_select_row_pattern():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="select_row_pattern",
         params={
@@ -523,7 +535,7 @@ def test_select_row_pattern():
 
 
 def test_split_col():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="split_col",
         params={
@@ -549,8 +561,7 @@ def test_split_col():
 
 
 def test_split_row():
-    table = Table(
-        os.path.join(sample_dir, "yanai_tourism_sjis.csv"))
+    table = Table(sample_dir / "yanai_tourism_sjis.csv")
     table = table.convert(
         convertor="split_row",
         params={
@@ -570,8 +581,7 @@ def test_split_row():
 
 
 def test_truncate():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="truncate",
         params={
@@ -599,8 +609,7 @@ def test_truncate():
 
 
 def test_truncate_replace():
-    table = Table(os.path.join(
-        sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="truncate",
         params={
@@ -629,7 +638,7 @@ def test_truncate_replace():
 
 
 def test_update_row_match():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="update_row_match",
         params={
@@ -651,7 +660,7 @@ def test_update_row_match():
 
 
 def test_update_row_contains():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="update_row_contains",
         params={
@@ -674,7 +683,7 @@ def test_update_row_contains():
 
 
 def test_update_row_pattern():
-    table = Table(os.path.join(sample_dir, "ma030000.csv"))
+    table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
         convertor="update_row_pattern",
         params={
@@ -697,11 +706,11 @@ def test_update_row_pattern():
 
 
 def test_to_hankaku():
-    stream = io.StringIO((
+    data = (
         "機関名,部署名,連絡先電話番号\n"
         "国立情報学研究所,総務チーム,０３－４２１２－２０００\n"
-        "国立情報学研究所,広報チーム,０３－４２１２－２１６４\n"))
-    table = Table(stream)
+        "国立情報学研究所,広報チーム,０３－４２１２－２１６４\n")
+    table = Table(data=data)
     table = table.convert(
         convertor="to_hankaku",
         params={
@@ -719,11 +728,11 @@ def test_to_hankaku():
 
 
 def test_to_zenkaku():
-    stream = io.StringIO((
+    data = (
         "機関名,所在地\n"
         "国立情報学研究所,千代田区一ツ橋2-1-2\n"
-        "デジタル庁,\"千代田区紀尾井町1番3号 19階,20階\"\n"))
-    table = Table(stream)
+        "デジタル庁,\"千代田区紀尾井町1番3号 19階,20階\"\n")
+    table = Table(data=data)
     table = table.convert(
         convertor="to_zenkaku",
         params={

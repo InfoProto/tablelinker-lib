@@ -1,3 +1,5 @@
+import re
+
 from tablelinker.core import convertors, params
 
 
@@ -18,20 +20,23 @@ class ConcatTitleConvertor(convertors.Convertor):
     r"""
     概要
         タイトル行が複数行に分割されている場合に結合して
-        列見出しに設定します。
+        列見出しに設定します。列見出し中の改行は削除します。
         タイトル行以降のデータには影響しません。
 
     コンバータ名
         "concat_title"
 
     パラメータ
-        * "lineno_from": タイトル行の開始行番号 [0]
-        * "lines": タイトル行として利用する行数: [2]
+        * "title_from": タイトル行の開始行番号 [0]
+        * "title_lines": タイトル行として利用する行数
+        * "data_from": データ行の先頭行の行番号または含む文字列
         * "empty_value": 空欄の場合の文字列: ""
         * "separator": 区切り文字 ["/"]
         * "hierarchical_heading": 階層型見出しかどうか [False]
 
     注釈
+        - ``title_lines`` と ``data_from`` はどちらかを指定してください。
+          両方指定すると ``title_lines`` を優先します。
         - ``empty_value`` に "" を指定すると、空欄の行は無視されます。
         - ``hierarchical_heading`` に True を指定すると、上の列が
           空欄の場合にその左側の値を上位見出しとして利用します。
@@ -44,6 +49,8 @@ class ConcatTitleConvertor(convertors.Convertor):
         国の集計表によく見られる、1行目に大項目、2行目と3行目に
         小項目が分割して記載されているタイトルを、
         ``hierarchical_heading`` を True にして階層見出しとして結合します。
+        ``data_from`` で"全　国" を含む行からデータ行と指定することで、
+        その前の行までをタイトル行と判断します。
 
         - タスクファイル例
 
@@ -52,7 +59,7 @@ class ConcatTitleConvertor(convertors.Convertor):
             {
                 "convertor": "concat_title",
                 "params": {
-                    "lines": 3,
+                    "data_from": "全　国",
                     "separator": "",
                     "hierarchical_heading": true
                 }
@@ -75,7 +82,7 @@ class ConcatTitleConvertor(convertors.Convertor):
             >>> table = table.convert(
             ...     convertor="concat_title",
             ...     params={
-            ...         "lines": 3,
+            ...         "data_from": "全　国",
             ...         "separator": "",
             ...         "hierarchical_heading": True,
             ...     },
@@ -98,16 +105,22 @@ class ConcatTitleConvertor(convertors.Convertor):
 
         params = params.ParamSet(
             params.IntParam(
-                "lineno_from",
-                label="開始行",
+                "title_from",
+                label="タイトル行の開始行番号",
                 required=False,
                 default_value=0,
             ),
             params.IntParam(
-                "lines",
-                label="行数",
+                "title_lines",
+                label="タイトル行の行数",
                 required=False,
-                default_value=2,
+                default_value=0,
+            ),
+            params.StringParam(
+                "data_from",
+                label="データ行の開始行番号、または文字列",
+                required=False,
+                default_value="",
             ),
             params.StringParam(
                 "empty_value",
@@ -131,20 +144,54 @@ class ConcatTitleConvertor(convertors.Convertor):
 
     def preproc(self, context):
         super().preproc(context)
-        self.lineno_from = context.get_param("lineno_from")
-        self.lines = context.get_param("lines")
+        self.title_from = context.get_param("title_from")
+        self.title_lines = context.get_param("title_lines")
+        self.data_from = context.get_param("data_from")
         self.empty_value = context.get_param("empty_value")
         self.separator = context.get_param("separator")
         self.hierarchical = context.get_param("hierarchical_heading")
 
+        if self.title_lines == 0 and self.data_from == "":
+            raise ValueError(
+                "title_lines か data_from のどちらかを指定してください。")
+        elif self.title_lines > 0:
+            # 指定された行数をタイトル行とする
+            pass
+        else:
+            if re.match(r"^\d{1}$", self.data_from):
+                # データ行が数値で指定されている場合
+                self.title_lines = int(self.data_from) - self.title_from
+            else:
+                # 開始行までスキップ
+                context.reset()
+                context.next()
+                for _ in range(0, self.title_from):
+                    context.next()
+
+                # 指定された文字列を含む行を探す
+                for i in range(1, 10):
+                    rows = context.next()
+                    for row in rows:
+                        if self.data_from in row:
+                            self.title_lines = i
+                            break
+
+                    if self.title_lines > 0:
+                        break
+
+        if self.title_lines == 0:
+            raise ValueError(
+                "文字列 '{}' を含む行が見つかりません。".format(self.data_from))
+
     def process_header(self, headers, context):
         # 開始行までスキップ
-        for lineno in range(0, self.lineno_from):
+        for _ in range(0, self.title_from):
             headers = context.next()
 
         new_headers = [[] for _ in range(len(headers))]
-        for lineno in range(0, self.lines):
+        for lineno in range(0, self.title_lines):
             for i, value in enumerate(headers):
+                value = value.replace("\n", "")
                 if value != "":
                     if self.hierarchical and i > 0 and \
                             "".join(new_headers[i]) == "":
@@ -154,7 +201,7 @@ class ConcatTitleConvertor(convertors.Convertor):
                 else:
                     new_headers[i].append("")
 
-            if lineno < self.lines - 1:
+            if lineno < self.title_lines:
                 headers = context.next()
 
         for i, values in enumerate(new_headers):

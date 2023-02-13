@@ -245,7 +245,7 @@ class Table(object):
                 data = df.to_csv(index=False)
                 self._reader = CsvInputCollection(
                     file_or_path=io.StringIO(data),
-                    skip_cleaning=True).open(
+                    skip_cleaning=False).open(
                         as_dict=as_dict, **kwargs)
 
                 self.filetype = "excel"

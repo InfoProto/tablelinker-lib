@@ -70,12 +70,12 @@ Tablelinker コマンドは、表データを読み込み、
     05 秋田県,955659,4499,15379,9,4,-10880,98,63,35,18,15,3,2686,1213
     ...
 
-まだ何もコンバータを指定していないので、入力データがそのまま出力されます。
+コンバータを指定していないので、入力データがそのまま出力されます。
 ただし読み込む際に次のクリーニング処理が行われています。
 
 - 文字エンコーディング（シフトJIS、UTF-8など）の自動変換
 - 区切り文字（カンマ区切り、タブ区切り）の自動検出
-- 表データより前の説明文の除去
+- 表データより前の説明文やコメントの除去
 
 実際に **ma030000.csv** をテキストエディタで開くと、先頭部分は次のようになっています。
 
@@ -228,17 +228,17 @@ Tablelinker コマンドの実行時に呼び出すことができます。
     {
         "convertor":"concat_title",
         "params":{
-            "lines":3,
+            "title_lines":3,
             "separator":"",
             "hierarchical_heading":true
         }
     }
 
-先頭の3行（**lines** =3）を区切り文字無し（**separator** =""）で
+先頭の3行（**title_lines** =3）を区切り文字無し（**separator** =""）で
 結合し、階層的な見出し構造に対応するために
 **hierarchical_heading** に **true** をセットしています。
 
-このタスクファイルを **ma030000.csv** ではなく
+このタスクファイルを元のファイル **ma030000.csv** ではなく、
 :numref:`example3` の結果に適用したい場合、次の2つの方法があります。
 
 - タスクファイルを列挙する
@@ -313,7 +313,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
         {
             "convertor":"concat_title",
             "params":{
-                "lines":3,
+                "title_lines":3,
                 "separator":"",
                 "hierarchical_heading":true
             }
@@ -444,13 +444,6 @@ Tablelinker コマンドは以下のオプションを指定できます。
 
         $ python -m tablelinker -i sample.xlsx --sheet=シート1 task1.json
 
-- Excel から CSV へ変換
-
-    タスクファイルを指定しないで Tablelinker コマンドを実行すると、
-    入力表データを CSV に変換してクリーニングした結果を出力します。
-    この機能を利用すると、 Excel ファイルを CSV に変換することができます。 ::
-
-        $ python -m tablelinker -i sample.xlsx
 
 .. _mapping_commandline:
 

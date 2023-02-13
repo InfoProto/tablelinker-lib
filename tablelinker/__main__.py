@@ -1,6 +1,5 @@
 import json
 from logging import getLogger
-import os
 from pathlib import Path
 import re
 import sys

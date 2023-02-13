@@ -1,20 +1,20 @@
 import csv
 import io
-import os
+from pathlib import Path
 import tempfile
 
 import pytest
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
+sample_dir = Path(__file__).parent.parent / "sample/datafiles"
 
 
 def test_excel_open():
     # シート名を指定せずに Excel ファイルを開くと
     # 最初のシートが開く
     table = Table(
-        file=os.path.join(sample_dir, "hachijo_sightseeing.xlsx"),
+        file=sample_dir / "hachijo_sightseeing.xlsx",
         sheet=None)
     with table.open() as reader:
         for row in reader:
@@ -27,14 +27,14 @@ def test_excel_open():
     # 存在しないシート名を指定して Excel ファイルを開くと
     # ValueError
     table = Table(
-        file=os.path.join(sample_dir, "hachijo_sightseeing.xlsx"),
+        file=sample_dir / "hachijo_sightseeing.xlsx",
         sheet="その他")
     with pytest.raises(ValueError):
         table.open()
 
     # 存在するシート名を指定して Excel ファイルを開く
     table = Table(
-        file=os.path.join(sample_dir, "hachijo_sightseeing.xlsx"),
+        file=sample_dir / "hachijo_sightseeing.xlsx",
         sheet="観光スポット")
     with table.open() as reader:
         for row in reader:
@@ -46,10 +46,10 @@ def test_excel_open():
 
 
 def test_excel_save():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.xlsx"))
+    table = Table(sample_dir / "hachijo_sightseeing.xlsx")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        temppath = os.path.join(tmpdir, "tmpfile.csv")
+        temppath = Path(tmpdir) / "tmpfile.csv"
         table.save(temppath)
 
         with open(temppath, "r", newline="") as f:
@@ -64,7 +64,7 @@ def test_excel_save():
 
 
 def test_excel_write():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.xlsx"))
+    table = Table(sample_dir / "hachijo_sightseeing.xlsx")
 
     # write() の出力をテキストバッファに保存
     buf = io.StringIO()
@@ -85,7 +85,7 @@ def test_excel_write():
 
 
 def test_excel_convert():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.xlsx"))
+    table = Table(sample_dir / "hachijo_sightseeing.xlsx")
     table = table.convert(
         convertor="move_col",
         params={
@@ -115,7 +115,7 @@ def test_read_sjis():
     """
     シフトJIS CSV ファイルを読み込めることを確認。
     """
-    table = Table(os.path.join(sample_dir, "yanai_tourism_sjis.csv"))
+    table = Table(sample_dir / "yanai_tourism_sjis.csv")
     correct_headers = (
         "市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,"
         "POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
@@ -134,7 +134,7 @@ def test_read_tsv():
     """
     タブ区切り CSV ファイルを読めることを確認。
     """
-    table = Table(os.path.join(sample_dir, "yanai_tourism_tsv.txt"))
+    table = Table(sample_dir / "yanai_tourism_tsv.txt")
     correct_headers = (
         "市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,"
         "POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,"
@@ -153,7 +153,7 @@ def test_skip_csv_comments():
     """
     CSV ファイルのコメント行を正しくスキップできることを確認。
     """
-    table = Table(os.path.join(sample_dir, "kyotenbyoinlist20220101.csv"))
+    table = Table(sample_dir / "kyotenbyoinlist20220101.csv")
     correct_headers = (
         "二次保健医療圏,,施設名,所在地,電話番号,病床数,三次\n救急"
     )

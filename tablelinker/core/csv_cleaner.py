@@ -1,4 +1,3 @@
-from collections import defaultdict
 import csv
 import io
 from logging import getLogger
@@ -140,7 +139,8 @@ class CSVCleaner(object):
         self.text_io.seek(0)
         reader = csv.reader(self.text_io, delimiter=self.delimiter)
         for i, row in enumerate(reader):
-            while len(row) > 0 and row[-1] == '':
+            while len(row) > 0 and \
+                    (row[-1] == '' or row[-1].startswith('Unnamed: ')):
                 del row[-1]
 
             ncols.append(len(row))
@@ -150,7 +150,9 @@ class CSVCleaner(object):
         table_columns = max(ncols)
 
         """
-        An alternative method
+        # An alternative method
+
+        from collections import defaultdict
 
         # Make frequency table
         freqs = defaultdict(int)

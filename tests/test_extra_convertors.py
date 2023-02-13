@@ -1,16 +1,15 @@
-import io
-import os
+from pathlib import Path
 import re
 
 from tablelinker import Table
 
-sample_dir = os.path.join(os.path.dirname(__file__), "../sample/datafiles")
+sample_dir = Path(__file__).parent.parent / "sample/datafiles"
 
 
 def test_date_extract():
     # 東京国立博物館「展示・催し物」より作成
     # https://www.tnm.jp/modules/r_calender/index.php
-    stream = io.StringIO((
+    data = (
         "展示名,会場,期間\n"
         "令和5年 新指定 国宝・重要文化財,平成館 企画展示室,"
         "2023年1月31日（火） ～ 2023年2月19日（日）\n"
@@ -22,8 +21,8 @@ def test_date_extract():
         "2023年1月31日（火） ～ 2023年4月23日（日）\n"
         "創立150年記念特集　近世能狂言面名品選 ー「天下一」号を授かった面打ー,"
         "本館 14室,2023年1月2日（月・休） ～ 2023年2月26日（日）\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="date_extract",
         params={
@@ -41,7 +40,7 @@ def test_date_extract():
 
 
 def test_datetime_extract():
-    stream = io.StringIO((
+    data = (
         "発生時刻,震源地,マグニチュード,最大震度\n"
         "2023年1月31日 4時15分ごろ,宮城県沖,4.3,2\n"
         "2023年1月30日 18時16分ごろ,富山県西部,3.4,2\n"
@@ -53,8 +52,8 @@ def test_datetime_extract():
         "2023年1月27日 13時51分ごろ,岐阜県美濃中西部,2.7,1\n"
         "2023年1月27日 13時49分ごろ,岐阜県美濃中西部,3.0,1\n"
         "2023年1月27日 13時28分ごろ,福島県沖,3.6,1\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="datetime_extract",
         params={
@@ -79,7 +78,7 @@ def test_datetime_extract():
 def test_to_seireki():
     # 気象庁「過去に発生した火山災害」より作成
     # https://www.data.jma.go.jp/vois/data/tokyo/STOCK/kaisetsu/volcano_disaster.htm
-    stream = io.StringIO((
+    data = (
         "噴火年月日,火山名,犠牲者（人）,備考\n"
         "享保6年6月22日,浅間山,15,噴石による\n"
         "寛保元年8月29日,渡島大島,1467,岩屑なだれ・津波による\n"
@@ -102,8 +101,8 @@ def test_to_seireki():
         "昭和33年6月24日,阿蘇山,12,噴石による\n"
         "平成3年6月3日,雲仙岳,43（不明を含む）,火砕流による「平成3年(1991年)雲仙岳噴火」\n"
         "平成26年9月27日,御嶽山,63（不明を含む）,噴石等による\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="to_seireki",
         params={
@@ -125,15 +124,15 @@ def test_to_wareki():
     # 統計局「人口推計 / 長期時系列データ 長期時系列データ
     # （平成12年～令和２年）」より作成
     # https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00200524&tstat=000000090001&cycle=0&tclass1=000000090004&tclass2=000001051180&tclass3val=0
-    stream = io.StringIO((
+    data = (
         "年次,総人口（千人）\n"
         "2000,126926\n"
         "2005,127768\n"
         "2010,128057\n"
         "2015,127095\n"
         "2020,126146\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="to_wareki",
         params={
@@ -157,7 +156,7 @@ def test_to_wareki():
 
 
 def test_geocoder_code():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="geocoder_code",
         params={
@@ -184,7 +183,7 @@ def test_geocoder_code():
 
 
 def test_geocoder_latlong():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="geocoder_latlong",
         params={
@@ -212,7 +211,7 @@ def test_geocoder_latlong():
 
 
 def test_geocoder_municipality():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="geocoder_municipality",
         params={
@@ -240,7 +239,7 @@ def test_geocoder_municipality():
 
 def test_geocoder_municipality_seirei():
     # https://www.library.city.chiba.jp/facilities/index.html より作成
-    stream = io.StringIO((
+    data = (
         "施設名,所在地,連絡先電話番号\n"
         "中央図書館,中央区弁天3-7-7,043-287-3980\n"
         "みやこ図書館白旗分館,中央区白旗1-3-16,043-264-8566\n"
@@ -257,8 +256,8 @@ def test_geocoder_municipality_seirei():
         "若葉図書館西都賀分館,若葉区西都賀2-8-8,043-254-8681\n"
         "緑図書館あすみが丘分館,緑区あすみが丘7-2-4,043-295-0200\n"
         "美浜図書館打瀬分館,美浜区打瀬2丁目13番地（幕張ベイタウン・コア内）,043-272-4646\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="geocoder_municipality",
         params={
@@ -281,11 +280,11 @@ def test_geocoder_municipality_seirei():
 
 
 def test_geocoder_nodeid():
-    stream = io.StringIO((
+    data = (
         "機関名,部署名,所在地,連絡先電話番号\n"
         "国立情報学研究所,総務チーム,千代田区一ツ橋２－１－２,03-4212-2000\n"
-        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n"))
-    table = Table(stream)
+        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n")
+    table = Table(data=data)
     table = table.convert(
         convertor="geocoder_nodeid",
         params={
@@ -306,11 +305,11 @@ def test_geocoder_nodeid():
 
 
 def test_geocoder_postcode():
-    stream = io.StringIO((
+    data = (
         "機関名,部署名,所在地,連絡先電話番号\n"
         "国立情報学研究所,総務チーム,千代田区一ツ橋２－１－２,03-4212-2000\n"
-        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n"))
-    table = Table(stream)
+        "国立情報学研究所,広報チーム,一ッ橋二丁目1-2,03-4212-2164\n")
+    table = Table(data=data)
     table = table.convert(
         convertor="geocoder_postcode",
         params={
@@ -334,7 +333,7 @@ def test_geocoder_postcode():
 
 
 def test_geocoder_prefecture():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="geocoder_prefecture",
         params={
@@ -358,15 +357,15 @@ def test_geocoder_prefecture():
 
 
 def test_mtab_wikilink():
-    stream = io.StringIO((
+    data = (
         "col0,col1,col2,col3\n"
         "2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735\n"
         "2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,"
         "11.818755055646479\n"
         "2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955\n"
         "2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303\n"
-    ))
-    table = Table(stream)
+    )
+    table = Table(data=data)
     table = table.convert(
         convertor="mtab_wikilink",
         params={
@@ -387,7 +386,7 @@ def test_mtab_wikilink():
 
 
 def test_auto_mapping_cols():
-    table = Table(os.path.join(sample_dir, "hachijo_sightseeing.csv"))
+    table = Table(sample_dir / "hachijo_sightseeing.csv")
     table = table.convert(
         convertor="auto_mapping_cols",
         params={

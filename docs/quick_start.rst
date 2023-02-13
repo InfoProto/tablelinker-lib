@@ -6,21 +6,20 @@
 使い方1: コマンドラインで利用する
 ---------------------------------
 
-Tablelinker パッケージをモジュールとして実行すると、
+Tablelinker を Python コマンドとして実行すると、
 CSV や Excel の表データを読み込み、用意されているコンバータを
 利用して表データを変換し、結果を CSV データとして出力する
 コマンドとして利用できます。
 
-実行例は次のようになります。
+実行例は次のようになります。このコマンドは、「市区町村コード」列を
+「都道府県コード又は市区町村コード」に変更します。
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv \
-      -c rename_col \
-      -p '{"input_col_idx":"市区町村コード", "output_col_name": "都道府県コード又は市区町村コード"}'
+    $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv -c rename_col -p '{"input_col_idx":"市区町村コード", "output_col_name": "都道府県コード又は市区町村コード"}'
 
 毎回長いパラメータを指定するのは大変なので、利用したいコンバータ名と
-パラメータを JSON ファイルに記述しておき、呼び出すこともできます。
+パラメータを JSON ファイルに記述しておき、呼び出すこともできます。 ::
 
     $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv task.json
 
@@ -36,8 +35,8 @@ CSV や Excel の表データを読み込み、用意されているコンバー
         }
     }
 
-複数のコンバータを一つの JSON ファイルに書くこともできるので、
-一度手順を書いておけば簡単に繰り返して実行できます。
+複数のコンバータを一つの JSON ファイルにまとめて書くこともできるので、
+何度も使う手順を JSON ファイルにしておけば簡単に繰り返して実行できます。
 
 
 使い方2: Python パッケージとして利用する
