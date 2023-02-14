@@ -164,13 +164,12 @@ class ConcatTitleConvertor(convertors.Convertor):
             else:
                 # 開始行までスキップ
                 context.reset()
-                context.next()
+                rows = context.next()
                 for _ in range(0, self.title_from):
-                    context.next()
+                    rows = context.next()
 
                 # 指定された文字列を含む行を探す
-                for i in range(1, 10):
-                    rows = context.next()
+                for i in range(0, 10):
                     for row in rows:
                         if self.data_from in row:
                             self.title_lines = i
@@ -178,6 +177,8 @@ class ConcatTitleConvertor(convertors.Convertor):
 
                     if self.title_lines > 0:
                         break
+
+                    rows = context.next()
 
         if self.title_lines == 0:
             raise ValueError(
@@ -201,7 +202,7 @@ class ConcatTitleConvertor(convertors.Convertor):
                 else:
                     new_headers[i].append("")
 
-            if lineno < self.title_lines:
+            if lineno < self.title_lines - 1:
                 headers = context.next()
 
         for i, values in enumerate(new_headers):

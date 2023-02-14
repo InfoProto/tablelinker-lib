@@ -136,6 +136,7 @@ class CSVCleaner(object):
         # Count the number of columns in the first 20 rows,
         # and determine the max value as the number of columns of the table.
         ncols = []
+        nvalues = []
         self.text_io.seek(0)
         reader = csv.reader(self.text_io, delimiter=self.delimiter)
         for i, row in enumerate(reader):
@@ -144,6 +145,7 @@ class CSVCleaner(object):
                 del row[-1]
 
             ncols.append(len(row))
+            nvalues.append(len(list(filter(len, row))))
             if i > 20:
                 break
 
@@ -177,9 +179,20 @@ class CSVCleaner(object):
 
         # Count the rows that do not match the calculated number of columns.
         skip_lines = 0
-        for ncol in ncols:
-            if ncol == table_columns:
+        for i, ncol in enumerate(ncols):
+            nvalue = nvalues[i]
+            if ncol == table_columns and nvalue > 1:
+                # If the number of columns matches that of the table
+                # and more than one columns contain values,
+                # consider that line to be the starting line of data.
                 break
+            elif ncol == 0:
+                if i < len(ncols) and nvalues[i + 1] > 1:
+                    # If the line following an empty line has
+                    # more than one columns, the data is considered
+                    # to be the starting line of data.
+                    skip_lines += 1
+                    break
 
             skip_lines += 1
 
