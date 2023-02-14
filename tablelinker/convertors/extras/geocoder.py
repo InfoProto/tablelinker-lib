@@ -178,7 +178,7 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
             ...         "default": "-",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,市区町村コード,郵便番号,所在地
             北海道大学,01102,060-0808,札幌市北区北8条西5
             北海道教育大学,01102,002-8501,札幌市北区あいの里5条3-1-3
@@ -313,7 +313,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
             ...         "default": "-",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,郵便番号,所在地,緯度,経度,住所レベル
             北海道大学,060-0808,札幌市北区北8条西5,43.070446,141.347151,6
             北海道教育大学,002-8501,札幌市北区あいの里5条3-1-3,43.170497,141.39375,7
@@ -456,7 +456,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
             ...         "default": "-",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,郵便番号,市区町村,（区）,所在地
             北海道大学,060-0808,札幌市,北区,札幌市北区北8条西5
             北海道教育大学,002-8501,札幌市,北区,札幌市北区あいの里5条3-1-3
@@ -625,7 +625,7 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
             ...         "default": "",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,郵便番号,所在地,住所ノードID
             北海道大学,060-0808,札幌市北区北8条西5,...
             北海道教育大学,002-8501,札幌市北区あいの里5条3-1-3,...
@@ -755,7 +755,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,郵便番号,所在地
             北海道大学,060-0808,札幌市北区北8条西5
             北海道教育大学,002-8075,札幌市北区あいの里5条3-1-3
@@ -884,7 +884,7 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
             ...         "default": "",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,都道府県名,郵便番号,所在地
             北海道大学,北海道,060-0808,札幌市北区北8条西5
             北海道教育大学,北海道,002-8501,札幌市北区あいの里5条3-1-3

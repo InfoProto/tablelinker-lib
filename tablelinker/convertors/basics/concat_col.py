@@ -76,7 +76,7 @@ class ConcatColConvertor(convertors.Convertor):
             ...         "output_col_idx": "生年月日",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             姓,名,姓名,生年月日,性別
             生田,直樹,生田 直樹,1930年08月11日,男
             石橋,絵理,石橋 絵理,1936年01月28日,女
@@ -240,7 +240,7 @@ class ConcatColsConvertor(convertors.Convertor):
             ...         "separator": "",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             機関名,郵便番号,都道府県,市区町村,所在地詳細,所在地
             北海道大学,060-0808,北海道,札幌市,北区北8条西5,北海道札幌市北区北8条西5
             北海道教育大学,002-8501,北海道,札幌市,北区あいの里5条3-1-3,北海道札幌市北区あいの里5条3-1-3

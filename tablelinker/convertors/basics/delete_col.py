@@ -44,7 +44,7 @@ class DeleteColConvertor(convertors.Convertor):
             ...         "input_col_idx": "クレジットカード",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別
             小室 友子,1990年06月20日,女
             江島 佳洋,1992年10月07日,男
@@ -131,7 +131,7 @@ class DeleteColsConvertor(convertors.Convertor):
             ...         "input_col_idxs": ["生年月日", "クレジットカード"],
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,性別
             小室 友子,女
             江島 佳洋,男

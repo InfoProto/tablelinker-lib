@@ -62,7 +62,7 @@ class SplitColConvertor(convertors.Convertor):
             ...         "separator": " ",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             姓名,姓,名,生年月日,性別
             生田 直樹,生田,直樹,1930年08月11日,男
             石橋 絵理,石橋,絵理,1936年01月28日,女
@@ -180,7 +180,7 @@ class SplitRowConvertor(convertors.Convertor):
             ...         "separator": ";",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             名称,診療科目
             特定医療法人平成会平成会病院,外
             特定医療法人平成会平成会病院,リハ

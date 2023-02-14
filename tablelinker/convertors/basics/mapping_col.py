@@ -70,7 +70,7 @@ class MappingColsConvertor(convertors.Convertor):
             ...         },
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             都道府県,人口,婚姻件数,離婚件数
             全　国,123398962,525507,193253
             ...

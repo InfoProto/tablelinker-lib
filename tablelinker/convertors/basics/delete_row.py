@@ -49,7 +49,7 @@ class StringMatchDeleteRowConvertor(convertors.Convertor):
             ...         "query": "女",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             江島 佳洋,1992年10月07日,男,376001629316609
             三沢 大志,1995年02月13日,男,4173077927458449
@@ -135,7 +135,7 @@ class StringContainDeleteRowConvertor(convertors.Convertor):
             ...         "query": "10月",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,女,3562635454918233
             三沢 大志,1995年02月13日,男,4173077927458449
@@ -222,7 +222,7 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
             ...         "query": r".*[02468]日",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             江島 佳洋,1992年10月07日,男,376001629316609
             三沢 大志,1995年02月13日,男,4173077927458449

@@ -136,7 +136,7 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             ...         "lines": 100,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             col0,col1,col2,col3,wikilink
             2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735,http://www.wikidata.org/entity/Q222120
             2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,11.818755055646479,http://www.wikidata.org/entity/Q222110

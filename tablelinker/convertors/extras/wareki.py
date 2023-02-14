@@ -83,7 +83,7 @@ class ToSeirekiConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             噴火年月日,火山名,犠牲者（人）,備考
             1721年6月22日,浅間山,15,噴石による
             1741年8月29日,渡島大島,1467,岩屑なだれ・津波による
@@ -189,7 +189,7 @@ class ToWarekiConvertor(convertors.InputOutputConvertor):
             ...         "output_col_idx": 1,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             年次,和暦,総人口（千人）
             2000,平成12,126926
             2005,平成17,127768

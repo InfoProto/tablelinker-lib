@@ -63,7 +63,7 @@ class AutoMappingColsConvertor(convertors.Convertor):
             ...         "keep_colname": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             名称 / 観光スポット名称,所在地,経度,緯度,説明
             ホタル水路,,139.80102,33.108218,八丈島は伊豆諸島で唯一、...
             登龍峠展望,,139.835245,33.113154,「ノボリュウトウゲ」または...

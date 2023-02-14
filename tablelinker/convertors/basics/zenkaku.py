@@ -83,7 +83,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             施設名,所在地,電話番号,病床数
             日本大学病院,千代田区神田駿河台1-6,03-3293-1711,320
             三井記念病院,千代田区神田和泉町１,03-3862-9111,482
@@ -217,7 +217,7 @@ class ToZenkakuConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             ＮＯ,名称,住所
             101100302,特定医療法人平成会平成会病院,北海道札幌市中央区北１条西１８丁目１番１
             101010421,時計台記念病院,北海道札幌市中央区北１条東１丁目２番地３

@@ -49,7 +49,7 @@ class StringMatchSelectRowConvertor(convertors.Convertor):
             ...         "query": "女",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,女,3562635454918233
 
@@ -125,7 +125,7 @@ class StringContainSelectRowConvertor(convertors.Convertor):
             ...         "query": "10月",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             江島 佳洋,1992年10月07日,男,376001629316609
 
@@ -202,7 +202,7 @@ class PatternMatchSelectRowConvertor(convertors.Convertor):
             ...         "query": r".*[02468]日",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,女,3562635454918233
 

@@ -53,7 +53,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
             ...         "new": "F",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             氏名,生年月日,性別,クレジットカード
             小室 友子,1990年06月20日,F,3562635454918233
             江島 佳洋,1992年10月07日,男,376001629316609
@@ -159,7 +159,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
             ...         "new": "",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             ,人口,出生数,死亡数
             全国,123398962,840835,1372755
             01 北海道,5188441,29523,65078
@@ -269,7 +269,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
             ...         "new": "",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             ,人口,出生数,死亡数
             全　国,123398962,840835,1372755
             北海道,5188441,29523,65078

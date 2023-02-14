@@ -85,7 +85,7 @@ class DatetimeExtractConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             発生時刻,震源地,マグニチュード,最大震度
             2023-01-31T04:15:00,宮城県沖,4.3,2
             2023-01-30T18:16:00,富山県西部,3.4,2
@@ -264,7 +264,7 @@ class DateExtractConvertor(convertors.InputOutputConvertor):
             ...         "format": "%Y-%m-%d",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             開催開始日,展示名,会場,期間
             2023-01-31,令和5年 新指定 国宝・重要文化財,平成館 企画展示室,2023年1月31日（火） ～ 2023年2月19日（日）
             2023-01-02,特別企画「大安寺の仏像」,本館 11室,2023年1月2日（月・休） ～ 2023年3月19日（日）

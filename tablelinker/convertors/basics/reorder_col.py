@@ -55,7 +55,7 @@ class ReorderColsConvertor(convertors.Convertor):
             ...         "column_list": ["施設名", "所在地", "経度", "緯度"],
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             施設名,所在地,経度,緯度
             樫立向里温泉「ふれあいの湯」,東京都八丈島八丈町樫立1812?3,139.790328 ,33.075843 
             裏見ヶ滝温泉,東京都八丈島八丈町中之郷無番地,139.816513 ,33.063743 

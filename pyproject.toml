@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tablelinker"
-version = "0.1.0b3"
+version = "1.0.0rc1"
 description = "A library of processes for manipulating tabular data in CSV format"
 authors = ["Takeshi Sagara <sagara@info-proto.com>"]
 readme = "README.md"
@@ -43,3 +43,13 @@ twine = "^4.0.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+testpaths = [
+    "tablelinker/tests",
+    "tablelinker/convertors",
+    "docs/as_library.rst"
+]
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"

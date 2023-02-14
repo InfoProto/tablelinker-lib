@@ -250,7 +250,7 @@ class GeneratePkConvertor(convertors.InputOutputConvertor):
             ...         "skip_if_not_unique": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             PK,氏名,生年月日,性別,クレジットカード
             9wUXiv,小室 友子,1990年06月20日,女,3562635454918233
             JtFkJ7,江島 佳洋,1992年10月07日,男,376001629316609

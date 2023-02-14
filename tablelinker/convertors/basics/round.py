@@ -69,7 +69,7 @@ class RoundConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             都道府県名,人口,面積,人口密度
             北海道 ほっかいどう,"5,224,614",83423.81,62.627
             青森県 あおもりけん,"1,237,984",9645.95,128.342

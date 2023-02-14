@@ -72,7 +72,7 @@ class TruncateConvertor(convertors.InputOutputConvertor):
             ...         "overwrite": True,
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             観光スポット名称,説明
             ホタル水路,八丈島は伊豆諸島で唯一、水田耕作がなされ...
             登龍峠展望,「ノボリュウトウゲ」または「ノボリョウト...

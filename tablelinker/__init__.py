@@ -3,7 +3,7 @@ from logging import getLogger
 from .core.table import Table
 from .core.task import Task
 
-__version__ = "0.1.0"
+__version__ = "1.0.0rc1"  # pyproject.toml と git tag も変更すること
 
 logger = getLogger(__name__)
 

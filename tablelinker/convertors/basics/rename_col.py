@@ -59,7 +59,7 @@ class RenameColConvertor(convertors.Convertor):
             ...         "output_col_name": "地域",
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             地域,人口,出生数,死亡数
             全　国,123398962,840835,1372755
             01 北海道,5188441,29523,65078
@@ -160,7 +160,7 @@ class RenameColsConvertor(convertors.Convertor):
             ...         ],
             ...     },
             ... )
-            >>> table.write(lineterminator="\n")
+            >>> table.write()
             Area,Population,Births,Deaths
             全　国,123398962,840835,1372755
             01 北海道,5188441,29523,65078
