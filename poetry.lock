@@ -1098,14 +1098,14 @@ wheel = "*"
 
 [[package]]
 name = "openpyxl"
-version = "3.1.0"
+version = "3.1.1"
 description = "A Python library to read/write Excel 2010 xlsx/xlsm files"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "openpyxl-3.1.0-py2.py3-none-any.whl", hash = "sha256:24d7d361025d186ba91eff58135d50855cf035a84371b891e58fb6eb5125660f"},
-    {file = "openpyxl-3.1.0.tar.gz", hash = "sha256:eccedbe1cdd8b2494057e73959b496821141038dbb7eb9266ea59e3f34208231"},
+    {file = "openpyxl-3.1.1-py2.py3-none-any.whl", hash = "sha256:a0266e033e65f33ee697254b66116a5793c15fc92daf64711080000df4cfe0a8"},
+    {file = "openpyxl-3.1.1.tar.gz", hash = "sha256:f06d44e2c973781068bce5ecf860a09bcdb1c7f5ce1facd5e9aa82c92c93ae72"},
 ]
 
 [package.dependencies]
@@ -1216,6 +1216,37 @@ files = [
 
 [package.dependencies]
 six = ">=1.5.2"
+
+[[package]]
+name = "polars"
+version = "0.16.5"
+description = "Blazingly fast DataFrame library"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "polars-0.16.5-cp37-abi3-macosx_10_7_x86_64.whl", hash = "sha256:8fe0630f5ea8e5c2baa8a825a19b60226f10928a90215daf3405699110806a3b"},
+    {file = "polars-0.16.5-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:341255e5e0cf96c41d11646cdc8f64c54988931ad73d668e667b8c2ecc1794e3"},
+    {file = "polars-0.16.5-cp37-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a746e1a1a42611f7f00de4f633cc4961ac13f7ccfebba4c948cefcab9c214105"},
+    {file = "polars-0.16.5-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:74073815d9eaf87273d91eaf6366b488fd26a549a77511adb5c3169c9fe547a3"},
+    {file = "polars-0.16.5-cp37-abi3-win_amd64.whl", hash = "sha256:b4b148deb4c1c2c3d6ca437141aca86361daf29ed0f455b8571d59adf6dd1ccd"},
+    {file = "polars-0.16.5.tar.gz", hash = "sha256:80893b5df9f5428787b1e5555b6a94e240ddbcc178df1a64e3d9fa61b59dd57a"},
+]
+
+[package.dependencies]
+typing_extensions = {version = ">=4.0.1", markers = "python_version < \"3.11\""}
+
+[package.extras]
+all = ["polars[connectorx,deltalake,fsspec,matplotlib,numpy,pandas,pyarrow,timezone,xlsx2csv]"]
+connectorx = ["connectorx"]
+deltalake = ["deltalake (>=0.6.2)"]
+fsspec = ["fsspec"]
+matplotlib = ["matplotlib"]
+numpy = ["numpy (>=1.16.0)"]
+pandas = ["pandas", "pyarrow (>=4.0.0)"]
+pyarrow = ["pyarrow (>=4.0.0)"]
+timezone = ["backports.zoneinfo", "tzdata"]
+xlsx2csv = ["xlsx2csv (>=0.8.0)"]
 
 [[package]]
 name = "pycodestyle"
@@ -1589,14 +1620,14 @@ jeepney = ">=0.6"
 
 [[package]]
 name = "setuptools"
-version = "67.2.0"
+version = "67.3.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "setuptools-67.2.0-py3-none-any.whl", hash = "sha256:16ccf598aab3b506593c17378473978908a2734d7336755a8769b480906bec1c"},
-    {file = "setuptools-67.2.0.tar.gz", hash = "sha256:b440ee5f7e607bb8c9de15259dba2583dd41a38879a7abc1d43a71c59524da48"},
+    {file = "setuptools-67.3.2-py3-none-any.whl", hash = "sha256:bb6d8e508de562768f2027902929f8523932fcd1fb784e6d573d2cafac995a48"},
+    {file = "setuptools-67.3.2.tar.gz", hash = "sha256:95f00380ef2ffa41d9bba85d95b27689d923c93dfbafed4aecd7cf988a25e012"},
 ]
 
 [package.extras]
@@ -1904,14 +1935,11 @@ files = [
     {file = "tokenizers-0.13.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:47ef745dbf9f49281e900e9e72915356d69de3a4e4d8a475bda26bfdb5047736"},
     {file = "tokenizers-0.13.2-cp310-cp310-win32.whl", hash = "sha256:96cedf83864bcc15a3ffd088a6f81a8a8f55b8b188eabd7a7f2a4469477036df"},
     {file = "tokenizers-0.13.2-cp310-cp310-win_amd64.whl", hash = "sha256:eda77de40a0262690c666134baf19ec5c4f5b8bde213055911d9f5a718c506e1"},
-    {file = "tokenizers-0.13.2-cp311-cp311-macosx_10_11_universal2.whl", hash = "sha256:9eee037bb5aa14daeb56b4c39956164b2bebbe6ab4ca7779d88aa16b79bd4e17"},
-    {file = "tokenizers-0.13.2-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:d1b079c4c9332048fec4cb9c2055c2373c74fbb336716a5524c9a720206d787e"},
     {file = "tokenizers-0.13.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a689654fc745135cce4eea3b15e29c372c3e0b01717c6978b563de5c38af9811"},
     {file = "tokenizers-0.13.2-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3606528c07cda0566cff6cbfbda2b167f923661be595feac95701ffcdcbdbb21"},
     {file = "tokenizers-0.13.2-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:41291d0160946084cbd53c8ec3d029df3dc2af2673d46b25ff1a7f31a9d55d51"},
     {file = "tokenizers-0.13.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7892325f9ca1cc5fca0333d5bfd96a19044ce9b092ce2df625652109a3de16b8"},
     {file = "tokenizers-0.13.2-cp311-cp311-win32.whl", hash = "sha256:93714958d4ebe5362d3de7a6bd73dc86c36b5af5941ebef6c325ac900fa58865"},
-    {file = "tokenizers-0.13.2-cp311-cp311-win_amd64.whl", hash = "sha256:fa7ef7ee380b1f49211bbcfac8a006b1a3fa2fa4c7f4ee134ae384eb4ea5e453"},
     {file = "tokenizers-0.13.2-cp37-cp37m-macosx_10_11_x86_64.whl", hash = "sha256:da521bfa94df6a08a6254bb8214ea04854bb9044d61063ae2529361688b5440a"},
     {file = "tokenizers-0.13.2-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a739d4d973d422e1073989769723f3b6ad8b11e59e635a63de99aea4b2208188"},
     {file = "tokenizers-0.13.2-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:cac01fc0b868e4d0a3aa7c5c53396da0a0a63136e81475d32fcf5c348fcb2866"},
@@ -1920,7 +1948,6 @@ files = [
     {file = "tokenizers-0.13.2-cp37-cp37m-win32.whl", hash = "sha256:a537061ee18ba104b7f3daa735060c39db3a22c8a9595845c55b6c01d36c5e87"},
     {file = "tokenizers-0.13.2-cp37-cp37m-win_amd64.whl", hash = "sha256:c82fb87b1cbfa984d8f05b2b3c3c73e428b216c1d4f0e286d0a3b27f521b32eb"},
     {file = "tokenizers-0.13.2-cp38-cp38-macosx_10_11_x86_64.whl", hash = "sha256:ce298605a833ac7f81b8062d3102a42dcd9fa890493e8f756112c346339fe5c5"},
-    {file = "tokenizers-0.13.2-cp38-cp38-macosx_12_0_arm64.whl", hash = "sha256:f44d59bafe3d61e8a56b9e0a963075187c0f0091023120b13fbe37a87936f171"},
     {file = "tokenizers-0.13.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a51b93932daba12ed07060935978a6779593a59709deab04a0d10e6fd5c29e60"},
     {file = "tokenizers-0.13.2-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:6969e5ea7ccb909ce7d6d4dfd009115dc72799b0362a2ea353267168667408c4"},
     {file = "tokenizers-0.13.2-cp38-cp38-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:92f040c4d938ea64683526b45dfc81c580e3b35aaebe847e7eec374961231734"},
@@ -2109,14 +2136,14 @@ urllib3 = ">=1.26.0"
 
 [[package]]
 name = "typing-extensions"
-version = "4.4.0"
+version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
-    {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
+    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
+    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
 ]
 
 [[package]]
@@ -2256,4 +2283,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.11.0"
-content-hash = "158b18408b06b99da7bdbd9bd8d240dbda1891a453f93376735c86a332241573"
+content-hash = "4b7667c7167b85b06adface4d29dda939def8b17ee1ae34ede7b4bab93e9d8e6"

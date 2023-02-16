@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tablelinker"
-version = "1.0.0rc1"
+version = "1.0.0rc2"
 description = "A library of processes for manipulating tabular data in CSV format"
 authors = ["Takeshi Sagara <sagara@info-proto.com>"]
 readme = "README.md"
@@ -39,6 +39,7 @@ sphinx-rtd-theme = "^1.1.1"
 pytest = "^7.2.1"
 sphinxcontrib-napoleon = "^0.7"
 twine = "^4.0.2"
+polars = "^0.16.5"
 
 [build-system]
 requires = ["poetry-core"]

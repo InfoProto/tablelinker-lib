@@ -138,10 +138,9 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             ... )
             >>> table.write()
             col0,col1,col2,col3,wikilink
-            2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735,http://www.wikidata.org/entity/Q222120
-            2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,11.818755055646479,http://www.wikidata.org/entity/Q222110
-            2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955,http://www.wikidata.org/entity/Q78611172
-            2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303,http://www.wikidata.org/entity/Q78610810
+            2MASS J10540655-0031018,-5.7,19.3716...,13.6356...,http://www.wikidata.org/entity/Q...
+            2MASS J0464841+0715177,-2.7747...,26.6712...,11.8187...,http://www.wikidata.org/entity/Q...
+            ...
 
     """  # noqa: E501
 

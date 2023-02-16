@@ -77,6 +77,10 @@ class Table(object):
     filetype: str
         入力表データファイルの種別。 CSV の場合は ``csv``、
         Excel の場合は ``excel`` になります。
+    headers: List[str, datatype]
+        表データの列ごとの見出しとデータ型を持つリストです。
+        ``open()`` を実行した時にファイルの内容から設定します。
+        実行前は None です。
 
     Examples
     --------
@@ -131,6 +135,7 @@ class Table(object):
         self.is_tempfile = is_tempfile
         self.skip_cleaning = skip_cleaning
         self.filetype = "csv"
+        self.headers = None
         self._reader = None
 
         if file is None and data is None:
@@ -152,9 +157,9 @@ class Table(object):
         self.is_tempfile が True で、かつ self.file が指す
         ファイルが残っている場合、先にファイルを消去します。
         """
+        self.close()
         if self.is_tempfile is True and \
                 os.path.exists(self.file):
-            del self._reader
             os.remove(self.file)
             logger.debug("一時ファイル '{}' を削除しました".format(
                 self.file))
@@ -169,15 +174,18 @@ class Table(object):
         return self
 
     def __next__(self):
-        return self._reader.__next__()
+        row = self._reader.__next__()
+        return row
 
     def __exit__(self, exception_type, exception_value, traceback):
-        return self._reader.__exit__(
+        self._reader.__exit__(
             exception_type, exception_value, traceback)
+        self.close()
 
     def open(
             self,
             as_dict: bool = False,
+            adjust_datatype: bool = False,
             **kwargs):
         """
         表データを開きます。既に開いている場合、先頭に戻します。
@@ -187,6 +195,9 @@ class Table(object):
         as_dict: bool [False]
             True が指定された場合、 csv.DictReader
             オブジェクトを返します。
+        adjust_datatype: bool [False]
+            True が指定された場合、列ごとにデータ型を推定して
+            その型に合わせた値を返します。
         kwargs: dict
             csv.reader, csv.DictReader に渡すその他のパラメータ。
 
@@ -228,48 +239,78 @@ class Table(object):
         永郷展望,,139.747501,33.153559
         ...
 
+        Examples
+        --------
+        >>> import json
+        >>> from tablelinker import Table
+        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
+        >>> with table.open(adjust_datatype=True) as reader:
+        ...     for row in reader:
+        ...         print(json.dumps(row[0:4], ensure_ascii=False))
+        ...
+        ["観光スポット名称", "所在地", "緯度", "経度"]
+        ["ホタル水路", "", 33.108218, 139.80102]
+        ["登龍峠展望", "", 33.113154, 139.835245]
+        ["八丈富士", "", 33.139168, 139.762187]
+        ["永郷展望", "", 33.153559, 139.747501]
+        ...
+
         Notes
         -----
         - CSV、タブ区切りテキスト、 Excel に対応しています。
         - 表データの確認とクリーニングは、このメソッドが
           呼ばれたときに実行されます。
         """
+        self.filetype = None
         if not self.skip_cleaning:
             # エクセルファイルとして読み込む
             try:
-                df = pd.read_excel(self.file, sheet_name=self.sheet)
                 if self.sheet is None:
-                    sheets = list(df.keys())
-                    df = df[sheets[0]]
+                    df = pd.read_excel(self.file, sheet_name=0)
+                else:
+                    df = pd.read_excel(self.file, sheet_name=self.sheet)
 
                 data = df.to_csv(index=False)
                 self._reader = CsvInputCollection(
                     file_or_path=io.StringIO(data),
                     skip_cleaning=False).open(
-                        as_dict=as_dict, **kwargs)
+                        as_dict=as_dict,
+                        adjust_datatype=adjust_datatype,
+                        **kwargs)
 
                 self.filetype = "excel"
-                return self
 
             except ValueError as e:
                 if str(e).lower().startswith(
                         "excel file format cannot be determined"):
-                    # Excel ファイルではない
-                    pass
+                    pass  # Excel ファイルではないので CSV として開く
                 elif self.sheet is not None:
                     logger.error(
                         "対象にはシート '{}' は含まれていません。".format(
                             self.sheet))
                     raise ValueError("Invalid sheet name.")
 
-        # CSV 読み込み
-        self._reader = CsvInputCollection(
-            self.file,
-            skip_cleaning=self.skip_cleaning).open(
-                as_dict=as_dict, **kwargs)
+        if self.filetype is None:
+            # CSV 読み込み
+            self._reader = CsvInputCollection(
+                self.file,
+                skip_cleaning=self.skip_cleaning).open(
+                    as_dict=as_dict,
+                    adjust_datatype=adjust_datatype,
+                    **kwargs)
 
-        self.filetype = "csv"
+            self.filetype = "csv"
+
         return self
+
+    def close(self):
+        """
+        ファイルを閉じます。開いていない場合には何もしません。
+        """
+        if self._reader is not None:
+            del self._reader
+
+        self._reader = None
 
     def get_reader(self):
         """
@@ -766,7 +807,7 @@ class Table(object):
         Index(['国名', '3文字コード'], dtype='object')
 
         """
-        with self.open(as_dict=True) as reader:
+        with self.open(as_dict=True, adjust_datatype=True) as reader:
             df = pd.DataFrame.from_records(reader)
 
         return df

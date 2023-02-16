@@ -162,3 +162,32 @@ def test_skip_csv_comments():
             assert len(row) == len(correct_headers.split(","))
             if lineno == 0:
                 assert ",".join(row) == correct_headers
+
+
+def test_datatype_adjustment():
+    """
+    CSV ファイルのデータ型を正しく判定できていることを確認。
+    """
+    table = Table(sample_dir / "major_results_2020.xlsx")
+    with table.open(adjust_datatype=True) as reader:
+        for row in reader:
+            if row[0] == "00_全国":
+                assert row[4] == 126146099
+                assert row[8] == -948646
+                assert row[9] == -0.74641
+            elif row[1] == "01463_占冠村":
+                assert row[37] == "-"  # 文字列はそのまま
+
+
+def test_datatype_adjustment_dict():
+    """
+    CSV ファイルのデータ型を dict リーダーでも
+    正しく判定できていることを確認。
+    """
+    table = Table(sample_dir / "yanai_tourism_sjis.csv")
+    with table.open(as_dict=True, adjust_datatype=True) as dictreader:
+        for lineno, row in enumerate(dictreader):
+            assert len(row) == 30
+            if lineno > 0:
+                assert isinstance(row["緯度"], float) or row["緯度"] == ""
+                assert isinstance(row["経度"], float) or row["経度"] == ""

@@ -1,6 +1,7 @@
 import csv
 import io
 from logging import getLogger
+import re
 
 from .csv_cleaner import CSVCleaner
 
@@ -74,6 +75,11 @@ class ArrayInputCollection(InputCollection):
 
 class CsvInputCollection(InputCollection):
 
+    _int_pattern = r'[\-\+]?([1-9]\d{0,2}(,\d{3})*|[1-9]\d+|0)'
+    _float_pattern = fr'{_int_pattern}(\.\d+)?'
+    _re_int = re.compile(rf'^{_int_pattern}$')
+    _re_float = re.compile(rf'^{_float_pattern}$')
+
     def __init__(self, file_or_path, skip_cleaning=False):
         # file_or_path パラメータが File-like か PathLike か判別
         if all(hasattr(file_or_path, attr)
@@ -88,9 +94,92 @@ class CsvInputCollection(InputCollection):
             logger.debug("Detect path-like object.")
 
         self.skip_cleaning = skip_cleaning
+        self.as_dict = False
+        self.adjust_datatype = False
+        self.headers = None
         self._reader = None
 
-    def open(self, as_dict: bool = False, **kwargs):
+    def get_header_info(self):
+        """
+        管理している表データの先頭 20 行を読み込み、
+        列見出しとデータタイプを推定します。
+
+        Returns
+        -------
+        list:
+            [列見出し, データ型] のリストで、データ型は
+            int, float, str のいずれかになります。
+
+        Notes
+        -----
+        - このメソッドを呼び出すと、ファイルの先頭に巻き戻されます。
+        """
+        with self as reader:
+            header_titles = reader.__next__()
+            headers = [[x, 0, 0, 0] for x in header_titles]
+            for i, row in enumerate(reader):
+                if i == 20:
+                    break
+
+                if isinstance(row, dict):
+                    row = list(row.values())
+
+                for i in range(len(header_titles)):
+                    if len(row) <= i:
+                        continue
+
+                    if self._re_int.match(row[i]):
+                        headers[i][1] += 1
+                    elif self._re_float.match(row[i]):
+                        headers[i][2] += 1
+                    else:
+                        headers[i][3] += 1
+
+        detected_headers = []
+        for header in headers:
+            if header[1] >= header[2] and header[1] >= header[3]:
+                data_type = int
+            elif header[2] >= header[1] and header[2] >= header[3]:
+                data_type = float
+            else:
+                data_type = str
+
+            detected_headers.append([header[0], data_type])
+
+        self.close()
+        return detected_headers
+
+    def datatype_wrapper(self, as_dict: bool = False):
+        """
+        列ごとに推定された型に変更したリストを返す
+        ラッパーリソースを返します。
+        """
+        self.close()
+        with self.open(as_dict=as_dict) as reader:
+            for row in reader:
+                output = row[:]
+                for i, val in enumerate(row):
+                    try:
+                        if self.headers[i][1] == int:
+                            output[i] = int(val.replace(',', ''))
+                        elif self.headers[i][1] == float:
+                            output[i] = float(val.replace(',', ''))
+                    except ValueError:
+                        pass  # 数値ではないので文字列のまま
+
+                yield output
+
+    def __enter__(self):
+        if self._reader is None:
+            self._open()
+
+        return self
+
+    def _open(
+            self,
+            as_dict: bool = False,
+            adjust_datatype: bool = False,
+            **kwargs):
         """
         ファイルを開く。
         skip_cleaning が False の場合、コンテンツを読み込み
@@ -133,6 +222,38 @@ class CsvInputCollection(InputCollection):
 
         return self
 
+    def open(
+            self,
+            as_dict: bool = False,
+            adjust_datatype: bool = False,
+            **kwargs):
+        """
+        ファイルを開く。
+        skip_cleaning が False の場合、コンテンツを読み込み
+        CSVCleaner で整形したバッファを開く。
+        """
+        if adjust_datatype:
+            self.headers = self.get_header_info()
+
+        self.as_dict = as_dict
+        self.adjust_datatype = adjust_datatype
+
+        return self._open(
+            as_dict=as_dict,
+            adjust_datatype=adjust_datatype,
+            **kwargs)
+
+    def close(self):
+        if self._reader is not None:
+            del self._reader
+            self._reader = None
+
+        if self.path is not None:
+            if self.fp is not None:
+                self.fp.close()
+        else:
+            self.fp.seek(0)
+
     def get_reader(self):
         if self._reader is not None:
             return self._reader
@@ -140,10 +261,25 @@ class CsvInputCollection(InputCollection):
         return False
 
     def reset(self):
-        self.open()
+        self.open(
+            as_dict=self.as_dict,
+            adjust_datatype=self.adjust_datatype)
 
     def next(self):
-        return self._reader.__next__()
+        row = self._reader.__next__()
+        if not self.adjust_datatype:
+            return row
+
+        for i, val in enumerate(row):
+            try:
+                if self.headers[i][1] == int:
+                    row[i] = int(val.replace(',', ''))
+                elif self.headers[i][1] == float:
+                    row[i] = float(val.replace(',', ''))
+            except ValueError:
+                pass  # 数値ではないので文字列のまま
+
+        return row
 
     def encode(self):
         return [self.filepath]
