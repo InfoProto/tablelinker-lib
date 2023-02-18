@@ -5,6 +5,7 @@ import io
 from logging import getLogger
 import math
 import os
+import re
 import sys
 import tempfile
 from typing import List, Optional, Union
@@ -296,7 +297,12 @@ class Table(object):
                 if self.sheet is None:
                     df = pd.read_excel(self.file, sheet_name=0)
                 else:
-                    df = pd.read_excel(self.file, sheet_name=self.sheet)
+                    try:
+                        df = pd.read_excel(self.file, sheet_name=self.sheet)
+                    except ValueError:
+                        if re.match(r'^\d+', self.sheet):
+                            self.sheet = int(self.sheet)
+                        df = pd.read_excel(self.file, sheet_name=self.sheet)
 
                 data = df.to_csv(index=False)
                 self._reader = CsvInputCollection(
@@ -609,6 +615,9 @@ class Table(object):
             table = table.convert(
                 convertor=task.convertor,
                 params=task.params)
+
+            if task.note:
+                logger.info("{} 完了".format(task.convertor))
 
         return table
 

@@ -88,12 +88,9 @@ def process_tasks(args: dict, all_tasks: List["Task"]):
             sheet=args['--sheet'],
             skip_cleaning=skip_cleaning)
 
+        # タスク実行
         for task in all_tasks:
             try:
-                # タスク実行
-                if task.note:
-                    logger.info(task)
-
                 logger.debug("Running {}".format(task))
                 table = table.apply(task)
 
