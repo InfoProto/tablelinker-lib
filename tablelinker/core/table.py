@@ -22,7 +22,9 @@ from .task import Task
 
 
 logger = getLogger(__name__)
-basic_convertors.register()
+
+basic_convertors.register()  # コンバータリストを初期化
+session_tmpdir = None  # セッション内で有効な一時ディレクトリ
 
 
 def escape_encoding(exc):
@@ -35,6 +37,34 @@ def escape_encoding(exc):
     """
     logger.warning(str(exc))
     return ('??', exc.end)
+
+
+def NamedTemporaryFile(*args, **kwargs):
+    """
+    セッション内で有効な一時ディレクトリの下に、名前付き一時ファイルを作ります。
+
+    Notes
+    -----
+    - パラメータは ``tempfile.NamedTemporaryFile`` と同じです。
+      ただし ``dir`` パラメータは指定できません。
+    - With コンテキストでは利用できません。
+    """
+    global session_tmpdir
+
+    if "dir" in kwargs:
+        del kwargs["dir"]
+
+    if session_tmpdir is None:
+        session_tmpdir = tempfile.TemporaryDirectory(prefix="table_")
+        logger.debug("一時ディレクトリ '{}' を作成しました。".format(
+            session_tmpdir.name))
+
+    tmpf = tempfile.NamedTemporaryFile(
+        *args, dir=session_tmpdir.name, **kwargs)
+    logger.debug("一時ファイル '{}' を作成しました。".format(
+        tmpf.name))
+
+    return tmpf
 
 
 class Table(object):
@@ -86,7 +116,7 @@ class Table(object):
     --------
     >>> from tablelinker import Table
     >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
-    >>> table.write(lines=2, lineterminator="\n")
+    >>> table.write(lines=2)
     観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
     ホタル水路,,33.108218,139.80102,JGD2011,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01
 
@@ -143,10 +173,8 @@ class Table(object):
 
         # 文字列が渡された場合は一時ファイルに保存する
         if self.file is None:
-            with tempfile.NamedTemporaryFile(
-                    mode="w", delete=False) as f:
-                f.write(data)
-
+            f = NamedTemporaryFile(mode="w", delete=False)
+            f.write(data)
             self.file = f.name
             self.is_tempfile = True
 
@@ -370,22 +398,46 @@ class Table(object):
             for row in reader:
                 writer.writerow(row)
 
-    def merge(self, path: os.PathLike):
+    def merge(self, target: Union[str, os.PathLike, "Table"]):
         """
         Table オブジェクトが管理する表データを、
-        指定したパスのファイルの後ろに結合 (merge) します。
+        指定したファイルまたは Table の末尾に結合 (merge) します。
 
         Parameters
         ----------
-        path: os.PathLike
-            保存する CSV ファイルのパス。
+        target: os.PathLike, Table
+            結合先の CSV ファイルのパスまたは Table。
 
         Examples
         --------
-        >>> import csv
+        >>> import shutil
         >>> from tablelinker import Table
-        >>> table = Table("sample/datafiles/shimabara_tourism.csv")
-        >>> table.merge("sample/datafiles/katsushika_tourism.csv")
+        >>> _ = shutil.copy("katsushika_tourism.csv", "tourism.csv")
+        >>> table_src = Table("shimabara_tourism.csv")
+        >>> table_src.merge("tourism.csv")  # ファイルの末尾に結合
+        >>> with Table("tourism.csv").open() as reader:
+        ...     nlines = 0
+        ...     for _ in reader:
+        ...         nlines += 1
+        ...
+        >>> nlines
+        32
+
+        Examples
+        --------
+        >>> import shutil
+        >>> from tablelinker import Table
+        >>> _ = shutil.copy("katsushika_tourism.csv", "tourism.csv")
+        >>> table_src = Table("shimabara_tourism.csv")
+        >>> table_dst = Table("tourism.csv")
+        >>> table_src.merge(table_dst)  # 他のテーブルの末尾に結合
+        >>> with table_dst.open() as reader:
+        ...     nlines = 0
+        ...     for _ in reader:
+        ...         nlines += 1
+        ...
+        >>> nlines
+        32
 
         Notes
         -----
@@ -394,29 +446,33 @@ class Table(object):
         - 見出し行は出力しません。
 
         """
-        # 結合先ファイルの情報をチェック
-        if not os.path.exists(path):
-            logger.debug((
-                "結合先のファイル '{}' が存在しないため、"
-                "そのまま保存します。").format(path))
-            return self.save(path)
+        if not isinstance(target, Table):
+            # 結合先ファイルの存在チェック
+            if not os.path.exists(target):
+                logger.debug((
+                    "結合先のファイル '{}' が存在しないため、"
+                    "そのまま保存します。").format(target))
+                return self.save(target)
 
-        target = Table(path, skip_cleaning=False)
+            target_table = Table(target, skip_cleaning=False)
+        else:
+            target_table = target
+
         target_delimiter = ","
         target_encoding = "UTF-8"
-        with target.open() as target_reader:
-            if target.filetype != "csv":
+        with target_table.open() as target_reader:
+            if target_table.filetype != "csv":
                 logger.error(
                     "結合先のファイル '{}' は CSV ではありません。".format(
-                        path))
+                        target_table.file))
                 raise RuntimeError("The merged file must be a CSV.")
 
-            cc = target._reader._reader  # CSVCleaner
+            cc = target_table._reader._reader  # CSVCleaner
             target_delimiter = cc.delimiter
             target_encoding = cc.encoding
             target_header = target_reader.__next__()
 
-        del target  # 結合先ファイルを閉じる
+        target_table.close()  # 結合先ファイルを書き込み用に一度閉じる
 
         # 結合先のファイルに列の順番をそろえる
         try:
@@ -431,7 +487,7 @@ class Table(object):
 
         # 結合先のファイルに追加出力
         with reordered.open() as reader, \
-                open(path, mode="a", newline="",
+                open(target_table.file, mode="a", newline="",
                      encoding=target_encoding, errors="escape_encoding") as f:
             writer = csv.writer(f, delimiter=target_delimiter)
             reader.__next__()  # ヘッダ行をスキップ
@@ -508,15 +564,15 @@ class Table(object):
 
         return buf.getvalue()
 
-    def apply(self, task: Task) -> 'Table':
+    def apply(self, tasks: Union[Task, List[Task]]) -> 'Table':
         r"""
         テーブルが管理する表データにタスクを適用して変換し、
         変換結果を管理する新しい Table オブジェクトを返します。
 
         Parameters
         ----------
-        task: Task
-            適用するタスク。
+        tasks: Task, List[Task]
+            適用するタスク、またはタスクのリスト。
 
         Returns
         -------
@@ -526,26 +582,35 @@ class Table(object):
         Examples
         --------
         >>> from tablelinker import Table, Task
-        >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
-        >>> table.write(lines=1, lineterminator="\n")
-        観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
-        >>> task = Task.create({
-        ...     "convertor":"rename_col",
-        ...     "params":{"input_col_idx":"観光スポット名称", "output_col_name":"名称"},
-        ... })
-        >>> table = table.apply(task)
-        >>> table.write(lines=1, lineterminator="\n")
-        名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
+        >>> table = Table("ma030000.csv")
+        >>> table.write(lines=2)
+        ,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
+        ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
+        >>> table.apply(Task.from_files("task1.json")).write(lines=2)
+        地域,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
+        ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
+        >>> tasks = Task.from_files(["task1.json", "task2.json"])
+        >>> table.apply(tasks).write(lines=3)
+        地域,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
+        全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
+        01 北海道,5188441,29523,65078,59,25,-35555,728,304,424,92,75,17,20904,9070
 
-        Notes
-        -----
-        convert がコンバータ名とパラメータを指定するのに対し、
-        apply はタスクオブジェクトを指定する点が違うだけで
-        処理内容は同一です。
-        """
-        return self.convert(
-            convertor=task.convertor,
-            params=task.params)
+        """  # noqa: E501
+        if isinstance(tasks, Task):  # タスクが一つの場合
+            tasks = [tasks]
+
+        table = self
+        for task in tasks:
+            if task.note:
+                logger.info(task)
+            else:
+                logger.debug("Running {}".format(task))
+
+            table = table.convert(
+                convertor=task.convertor,
+                params=task.params)
+
+        return table
 
     def convert(
             self,
@@ -572,13 +637,13 @@ class Table(object):
         --------
         >>> from tablelinker import Table
         >>> table = Table("sample/datafiles/hachijo_sightseeing.csv")
-        >>> table.write(lines=1, lineterminator="\n")
+        >>> table.write(lines=1)
         観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
         >>> table = table.convert(
         ...     convertor="rename_col",
         ...     params={"input_col_idx":0, "output_col_name":"名称"},
         ... )
-        >>> table.write(lines=1, lineterminator="\n")
+        >>> table.write(lines=1)
         名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
 
         Notes
@@ -591,7 +656,7 @@ class Table(object):
           変換結果ファイルが残る場合があります。
         """
         self.open()
-        csv_out = tempfile.NamedTemporaryFile(
+        csv_out = NamedTemporaryFile(
             delete=False,
             prefix='table_').name
         input = self._reader
@@ -779,13 +844,12 @@ class Table(object):
         CSV ファイル（一時ファイル）に出力します。
         """
         table = None
-        with tempfile.NamedTemporaryFile(
-                mode="w+b", delete=False) as f:
-            df.to_csv(f, index=False)
-            table = Table(
-                f.name,
-                is_tempfile=True,
-                skip_cleaning=True)
+        f = NamedTemporaryFile(mode="w+b", delete=False)
+        df.to_csv(f, index=False)
+        table = Table(
+            f.name,
+            is_tempfile=True,
+            skip_cleaning=True)
 
         return table
 
@@ -856,13 +920,12 @@ class Table(object):
             return None
 
         table = None
-        with tempfile.NamedTemporaryFile(
-                mode="w+b", delete=False) as f:
-            df.write_csv(f.name)
-            table = Table(
-                f.name,
-                is_tempfile=True,
-                skip_cleaning=True)
+        f = NamedTemporaryFile(mode="w+b", delete=False)
+        df.write_csv(f.name)
+        table = Table(
+            f.name,
+            is_tempfile=True,
+            skip_cleaning=True)
 
         return table
 

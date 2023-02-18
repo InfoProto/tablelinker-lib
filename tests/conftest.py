@@ -3,15 +3,23 @@
 from pathlib import Path
 
 test_datafiles = (
-    'sample/datafiles/ma030000.csv',
     'sample/datafiles/2311.xlsx',
-    'templates/xxxxxx_tourism.csv'
+    'sample/datafiles/ma030000.csv',
+    'sample/datafiles/katsushika_tourism.csv',
+    'sample/datafiles/shimabara_tourism.csv',
+    'templates/xxxxxx_tourism.csv',
+    'sample/taskfiles/task1.json',
+    'sample/taskfiles/task2.json',
 )
 
 test_generated_files = (
     'ma030000_clean.csv',
-    'hoge.csv'
+    'hoge.csv',
+    'hachijo_2.csv',
+    'hachijo_sightseeing_utf8.csv',
+    'tourism.csv',
 )
+
 
 def pytest_configure(config):
     """
@@ -33,14 +41,14 @@ def pytest_sessionstart(session):
     Called after the Session object has been created and
     before performing collection and entering the run test loop.
     """
-    
+
 
 def pytest_sessionfinish(session, exitstatus):
     """
     Called after whole test run finished, right before
     returning the exit status to the system.
     """
-    
+
 
 def pytest_unconfigure(config):
     """
@@ -56,4 +64,3 @@ def pytest_unconfigure(config):
             Path(path).unlink()
         except FileNotFoundError:
             pass
-
