@@ -11,7 +11,7 @@ Python プログラムを書かずに CSV ファイルに対する変換処理�
 バッチ実行したい場合などに有用です。
 
 このページでは、 Tablelinker モジュールを呼び出すコマンドの
-``python -m tablelinker`` を便宜上「Tablelinker コマンド」と呼びます。
+``tablelinker`` を便宜上「Tablelinker コマンド」と呼びます。
 
 
 ヘルプ表示
@@ -22,7 +22,7 @@ Tablelinker コマンドに ``-h`` または ``--help`` オプションを
 
 .. code-block:: bash
 
-    $ python -m tablelinker -h
+    $ tablelinker -h
 
 
 表データの変換
@@ -41,7 +41,7 @@ Tablelinker コマンドは、表データを読み込み、
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i 入力ファイル
+    $ tablelinker -i 入力ファイル
 
 実際のサンプルデータで実行例を示します。
 
@@ -58,7 +58,7 @@ Tablelinker コマンドは、表データを読み込み、
     :caption: ma030000.csv を読み込み
     :name: example1
 
-    $ python -m tablelinker -i ma030000.csv
+    $ tablelinker -i ma030000.csv
     ,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
     ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
     ,,,,,死亡数,,,,,,の死産数,死亡数,,
@@ -108,7 +108,7 @@ Tablelinker コマンドが1行目から6行目を
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i 入力ファイル -c コンバータ名 -p パラメータ
+    $ tablelinker -i 入力ファイル -c コンバータ名 -p パラメータ
 
 【例2】 **ma030000.csv** に
 :py:class:`rename_col <tablelinker.convertors.basics.rename_col.RenameColConvertor>`
@@ -119,7 +119,7 @@ Tablelinker コマンドが1行目から6行目を
     :caption: ma030000.csv に rename_col を適用
     :name: example2
 
-    $ python -m tablelinker -i ma030000.csv -c rename_col -p '{"input_col_idx":0,"output_col_name":"地域"}'
+    $ tablelinker -i ma030000.csv -c rename_col -p '{"input_col_idx":0,"output_col_name":"地域"}'
     地域,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
     ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
     ,,,,,死亡数,,,,,,の死産数,死亡数,,
@@ -156,7 +156,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i 入力ファイル タスクファイル
+    $ tablelinker -i 入力ファイル タスクファイル
 
 .. note::
     Tablelinker コマンドでは、 **convertor** と **params** を含む
@@ -190,7 +190,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
     :caption: ma030000.csv に task1.json を適用
     :name: example3
 
-    $ python -m tablelinker -i ma030000.csv task1.json
+    $ tablelinker -i ma030000.csv task1.json
     地域,人口,出生数,死亡数,（再掲）,,自　然,死産数,,,周産期死亡数,,,婚姻件数,離婚件数
     ,,,,乳児死亡数,新生児,増減数,総数,自然死産,人工死産,総数,22週以後,早期新生児,,
     ,,,,,死亡数,,,,,,の死産数,死亡数,,
@@ -255,7 +255,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
         :caption: task1.json と task2.json を指定
         :name: multiple-taskfiles
 
-        $ python -m tablelinker -i ma030000.csv task1.json task2.json
+        $ tablelinker -i ma030000.csv task1.json task2.json
         地域,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
         全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
         01 北海道,5188441,29523,65078,59,25,-35555,728,304,424,92,75,17,20904,9070
@@ -279,7 +279,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
         :caption: task1.json の適用結果を入力として task2.json を適用
         :name: using-pipe
 
-        $ python -m tablelinker -i ma030000.csv task1.json | python -m tablelinker task2.json
+        $ tablelinker -i ma030000.csv task1.json | tablelinker task2.json
         地域,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
         全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
         01 北海道,5188441,29523,65078,59,25,-35555,728,304,424,92,75,17,20904,9070
@@ -336,7 +336,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
     :caption: 複数のタスクを含む task3.json を適用
     :name: task-array
 
-    $ python -m tablelinker -i ma030000.csv task3.json
+    $ tablelinker -i ma030000.csv task3.json
     地域,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
     全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
     01 北海道,5188441,29523,65078,59,25,-35555,728,304,424,92,75,17,20904,9070
@@ -361,7 +361,7 @@ Tablelinker コマンドの実行時に呼び出すことができます。
     :caption: 変換結果をファイルに保存
     :name: save-file
 
-    $ python -m tablelinker -i ma030000.csv -o ma030000_cleaned.csv task3.json
+    $ tablelinker -i ma030000.csv -o ma030000_cleaned.csv task3.json
     $ cat ma030000_cleaned.csv
     地域,人口,出生数,死亡数,（再掲）乳児死亡数,（再掲）新生児死亡数,自　然増減数,死産数総数,死産数自然死産,死産数人工死産,周産期死亡数総数,周産期死亡数22週以後の死産数,周産期死亡数早期新生児死亡数,婚姻件数,離婚件数
     全　国,123398962,840835,1372755,1512,704,-531920,17278,8188,9090,2664,2112,552,525507,193253
@@ -389,7 +389,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
     つまり上記の ``task1.json`` を適用する処理は、次のように
     書いても同じです。 ::
 
-        $ python -m tablelinker -i ma030000.csv task1.json 
+        $ tablelinker -i ma030000.csv task1.json 
 
 - 出力ファイル指定
 
@@ -427,7 +427,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
     サンプルデータ **ma030000.csv** はシフトJISなので、
     読み込むときにこのオプションを指定するとエラーになります。 ::
 
-        $ python -m tablelinker -i ma030000.csv --no-cleaning
+        $ tablelinker -i ma030000.csv --no-cleaning
         Traceback (most recent call last):
         ...
         UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97 in position 0: invalid start byte
@@ -446,13 +446,13 @@ Tablelinker コマンドは以下のオプションを指定できます。
     Tablelinker コマンドの入力となる表データには Excel ファイルも
     指定できます。 ::
 
-        $ python -m tablelinker -i sample.xlsx task1.json
+        $ tablelinker -i sample.xlsx task1.json
 
     Excel ファイルに複数のシートが含まれている場合は最初のシートが
     選択されます。それ以外のシートを読み込みたい場合は
     ``--sheet=シート名`` オプションで対象のシートを指定してください。 ::
 
-        $ python -m tablelinker -i sample.xlsx --sheet=シート1 task1.json
+        $ tablelinker -i sample.xlsx --sheet=シート1 task1.json
 
     シート名には番号も指定できます（最初のシートが **0** です）。
 
@@ -496,7 +496,7 @@ Tablelinker コマンドは以下のオプションを指定できます。
 
     .. code-block:: bash
 
-        $ python -m tablelinker -i ma030000.csv task4.json -o ma030000_cleaned.csv
+        $ tablelinker -i ma030000.csv task4.json -o ma030000_cleaned.csv
         2023-02-18 22:31:21,641:INFO:table:605:rename_col(先頭列名を「地域」に変更。)
         2023-02-18 22:31:21,661:INFO:table:614:rename_col 完了
         2023-02-18 22:31:21,661:INFO:table:605:concat_title(先頭3行をタイトルとして結合。)
@@ -538,7 +538,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
 
 .. code-block:: bash
 
-    $ python -m tablelinker mapping -i 入力ファイル テンプレートファイル
+    $ tablelinker mapping -i 入力ファイル テンプレートファイル
 
 例として、ダウンロードした **sightseeing.xlsx** を
 推奨データセットの「観光施設一覧」フォーマットに揃えることを考えます。
@@ -550,7 +550,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: sightseeing.xlsx の内容
     :name: sightseeing-xlsx
 
-    $ python -m tablelinker -i sightseeing.xlsx
+    $ tablelinker -i sightseeing.xlsx
     観光スポット名称,所在地,緯度,経度,座標系,説明,八丈町ホームページ記載
     ...
 
@@ -561,7 +561,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: xxxxxx_tourism.csv の内容
     :name: xxxxxx-tourism-csv
 
-    $ python -m tablelinker -i xxxxxx_tourism.csv
+    $ tablelinker -i xxxxxx_tourism.csv
     都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考
     ...
 
@@ -574,7 +574,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: マッピング機能
     :name: auto-column-mapping
 
-    $ python -m tablelinker mapping -i sightseeing.xlsx xxxxxx_tourism.csv
+    $ tablelinker mapping -i sightseeing.xlsx xxxxxx_tourism.csv
     {
       "convertor": "mapping_cols",
       "params": {
@@ -680,7 +680,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i sightseeing.xlsx mapping_task.json
+    $ tablelinker -i sightseeing.xlsx mapping_task.json
     都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考
     ,,,,ホタル水路,,,,,,33.108218,139.80102,,,,,,,八丈島は伊豆諸島で唯一、水田耕作がなされた島で鴨川に沿って水田が残っています。ホタル水路は、鴨川の砂防とともに平成元年につくられたもので、毎年6月から7月にかけてホタルの光が美しく幻想的です。,,,,,,,,,,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#01,
     ,,,,登龍峠展望,,,,,,33.113154,139.835245,,,,,,,「ノボリュウトウゲ」または「ノボリョウトウゲ」といい、この道を下方から望むとあたかも龍 が昇天するように見えるので、この名が付けられました。峠道の頂上近くの展望台は、八丈島で一、二を争う景勝地として名高く、新東京百景の一つにも選ばれました。眼前に八丈富士と神止山、八丈小島を、眼下には底土港や神湊港、三根市街を一望できます。,,,,,,,,,,http://www.town.hachijo.tokyo.jp/kankou_spot/mitsune.html#02,
@@ -719,7 +719,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: 2311.xlsx の内容
     :name: 2311-xlsx
 
-    $ python -m tablelinker -i 2311.xlsx
+    $ tablelinker -i 2311.xlsx
     市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金(基本),料金(詳細),説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考
     ...
 
@@ -739,7 +739,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: 柳井市観光施設一覧を推奨データにマッピング
     :name: yanai-mapping
 
-    $ python -m tablelinker mapping -i 2311.xlsx xxxxxx_tourism.csv
+    $ tablelinker mapping -i 2311.xlsx xxxxxx_tourism.csv
     {
       "convertor": "mapping_cols",
       "params": {
@@ -788,7 +788,7 @@ Tablelinker コマンドの直後に **mapping** を指定し、
     :caption: 柳井市観光施設一覧を推奨データに自動変換
     :name: yanai-auto-convert
 
-    $ python -m tablelinker mapping -i 2311.xlsx -a xxxxxx_tourism.csv
+    $ tablelinker mapping -i 2311.xlsx -a xxxxxx_tourism.csv
     都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可
     能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフ リー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考
     352128,1,山口県,柳井市,白壁の町並み,シラカベノマチナミ,,,山口県柳井市柳井津,,,,月火水木金土日,,,随時見学可能,無料,,"中世の町割りがそのまま今日も生きており、約200ｍの街路に面した両側に江戸時代の商家の家並みが続いています。藩政時代には岩国藩のお納戸と呼ばれ、産物を満載した大八車が往来してにぎわった町筋です。
@@ -829,14 +829,14 @@ Tablelinker コマンドの mapping モードでは以下のオプションを�
     :numref:`auto-column-mapping` の例をこのオプションで実行するには
     次のように指定します。 ::
 
-        $ python -m tablelinker mapping -i sightseeing.xlsx --headers='都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考'
+        $ tablelinker mapping -i sightseeing.xlsx --headers='都道府県コード又は市区町村コード,NO,都道府県名,市区町村名,名称,名称_カナ,名称_英語,POIコード,住所,方書,緯度,経度,利用可能曜日,開始時間,終了時間,利用可能日時特記事項,料金（基本）,料金（詳細）,説明,説明_英語,アクセス方法,駐車場情報,バリアフリー情報,連絡先名称,連絡先電話番号,連絡先内線番号,画像,画像_ライセンス,URL,備考'
 
 - テンプレートファイルのシート名指定
 
     テンプレートファイルにも Excel ファイルを利用できます。
     テンプレートとして利用するシートを指定するには、 ::
 
-        $ python -m tablelinker mapping -i sightseeing.xlsx \
+        $ tablelinker mapping -i sightseeing.xlsx \
           -t 観光施設一覧 templates.xlsx
 
     のように ``-t <sheet>`` または ``--template-sheet=<sheet>`` で

@@ -43,7 +43,6 @@ Python 3.10 をインストールしてからご利用ください。
     % pyenv install 3.10
     % pyenv local 3.10
     % pip install tablelinker
-    % python -m tablelinker -h
 
 Windows の場合
 ^^^^^^^^^^^^^^
@@ -57,7 +56,7 @@ Tablelinker をインストールできます。
     > pip install tablelinker
 
 複数の Python バージョンをインストールしている場合、
-Python launcher (``py.exe``) を実行して `利用するバージョンを指定する
+Python launcher ``py.exe`` を実行して `利用するバージョンを指定する
 <https://docs.python.org/ja/3/using/windows.html#from-the-command-line>`_ 
 必要があります。
 
@@ -68,11 +67,38 @@ Python launcher (``py.exe``) を実行して `利用するバージョンを指�
      -3.9-64 *
      -3.10-64
     > py -3.10 -m pip install tablelinker
-    > py -3.10 -m tablelinker -h
 
-この場合、 :ref:`as_command` の「Tablelinkerコマンド」
-``python -m tablelinker`` は ``py -3.10 -m tablelinker``
-と読み替えてください。
+インストール中に、以下のような警告が表示されます。 ::
+
+    ...
+    Installing collected packages: tablelinker
+      WARNING: The script tablelinker.exe is installed in 'C:\Users\foo\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts' which is not on PATH.
+      Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+    Successfully installed tablelinker-1.0.0
+
+``tablelinker.exe`` は :ref:`as_command` で説明するコマンドです。
+このコマンドを利用したい場合は、警告の `... is installed in` の後ろに
+表示されているディレクトリを環境変数 ``PATH`` に追加してください。
+
+上の例では ``C:\Users\foo\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts`` となっていますが、実行中の Python
+環境によって異なりますので、必ず表示されているメッセージに合わせてください。
+
+環境変数 ``PATH`` にディレクトリを追加するには、
+コントロールパネルのシステム設定を利用するなどいろいろな方法があります。
+ウェブ検索するなどして、やりやすい方法を利用してください。
+
+コマンドラインでの操作に慣れている場合は、
+PowerShell から以下の方法で追加できます。
+
+.. code-block:: powershell
+
+    > # 現在の Path の値を表示して、最後が ; で終わっているかどうか確認する
+    > $Env:Path
+    > # ; で終わっている場合は
+    > $Env:Path += "C:\Users\foo\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts"
+    > # ; で終わっていない場合は
+    > $Env:Path += ";C:\Users\foo\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts"
+
 
 Linux の場合
 ^^^^^^^^^^^^
@@ -81,16 +107,15 @@ Linux ディストリビューションごとのパッケージ管理ツール�
 Python と pip をインストールして、ターミナル上で上記の pip コマンドを
 利用すれば Tablelinker をインストールできます。
 
+ただし Python 2.x 系と 3.x 系の両方が利用できるディストリビューションでは、
+Python 3.x 系のコマンドは ``python3``、 pip コマンドは ``pip3`` に
+なっている場合がありますので注意してください。
+
 .. code-block:: bash
 
     (Ubuntu の場合)
     $ sudo apt install python3 python3-pip
     $ pip3 install tablelinker
-
-3.x 系の Python を実行するのに ``python3`` コマンドを利用する
-必要がある場合、 :ref:`as_command` の「Tablelinkerコマンド」
-``python -m tablelinker`` は ``python3 -m tablelinker``
-と読み替えてください。
 
 
 住所辞書データのインストール
@@ -133,7 +158,7 @@ Windows の場合
 ^^^^^^^^^^^^^^
 
 複数の Python バージョンをインストールしている場合、
-Python launcher (``py.exe``) を実行して、
+Python launcher ``py.exe`` を実行して、
 Tablelinker をインストールした Python バージョンを指定する
 必要があります。
 
