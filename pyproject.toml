@@ -2,17 +2,20 @@
 name = "tablelinker"
 version = "1.0.0rc3"
 description = "A library of processes for manipulating tabular data in CSV format"
-authors = ["Takeshi Sagara <sagara@info-proto.com>"]
+authors = ["Akiko Aizawa <akiko@nii.ac.jp>"]
 readme = "README.md"
+maintainers = ["Takeshi Sagara <sagara@info-proto.com>"]
 repository = "https://github.com/InfoProto/tablelinker-lib"
+documentation = "https://www2.info-proto.com/tablelinker/"
 keywords = ["CSV", "tabular", "manipulation", "cleansing"]
 packages = [{include = "tablelinker"}]
 classifiers = [
-	"Operating System :: Microsoft :: Windows :: Windows 11",
-	"Operating System :: POSIX :: Linux",
-	"License :: OSI Approved :: MIT License",
-	"Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Operating System :: POSIX :: Linux",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
 ]
+
 
 [tool.poetry.dependencies]
 python = ">=3.8.1,<3.11.0"
@@ -41,10 +44,6 @@ sphinxcontrib-napoleon = "^0.7"
 twine = "^4.0.2"
 polars = "^0.16.5"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
@@ -56,3 +55,15 @@ testpaths = [
     "docs/as_library.rst"
 ]
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+tablelinker = "tablelinker.cli:main"
+
+[project.scripts]
+tablelinker = "tablelinker.cli:main"
