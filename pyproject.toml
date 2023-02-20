@@ -62,5 +62,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
-[project.scripts]
+[tool.poetry.scripts]
 tablelinker = "tablelinker.cli:main"
