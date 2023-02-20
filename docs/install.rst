@@ -42,7 +42,7 @@ Python 3.10 をインストールしてからご利用ください。
     (表示されるメッセージに従って PATH などを設定)
     % pyenv install 3.10
     % pyenv local 3.10
-    % pip install tablelinker
+    % python -m pip install tablelinker
 
 Windows の場合
 ^^^^^^^^^^^^^^
