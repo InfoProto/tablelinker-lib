@@ -705,6 +705,14 @@ def register_convertor(convertor, selectable=True):
 
 
 def convertor_find_by(name):
+    """
+    登録済みのコンバータを取得します。
+    """
+    convertor = CONVERTOR_DICT.get(name)
+    if convertor is None:
+        from tablelinker.convertors.extras import register
+        register()
+
     return CONVERTOR_DICT.get(name)
 
 

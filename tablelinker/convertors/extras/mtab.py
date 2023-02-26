@@ -195,3 +195,107 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
             wikilink = ""
 
         return wikilink
+
+
+class MtabColumnAnnotationConvertor(convertors.Convertor):
+    r"""
+    概要
+        Mtab を利用して、各列のアノテーションを生成します。
+        生成したアノテーションは最初の行に格納されます。
+
+    コンバータ名
+        "geocoder_cta"
+
+    パラメータ
+        * "lines": アノテーションに利用する最大の行数を指定します [100]
+
+    注釈
+        * アノテーションの候補が複数見つかった場合、 "/" で結合して
+          列挙します。
+        * アノテーションの候補が見つからなかった場合、 "-" を記載します。
+
+    サンプル
+        各列のアノテーションを生成し、最初の行（見出し行の次）に格納します。
+
+        - タスクファイル例
+
+        .. code-block :: json
+
+            {
+                "convertor": "mtab_cta",
+                "params": {
+                    "lines": 100
+                }
+            }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> from tablelinker import Table
+            >>> # mTab API sample より取得
+            >>> # https://mtab.app/mtab
+            >>> table = Table(data=(
+            ...     "col0,col1,col2,col3\n"
+            ...     "2MASS J10540655-0031018,-5.7,19.3716366,13.635635128508735\n"
+            ...     "2MASS J0464841+0715177,-2.7747499999999996,26.671235999999997,"
+            ...     "11.818755055646479\n"
+            ...     "2MAS J08351104+2006371,72.216,3.7242887999999996,128.15196099865955\n"
+            ...     "2MASS J08330994+186328,-6.993,6.0962562,127.64996294136303\n"
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="mtab_cta",
+            ...     params={
+            ...         "lines": 100,
+            ...     },
+            ... )
+            >>> table.write()
+            col0,col1,col2,col3
+            star/near-IR source,-,-,-
+            2MASS J10540655-0031018,-5.7,19.3716...,13.6356...
+            ...
+
+    """  # noqa: E501
+
+    class Meta:
+        key = "mtab_cta"
+        name = "Mtabデータから列アノテーションを生成する。"
+        description = """
+        mTabに問い合わせて列アノテーションを生成します。
+        """
+        help_text = ""
+        params = params.ParamSet(
+            params.IntParam(
+                "lines",
+                label="アノテーションに利用する最大行数",
+                required=False,
+                help_text="アノテーションに利用する最大行数を指定します。"
+            ),
+
+        )
+
+    def preproc(self, context):
+        super().preproc(context)
+        self.lines = context.get_param("lines")
+
+        mtab_result = query_mtab(context, max_lines=self.lines)
+        if mtab_result:
+            self.cta = mtab_result.cta_data
+        else:
+            self.cta = None
+
+    def process_header(self, headers, context):
+        super().process_header(headers, context)
+        record = ["-"] * len(headers)
+        if self.cta:
+            for anno in self.cta:
+                labels = []
+                for candidate in anno['annotation']:
+                    labels.append(candidate['label'])
+
+                record[anno['target']] = "/".join(labels)
+
+        else:
+            record = ["(none)"] * len(headers)
+
+        context.output(record)

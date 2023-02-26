@@ -177,6 +177,9 @@ MTab アノテーション
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass::
+    tablelinker.convertors.extras.mtab.MtabColumnAnnotationConvertor
+
+.. autoclass::
     tablelinker.convertors.extras.mtab.MtabWikilinkConvertor
 
 列の自動マッピング
