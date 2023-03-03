@@ -16,12 +16,12 @@ CSV や Excel の表データを読み込み、用意されているコンバー
 
 .. code-block:: bash
 
-    $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv -c rename_col -p '{"input_col_idx":"市区町村コード", "output_col_name": "都道府県コード又は市区町村コード"}'
+    $ tablelinker -i opendata.xlsx -o clean_opendata.csv -c rename_col -p '{"input_col_idx":"市区町村コード", "output_col_name": "都道府県コード又は市区町村コード"}'
 
 毎回長いパラメータを指定するのは大変なので、利用したいコンバータ名と
 パラメータを JSON ファイルに記述しておき、呼び出すこともできます。 ::
 
-    $ python -m tablelinker -i opendata.xlsx -o clean_opendata.csv task.json
+    $ tablelinker -i opendata.xlsx -o clean_opendata.csv task.json
 
 ``task.json`` には次のような JSON を記述します。
 

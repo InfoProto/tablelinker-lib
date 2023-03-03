@@ -266,8 +266,8 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
     注釈（コンバータ固有）
         - ``output_col_names`` には、「緯度」「経度」「住所レベル」を
-          格納するための3つの列名を指定する必要があります。省略された場合、
-          「緯度」「経度」「住所レベル」が列名として利用されます。
+          格納するための3つの列名を指定する必要があります。
+          省略するとエラー（ValueError）になります。
         - 住所が一意ではない場合、最初の候補を選択します。
           精度を向上させたい場合は ``within`` で候補となる
           都道府県名や市区町村名を指定してください。
@@ -352,9 +352,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
         # 出力列名が3つ指定されていることを確認
         self.output_col_names = context.get_param("output_col_names")
-        if self.output_col_names is None:
-            self.output_col_names = ["緯度", "経度", "住所レベル"]
-        elif isinstance(self.output_col_names, str) or \
+        if isinstance(self.output_col_names, str) or \
                 len(self.output_col_names) != 3:
             raise ValueError((
                 "The output_col_names parameter of geocoder_latlong "

@@ -3,14 +3,14 @@ import re
 from tablelinker.core import convertors, params
 
 
-class StringMatchUpdateRowConvertor(convertors.Convertor):
+class StringMatchUpdateColConvertor(convertors.Convertor):
     r"""
     概要
-        指定した列の値が指定した文字列と完全に一致する行の値を
+        指定した列の値が指定した文字列と完全に一致する場合、
         新しい文字列に置き換えます。部分一致は置き換えません。
 
     コンバータ名
-        "update_row_match"
+        "update_col_match"
 
     パラメータ
         * "input_col_idx": 検索対象列の列番号または列名 [必須]
@@ -18,14 +18,14 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
         * "new": 置き換える文字列 [必須]
 
     サンプル
-        「性別」列が「女」の行を「F」に置き換えます。
+        「性別」列が「女」の場合、「F」に置き換えます。
 
         - タスクファイル例
 
         .. code-block:: json
 
             {
-                "convertor": "update_row_match",
+                "convertor": "update_col_match",
                 "params": {
                     "input_col_idx": "性別",
                     "query": "女",
@@ -46,7 +46,7 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
             ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
             ... ))
             >>> table = table.convert(
-            ...     convertor="update_row_match",
+            ...     convertor="update_col_match",
             ...     params={
             ...         "input_col_idx": "性別",
             ...         "query": "女",
@@ -62,8 +62,8 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
     """
 
     class Meta:
-        key = "update_row_match"
-        name = "行の値を変更（完全一致）"
+        key = "update_col_match"
+        name = "列の値を変更（完全一致）"
         description = """
         指定された列の値が文字列と完全一致する場合に変更します
         """
@@ -104,14 +104,14 @@ class StringMatchUpdateRowConvertor(convertors.Convertor):
         context.output(record)
 
 
-class StringContainUpdateRowConvertor(convertors.Convertor):
+class StringContainUpdateColConvertor(convertors.Convertor):
     r"""
     概要
         指定した列の値が指定した文字列を含む場合、
         その部分を新しい文字列に置き換えます。
 
     コンバータ名
-        "update_row_contains"
+        "update_col_contains"
 
     パラメータ
         * "input_col_idx": 検索対象列の列番号または列名 [必須]
@@ -126,7 +126,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
         .. code-block:: json
 
             {
-                "convertor": "update_row_contains",
+                "convertor": "update_col_contains",
                 "params": {
                     "input_col_idx": 0,
                     "query": "　",
@@ -152,7 +152,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
             ...     '05 秋田県,955659,4499,15379\n'
             ... ))
             >>> table = table.convert(
-            ...     convertor="update_row_contains",
+            ...     convertor="update_col_contains",
             ...     params={
             ...         "input_col_idx": 0,
             ...         "query": "　",
@@ -168,8 +168,8 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
     """
 
     class Meta:
-        key = "update_row_contains"
-        name = "行の値を変更（部分一致）"
+        key = "update_col_contains"
+        name = "列の値を変更（部分一致）"
         description = """
         指定された列の値が文字列と部分一致する場合に変更します
         """
@@ -212,7 +212,7 @@ class StringContainUpdateRowConvertor(convertors.Convertor):
         context.output(record)
 
 
-class PatternMatchUpdateRowConvertor(convertors.Convertor):
+class PatternMatchUpdateColConvertor(convertors.Convertor):
     r"""
     概要
         指定した列の値が指定した正規表現と一致する場合、
@@ -220,7 +220,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
         正規表現は列の途中が一致しても対象となります（search）。
 
     コンバータ名
-        "update_row_pattern"
+        "update_col_pattern"
 
     パラメータ
         * "input_col_idx": 検索対象列の列番号または列名 [必須]
@@ -236,7 +236,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
         .. code-block:: json
 
             {
-                "convertor": "update_row_pattern",
+                "convertor": "update_col_pattern",
                 "params": {
                     "input_col_idx": 0,
                     "query": "\d+\s+",
@@ -262,7 +262,7 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
             ...     '05 秋田県,955659,4499,15379\n'
             ... ))
             >>> table = table.convert(
-            ...     convertor="update_row_pattern",
+            ...     convertor="update_col_pattern",
             ...     params={
             ...         "input_col_idx": 0,
             ...         "query": r"\d+\s+",
@@ -279,8 +279,8 @@ class PatternMatchUpdateRowConvertor(convertors.Convertor):
     """
 
     class Meta:
-        key = "update_row_pattern"
-        name = "行の値を変更（正規表現）"
+        key = "update_col_pattern"
+        name = "列の値を変更（正規表現）"
         description = """
         指定された列の値が指定した正規表現と一致する場合に変更します
         """

@@ -106,7 +106,7 @@ SQL では **SELECT**, **INSERT**, **DELETE** を必要とする処理に該当�
 値の操作
 ^^^^^^^^
 
-行の増減を伴うコンバータです。
+値の変更を行うコンバータです。
 SQL では **UPDATE** を必要とする処理に該当します。
 
 .. autoclass::
@@ -116,13 +116,13 @@ SQL では **UPDATE** を必要とする処理に該当します。
     tablelinker.convertors.basics.truncate.TruncateConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.StringMatchUpdateRowConvertor
+    tablelinker.convertors.basics.update_col.StringMatchUpdateColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.StringContainUpdateRowConvertor
+    tablelinker.convertors.basics.update_col.StringContainUpdateColConvertor
 
 .. autoclass::
-    tablelinker.convertors.basics.update_row.PatternMatchUpdateRowConvertor
+    tablelinker.convertors.basics.update_col.PatternMatchUpdateColConvertor
 
 .. autoclass::
     tablelinker.convertors.basics.zenkaku.ToHankakuConvertor
@@ -134,7 +134,9 @@ SQL では **UPDATE** を必要とする処理に該当します。
 拡張コンバータ
 --------------
 
-拡張コンバータは辞書の読み込み等の前処理を行う必要があるため、
+外部知識や外部サービスを利用するコンバータです。
+
+拡張コンバータは辞書の読み込みやネットワーク接続を行う必要があるため、
 最初に利用する際に少し時間がかかることがあります。
 
 日時抽出・変換
