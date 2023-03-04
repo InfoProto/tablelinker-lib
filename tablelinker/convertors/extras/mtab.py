@@ -67,6 +67,7 @@ def query_mtab(context, max_lines=None):
         raise message
 
     mtab_result = MTabResult(response_json)
+
     return mtab_result
 
 
@@ -163,6 +164,7 @@ class MtabWikilinkConvertor(convertors.InputOutputConvertor):
 
     def preproc(self, context):
         super().preproc(context)
+        context.reset()
         self.input_col_idx = context.get_param("input_col_idx")
         self.lines = context.get_param("lines")
         self.wikidata = None
@@ -276,6 +278,7 @@ class MtabColumnAnnotationConvertor(convertors.Convertor):
 
     def preproc(self, context):
         super().preproc(context)
+        context.reset()
         self.lines = context.get_param("lines")
 
         mtab_result = query_mtab(context, max_lines=self.lines)
