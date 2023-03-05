@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tablelinker"
-version = "1.0.0rc4"
+version = "1.0.0rc5"
 description = "A library of processes for manipulating tabular data in CSV format"
 authors = ["Akiko Aizawa <akiko@nii.ac.jp>"]
 readme = "README.md"
@@ -33,6 +33,7 @@ docopt = "^0.6.2"
 jaconv = "^0.3.3"
 openpyxl = "^3.0.10"
 charset-normalizer = "^3.0.1"
+xlrd = "^2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

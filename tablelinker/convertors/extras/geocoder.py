@@ -1,5 +1,7 @@
+from abc import ABC
 from logging import getLogger
 import re
+from typing import List
 
 import jageocoder
 
@@ -102,7 +104,28 @@ def search_node(address_or_id: str):
     return node
 
 
-class ToCodeConvertor(convertors.InputOutputConvertor):
+class GeocodeConvertor(ABC):
+    """
+    概要
+        ジオコーディングを利用するコンバータのベース抽象クラスです。
+        直接インスタンス化はできません。
+    """
+
+    def preproc_geocode(self, context):
+        self.within = context.get_param("within")
+        self.within_col_idxs = context.get_param("within_col_idxs")
+        jageocoder.set_search_config(target_area=self.within)
+
+    def search_node(self, value: str, record: List[str]):
+        within = [record[x] for x in self.within_col_idxs]
+        if len(within) == 0:
+            within = self.within
+        jageocoder.set_search_config(target_area=within)
+        return search_node(value)
+
+
+class ToCodeConvertor(convertors.InputOutputConvertor,
+                      GeocodeConvertor):
     r"""
     概要
         住所から自治体コードを計算します。
@@ -118,6 +141,8 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": コードが計算できなかった場合の値 ["0"]
         * "with_check_digit": 検査数字を含むかどうか [False]
 
@@ -200,6 +225,11 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringParam(
                 "default",
                 label="デフォルト値",
@@ -216,15 +246,14 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
-        self.within = context.get_param("within")
-        self.default = context.get_param("default")
+        super().preproc_geocode(context)
         self.with_check_digit = context.get_param("with_check_digit")
-        jageocoder.set_search_config(target_area=self.within)
+        self.default = context.get_param("default")
 
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node is not None:
             if self.with_check_digit:
@@ -241,7 +270,8 @@ class ToCodeConvertor(convertors.InputOutputConvertor):
         return result
 
 
-class ToLatLongConvertor(convertors.InputOutputsConvertor):
+class ToLatLongConvertor(convertors.InputOutputsConvertor,
+                         GeocodeConvertor):
     r"""
     概要
         住所から緯度・経度・住所レベルを計算します。
@@ -257,6 +287,8 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 ["", "", ""]
 
     注釈（InputOutputsConvertor 共通）
@@ -335,6 +367,11 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringListParam(
                 "default",
                 label="緯度・経度・住所レベルのデフォルト値",
@@ -346,9 +383,9 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
+        super().preproc_geocode(context)
         self.within = context.get_param("within")
         self.default = context.get_param("default")
-        jageocoder.set_search_config(target_area=self.within)
 
         # 出力列名が3つ指定されていることを確認
         self.output_col_names = context.get_param("output_col_names")
@@ -370,7 +407,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node is not None:
             result = [node.y, node.x, node.level]
@@ -378,7 +415,8 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor):
         return result
 
 
-class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
+class ToMunicipalityConvertor(convertors.InputOutputsConvertor,
+                              GeocodeConvertor):
     r"""
     概要
         住所から市区町村名を計算します。
@@ -394,6 +432,8 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 ["", ""]
 
     注釈（InputOutputsConvertor 共通）
@@ -476,6 +516,11 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringListParam(
                 "default",
                 label="デフォルト市区町村",
@@ -486,7 +531,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
-        self.within = context.get_param("within")
+        super().preproc_geocode(context)
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
 
@@ -519,7 +564,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node is None:
             return result
@@ -544,7 +589,8 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor):
         return result
 
 
-class ToNodeIdConvertor(convertors.InputOutputConvertor):
+class ToNodeIdConvertor(convertors.InputOutputConvertor,
+                        GeocodeConvertor):
     r"""
     概要
         住所からノードIDを計算します。
@@ -565,6 +611,8 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": ノードが見つからなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
@@ -645,6 +693,11 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringParam(
                 "default",
                 label="デフォルト値",
@@ -656,14 +709,14 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
-        self.within = context.get_param("within")
+        super().preproc_geocode(context)
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
 
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node:
             result = node.id
@@ -671,7 +724,8 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor):
         return result
 
 
-class ToPostcodeConvertor(convertors.InputOutputConvertor):
+class ToPostcodeConvertor(convertors.InputOutputConvertor,
+                          GeocodeConvertor):
     r"""
     概要
         住所から郵便番号を検索します。ただしビルのフロアごとに
@@ -688,6 +742,8 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": 郵便番号が計算できなかった場合の値 [""]
         * "hiphen": 3桁目と4桁目の間にハイフンをいれるかどうか [False]
 
@@ -775,6 +831,11 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringParam(
                 "default",
                 label="デフォルト値",
@@ -792,7 +853,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
-        self.within = context.get_param("within")
+        super().preproc_geocode(context)
         self.default = context.get_param("default")
         self.hiphen = context.get_param("hiphen")
         jageocoder.set_search_config(target_area=self.within)
@@ -800,7 +861,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node is not None:
             result = node.get_postcode()
@@ -811,7 +872,8 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor):
         return result
 
 
-class ToPrefectureConvertor(convertors.InputOutputConvertor):
+class ToPrefectureConvertor(convertors.InputOutputConvertor,
+                            GeocodeConvertor):
     r"""
     概要
         住所から都道府県名を計算します。
@@ -827,6 +889,8 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
+        * "within_col_idxs": 検索対象とする都道府県名、市区町村名を含む
+          列番号または列名のリスト []
         * "default": 都道府県名が計算できなかった場合の値 [""]
 
     注釈（InputOutputConvertor 共通）
@@ -904,6 +968,11 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
                 required=False,
                 default_value=[],
                 help_text="検索対象とする都道府県名・市区町村名のリスト。"),
+            params.InputAttributeListParam(
+                "within_col_idxs",
+                label="都道府県・市区町村名を含む列のリスト",
+                default_value=[],
+                help_text="検索対象とする都道府県名・市区町村名を含む列のリスト。"),
             params.StringParam(
                 "default",
                 label="デフォルト都道府県名",
@@ -914,14 +983,14 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor):
     @check_jageocoder
     def preproc(self, context):
         super().preproc(context)
-        self.within = context.get_param("within")
+        super().preproc_geocode(context)
         self.default = context.get_param("default")
         jageocoder.set_search_config(target_area=self.within)
 
     def process_convertor(self, record, context):
         result = self.default
         value = str(record[self.input_col_idx])
-        node = search_node(value)
+        node = self.search_node(value, record)
 
         if node is not None:
             result = node.get_pref_name()

@@ -172,9 +172,13 @@ class Table(object):
         if file is None and data is None:
             raise RuntimeError("file と data のどちらかを指定してください。")
 
-        # 文字列が渡された場合は一時ファイルに保存する
+        # 文字列・バイト列が渡された場合は一時ファイルに保存する
         if self.file is None:
-            f = NamedTemporaryFile(mode="w", delete=False)
+            if isinstance(data, bytes):
+                f = NamedTemporaryFile(mode="wb", delete=False)
+            elif isinstance(data, str):
+                f = NamedTemporaryFile(mode="w", delete=False)
+
             f.write(data)
             self.file = f.name
             self.is_tempfile = True
@@ -207,8 +211,13 @@ class Table(object):
         return row
 
     def __exit__(self, exception_type, exception_value, traceback):
-        self._reader.__exit__(
-            exception_type, exception_value, traceback)
+        try:
+            self._reader.__exit__(
+                exception_type, exception_value, traceback)
+        except AttributeError:
+            # _reader が先に削除されている場合は例外を無視する
+            pass
+
         self.close()
 
     def open(

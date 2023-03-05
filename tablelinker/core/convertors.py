@@ -561,6 +561,8 @@ class InputOutputsConvertor(Convertor):
         self.input_col_idx = context.get_param("input_col_idx")
         self.output_col_idx = context.get_param("output_col_idx")
         self.output_col_names = context.get_param("output_col_names")
+        if isinstance(self.output_col_names, str):
+            self.output_col_names = [self.output_col_names]
 
         # 既存列をチェック
         for output_col_name in self.output_col_names:
