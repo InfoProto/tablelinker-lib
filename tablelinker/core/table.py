@@ -633,7 +633,8 @@ class Table(object):
     def convert(
             self,
             convertor: str,
-            params: dict) -> 'Table':
+            params: dict,
+            output: Optional[os.PathLike] = None) -> 'Table':
         r"""
         テーブルが管理する表データにコンバータを適用して変換し、
         変換結果を管理する新しい Table オブジェクトを返します。
@@ -645,6 +646,11 @@ class Table(object):
         params: dict
             コンバータに渡すパラメータ名・値の辞書。
             例: {"input_col_idx": 1, "new_col_name": "番号"}
+        output: Path-like, optional
+            出力結果を保存する CSV ファイル名を指定します。
+            省略した場合には一時ファイルを作成します。
+            途中経過を保存したい場合に指定してください。
+            ここで作成したファイルは変換処理完了後も削除されません。
 
         Returns
         -------
@@ -674,9 +680,13 @@ class Table(object):
           変換結果ファイルが残る場合があります。
         """
         self.open()
-        csv_out = NamedTemporaryFile(
-            delete=False,
-            prefix='table_').name
+        if output is not None:
+            csv_out = output
+        else:
+            csv_out = NamedTemporaryFile(
+                delete=False,
+                prefix='table_').name
+
         input = self._reader
         output = CsvOutputCollection(csv_out)
         conv = convertor_find_by(convertor)
@@ -702,16 +712,23 @@ class Table(object):
                     self.file, convertor, csv_out))
                 new_table = Table(
                     csv_out,
-                    is_tempfile=True,
+                    is_tempfile=(output is None),
                     skip_cleaning=True)
                 return new_table
 
             except RuntimeError as e:
-                os.remove(csv_out)
-                logger.debug((
-                    "ファイル '{}' にコンバータ '{}' を適用中、"
-                    "エラーのため一時ファイル '{}' を削除しました。").format(
-                    self.file, convertor, csv_out))
+                if output is None:
+                    os.remove(csv_out)
+                    logger.debug((
+                        "ファイル '{}' にコンバータ '{}' を適用中、"
+                        "エラーのため一時ファイル '{}' を削除しました。").format(
+                        self.file, convertor, csv_out))
+                else:
+                    logger.debug((
+                        "ファイル '{}' にコンバータ '{}' を適用中、"
+                        "エラーが発生しました。途中結果は '{}'"
+                        "にあります。").format(
+                            self.file, convertor, csv_out))
 
                 raise e
 
