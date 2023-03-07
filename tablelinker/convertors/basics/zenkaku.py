@@ -17,7 +17,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
 
     パラメータ（InputOutputConvertor 共通）
         * "input_col_idx": 対象列の列番号または列名 [必須]
-        * "output_col_idx": 分割した結果を出力する列番号または
+        * "output_col_idx": 変換した結果を出力する列番号または
           列名のリスト
         * "output_col_name": 結果を出力する列名
         * "overwrite": 既に値がある場合に上書きするかどうか [False]

@@ -11,6 +11,7 @@ logger = getLogger(__name__)
 
 jageocoder_initialized = False
 re_digits = re.compile(r'^\d+$')
+re_spaces = re.compile(r'[ \t\n\r\u3000]+')
 
 
 def initialize_jageocoder() -> bool:
@@ -92,6 +93,8 @@ def search_node(address_or_id: str):
         node = jageocoder.get_module_tree().get_node_by_id(address_or_id)
         return node
 
+    address_or_id = re_spaces.sub('', address_or_id)
+
     try:
         candidates = jageocoder.searchNode(address_or_id)
         if len(candidates) > 0:
@@ -117,10 +120,20 @@ class GeocodeConvertor(ABC):
         jageocoder.set_search_config(target_area=self.within)
 
     def search_node(self, value: str, record: List[str]):
-        within = [record[x] for x in self.within_col_idxs]
-        if len(within) == 0:
-            within = self.within
-        jageocoder.set_search_config(target_area=within)
+        within = []
+        for x in self.within_col_idxs:
+            if record[x] and record[x][-1] in '都道府県市区町村':
+                try:
+                    jageocoder.set_search_config(target_area=record[x])
+                    within.append(record[x])
+                except RuntimeError:
+                    pass
+
+        if len(within) > 0:
+            jageocoder.set_search_config(target_area=within)
+        else:
+            jageocoder.set_search_config(target_area=self.within)
+
         return search_node(value)
 
 
