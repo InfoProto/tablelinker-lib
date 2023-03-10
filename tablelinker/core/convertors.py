@@ -379,6 +379,10 @@ class InputOutputConvertor(Convertor):
             # 出力列名が指定されていない場合は既存列名を利用する
             self.output_col_name = self.headers[self.input_col_idx]
             self.del_col = self.input_col_idx
+            if self.output_col_idx is None:
+                # 出力列番号も指定されていない場合は既存列の位置
+                self.output_col_idx = self.input_col_idx
+
         else:
             # 出力列名が存在するかどうか調べる
             try:
@@ -506,7 +510,11 @@ class InputOutputConvertor(Convertor):
             if del_idx < insert_idx:
                 insert_idx -= 1
 
-        new_list.insert(insert_idx, insert_value)
+        if insert_idx < 0:
+            new_list.append(insert_value)
+        else:
+            new_list.insert(insert_idx, insert_value)
+
         return new_list
 
 

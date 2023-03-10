@@ -186,7 +186,7 @@ class PatternMatchDeleteRowConvertor(convertors.Convertor):
 
     パラメータ
         * "input_col_idx": 検索対象列の列番号または列名 [必須]
-        * "pattern": 正規表現 [必須]
+        * "query": 正規表現 [必須]
 
     サンプル
         「生年月日」が偶数の行を削除します。

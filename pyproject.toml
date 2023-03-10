@@ -49,6 +49,7 @@ polars = "^0.16.5"
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
 testpaths = [
+    "tests/",
     "tablelinker/tests",
     "tablelinker/convertors",
     "tablelinker/core/table.py",

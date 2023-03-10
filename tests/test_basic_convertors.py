@@ -606,14 +606,14 @@ def test_truncate():
         for lineno, row in enumerate(reader):
             assert len(row) == 7
             if lineno == 0:
-                # 「説明」列は最後に移動
+                # 「説明」列は overwrite するので元の位置
                 assert ",".join(row) == (
                     "観光スポット名称,所在地,緯度,経度,座標系,"
-                    "八丈町ホームページ記載,説明")
+                    "説明,八丈町ホームページ記載")
                 continue
 
             # レコードの最後列が切り詰められていることを確認
-            value = row[-1]
+            value = row[5]
             if len(value) > 20:
                 assert value.endswith("...")
 
@@ -650,7 +650,7 @@ def test_truncate_replace():
 def test_update_row_match():
     table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
-        convertor="update_row_match",
+        convertor="update_col_match",
         params={
             "input_col_idx": 0,
             "query": "全　国",
@@ -672,7 +672,7 @@ def test_update_row_match():
 def test_update_row_contains():
     table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
-        convertor="update_row_contains",
+        convertor="update_col_contains",
         params={
             "input_col_idx": 0,
             "query": "　",
@@ -695,7 +695,7 @@ def test_update_row_contains():
 def test_update_row_pattern():
     table = Table(sample_dir / "ma030000.csv")
     table = table.convert(
-        convertor="update_row_pattern",
+        convertor="update_col_pattern",
         params={
             "input_col_idx": 0,
             "query": r"^\d\d\s",
@@ -757,3 +757,138 @@ def test_to_zenkaku():
             if lineno > 0:
                 # 「所在地」列は全角文字に変換
                 assert re.match(r'^[^0-9\-]*$', row["所在地"])
+
+
+def test_input_output_convertor1():
+    """
+    InputOutputConverter のテスト。
+
+    出力列名も出力位置も指定しない場合は
+    既存列の位置にそのまま上書きする。
+    """
+    data = (
+        "col0,col1,col2,col3\n"
+        "00,01,02,03\n"
+        "10,11,12,13\n"
+        "20,21,22,23\n")
+    table = Table(data=data).convert(
+        convertor="round",
+        params={
+            "input_col_idx": "col0",
+            "overwrite": True,
+        })
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 4
+            if lineno == 0:
+                assert row == ["col0", "col1", "col2", "col3"]
+
+
+def test_input_output_convertor2():
+    """
+    InputOutputConverter のテスト。
+
+    出力位置だけ指定した場合、既存列を削除して
+    指定した位置に出力する。
+    """
+    data = (
+        "col0,col1,col2,col3\n"
+        "00,01,02,03\n"
+        "10,11,12,13\n"
+        "20,21,22,23\n")
+    table = Table(data=data).convert(
+        convertor="round",
+        params={
+            "input_col_idx": "col1",
+            "overwrite": True,
+            "output_col_idx": 3,
+        })
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 4
+            if lineno == 0:
+                assert row == ["col0", "col2", "col1", "col3"]
+
+
+def test_input_output_convertor3():
+    """
+    InputOutputConverter のテスト。
+
+    出力位置だけ指定した場合、既存列を削除して
+    指定した位置に出力する。
+    出力位置を列数以上に指定した場合、最後尾に追加する。
+    """
+    data = (
+        "col0,col1,col2,col3\n"
+        "00,01,02,03\n"
+        "10,11,12,13\n"
+        "20,21,22,23\n")
+    table = Table(data=data).convert(
+        convertor="round",
+        params={
+            "input_col_idx": "col1",
+            "overwrite": True,
+            "output_col_idx": 99,
+        })
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 4
+            if lineno == 0:
+                assert row == ["col0", "col2", "col3", "col1"]
+
+
+def test_input_output_convertor4():
+    """
+    InputOutputConverter のテスト。
+
+    出力列名を指定し、出力先を指定しない場合は、
+    新規列を最後尾に追加する。
+    """
+    data = (
+        "col0,col1,col2,col3\n"
+        "00,01,02,03\n"
+        "10,11,12,13\n"
+        "20,21,22,23\n")
+    table = Table(data=data).convert(
+        convertor="round",
+        params={
+            "input_col_idx": "col1",
+            "output_col_name": "col1+",
+            "overwrite": False,
+        })
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 5
+            if lineno == 0:
+                assert row == ["col0", "col1", "col2", "col3", "col1+"]
+
+
+def test_input_output_convertor5():
+    """
+    InputOutputConverter のテスト。
+
+    出力列名も出力先も指定した場合は、
+    新規列を指定した位置に挿入する。
+    """
+    data = (
+        "col0,col1,col2,col3\n"
+        "00,01,02,03\n"
+        "10,11,12,13\n"
+        "20,21,22,23\n")
+    table = Table(data=data).convert(
+        convertor="round",
+        params={
+            "input_col_idx": "col1",
+            "output_col_name": "col1+",
+            "output_col_idx": "col2",
+        })
+
+    with table.open() as reader:
+        for lineno, row in enumerate(reader):
+            assert len(row) == 5
+            if lineno == 0:
+                assert row == ["col0", "col1", "col1+", "col2", "col3"]
