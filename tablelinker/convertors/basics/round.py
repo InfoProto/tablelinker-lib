@@ -107,5 +107,9 @@ class RoundConvertor(convertors.InputOutputConvertor):
             # 数値ではない場合はそのまま
             return value
 
-        value = round(float_val, self.ndigits)
+        if self.ndigits <= 0:
+            value = round(float_val)
+        else:
+            value = round(float_val, self.ndigits)
+
         return value
