@@ -150,7 +150,7 @@ class ToCodeConvertor(convertors.InputOutputConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_name": 結果を出力する列名
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
@@ -296,7 +296,7 @@ class ToLatLongConvertor(convertors.InputOutputsConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_names": 結果を出力する列名のリスト
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
@@ -441,7 +441,7 @@ class ToMunicipalityConvertor(convertors.InputOutputsConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_names": 結果を出力する列名のリスト
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
@@ -620,7 +620,7 @@ class ToNodeIdConvertor(convertors.InputOutputConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_name": 結果を出力する列名
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
@@ -751,7 +751,7 @@ class ToPostcodeConvertor(convertors.InputOutputConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_name": 結果を出力する列名
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []
@@ -898,7 +898,7 @@ class ToPrefectureConvertor(convertors.InputOutputConvertor,
         * "input_col_idx": 対象列の列番号または列名 [必須]
         * "output_col_name": 結果を出力する列名
         * "output_col_idx": 分割した結果を出力する列番号または列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "within": 検索対象とする都道府県名、市区町村名のリスト []

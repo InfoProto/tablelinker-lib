@@ -20,7 +20,7 @@ class ToHankakuConvertor(convertors.InputOutputConvertor):
         * "output_col_idx": 変換した結果を出力する列番号または
           列名のリスト
         * "output_col_name": 結果を出力する列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "kana": カナ文字を変換対象に含める [True]

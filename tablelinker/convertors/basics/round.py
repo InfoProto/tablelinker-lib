@@ -14,7 +14,7 @@ class RoundConvertor(convertors.InputOutputConvertor):
         * "output_col_idx": 分割した結果を出力する列番号または
           列名のリスト
         * "output_col_name": 結果を出力する列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "ndigits": 小数部の桁数。0を指定すると整数を返します。 [0]

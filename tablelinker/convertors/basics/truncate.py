@@ -14,7 +14,7 @@ class TruncateConvertor(convertors.InputOutputConvertor):
         * "output_col_idx": 分割した結果を出力する列番号または
           列名のリスト
         * "output_col_name": 結果を出力する列名
-        * "overwrite": 既に値がある場合に上書きするかどうか [False]
+        * "overwrite": 既に値がある場合に上書きするかどうか [True]
 
     パラメータ（コンバータ固有）
         * "length": 最大文字数 [10]
