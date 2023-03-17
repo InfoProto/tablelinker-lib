@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tablelinker"
-version = "1.0.0rc5"
+version = "1.0.0rc6"
 description = "A library of processes for manipulating tabular data in CSV format"
 authors = ["Akiko Aizawa <akiko@nii.ac.jp>"]
 readme = "README.md"

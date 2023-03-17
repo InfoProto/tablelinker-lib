@@ -3,6 +3,94 @@ import re
 from tablelinker.core import convertors, params
 
 
+class UpdateColConvertor(convertors.Convertor):
+    r"""
+    概要
+        指定した列の値を新しい文字列に置き換えます。
+
+    コンバータ名
+        "update_col"
+
+    パラメータ
+        * "input_col_idx": 対象列の列番号または列名 [必須]
+        * "new": 置き換える文字列 [必須]
+
+    サンプル
+        「性別」列を「－」に置き換えます。
+
+        - タスクファイル例
+
+        .. code-block:: json
+
+            {
+                "convertor": "update_col",
+                "params": {
+                    "input_col_idx": "性別",
+                    "new": "－"
+                }
+            }
+
+        - コード例
+
+        .. code-block:: python
+
+            >>> # データはランダム生成
+            >>> from tablelinker import Table
+            >>> table = Table(data=(
+            ...     '"氏名","生年月日","性別","クレジットカード"\n'
+            ...     '"小室 友子","1990年06月20日","女","3562635454918233"\n'
+            ...     '"江島 佳洋","1992年10月07日","男","376001629316609"\n'
+            ...     '"三沢 大志","1995年02月13日","男","4173077927458449"\n'
+            ... ))
+            >>> table = table.convert(
+            ...     convertor="update_col",
+            ...     params={
+            ...         "input_col_idx": "性別",
+            ...         "new": "－",
+            ...     },
+            ... )
+            >>> table.write()
+            氏名,生年月日,性別,クレジットカード
+            小室 友子,1990年06月20日,－,3562635454918233
+            江島 佳洋,1992年10月07日,－,376001629316609
+            三沢 大志,1995年02月13日,－,4173077927458449
+
+    """
+
+    class Meta:
+        key = "update_col"
+        name = "列の値を変更（無条件）"
+        description = """
+        指定された列の値を変更します
+        """
+        help_text = """
+        「対象列」の値を「新しい文字列」に変更します。
+        """
+
+        params = params.ParamSet(
+            params.InputAttributeParam(
+                "input_col_idx",
+                label="対象列",
+                required=True
+            ),
+            params.StringParam(
+                "new",
+                label="新しい文字列",
+                required=True
+            )
+        )
+
+    def preproc(self, context):
+        super().preproc(context)
+        self.idx = context.get_param("input_col_idx")
+        self.new_value = context.get_param("new")
+
+    def process_record(self, record, context):
+        value = record[self.idx]
+        record[self.idx] = self.new_value
+        context.output(record)
+
+
 class StringMatchUpdateColConvertor(convertors.Convertor):
     r"""
     概要

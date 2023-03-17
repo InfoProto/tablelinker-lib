@@ -116,6 +116,9 @@ SQL では **UPDATE** を必要とする処理に該当します。
     tablelinker.convertors.basics.truncate.TruncateConvertor
 
 .. autoclass::
+    tablelinker.convertors.basics.update_col.UpdateColConvertor
+
+.. autoclass::
     tablelinker.convertors.basics.update_col.StringMatchUpdateColConvertor
 
 .. autoclass::
