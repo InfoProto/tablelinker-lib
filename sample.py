@@ -19,7 +19,7 @@ if __name__ == '__main__':
         params={
             "input_col_idx": "住所",
             "output_col_name": "都道府県コード又は市区町村コード",
-            "withCheckDigit": False,
+            "with_check_digit": False,
             "output_col_idx": 1,
         })
     table = table.convert(
