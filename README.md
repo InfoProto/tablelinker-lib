@@ -27,8 +27,8 @@ tablelinker モジュールを実行すると、標準入力から受け取っ�
 コンバータで変換し、標準出力に送るパイプとして利用できます。
 
 ```
-$ cat sample/sakurai_sightseeing_spots.csv | \
-  python -m tablelinker sample/task.json
+$ cat sample/datafiles/yanai_tourism.csv | \
+  python -m tablelinker sample/taskfiles/task.json
 ```
 
 利用するコンバータと、コンバータに渡すパラメータは JSON ファイルに記述し、
